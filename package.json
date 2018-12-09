@@ -1,9 +1,14 @@
 {
   "name": "PHOEBE",
+  "description": "Eclipsing Binary Modeling Software",
   "version": "0.1.0",
   "private": true,
   "devDependencies": {
     "electron": "^1.7.9",
+    "electron-installer-debian": "^1.0.0",
+    "electron-installer-dmg": "^2.0.0",
+    "electron-installer-redhat": "^0.5.0",
+    "electron-packager": "^13.0.0",
     "foreman": "^3.0.0",
     "react-scripts": "0.8.5"
   },
@@ -17,8 +22,14 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
-    "eject": "react-scripts eject",
     "electron": "electron .",
-    "dev": "nf start -p 3000"
+    "dev": "nf start -p 3000",
+    "package:all": "electron-packager . --all --out=dist --overwrite",
+    "package": "electron-packager . --out=dist --overwrite",
+    "package:installer:all": "npm run package:installer:deb64 && npm run package:installer:rpm64 && npm run package:installer:dmg && npm run package:installer:exe",
+    "package:installer:deb64": "electron-installer-debian --src dist/PHOEBE-linux-x64/ --dest dist/installers/ --arch amd64 --icon=/public/logos/phoebe2.svg",
+    "package:installer:rpm64": "electron-installer-redhat --src dist/PHOEBE-linux-x64/ --dest dist/installers/ --arch x86_64 --icon=/public/logos/phoebe2.svg",
+    "package:installer:dmg": "electron-installer-dmg ./dist/PHOEBE-darwin-x64/PHOEBE.app FooBar --out dist/installers/ --icon=/public/logos/phoebe2.svg --overwrite",
+    "package:installer:exe": "electron-installer-windows --src dist/PHOEBE-win32-x64/ --dest dist/installers/"
   }
 }

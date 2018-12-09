@@ -35,17 +35,51 @@ npm run dev
 
 will launch the webserver on http://localhost:3000 and open a the Electron app.  Both will update/refresh when updates are made to the code.
 
-### Deploying Web App
+## Deploying Web App
 
 ```bash
-npm build
+npm run build
 ```
 
 (eventually will add a deploy option, for now will need to copy all files to directory on the web-server)
 
-### Packaging Electron App
+## Packaging Electron App
 
-TBD
+Dependencies:
+* `wine` (if using Linux and trying to build for windows)
+* `rpm` (if using Debian-based system and trying to create rmp installer)
+
+```bash
+npm run package
+```
+
+will package PHOEBE2-UI for your system.
+
+
+```bash
+npm run package:all
+```
+
+will package PHOEBE2-UI for all systems.
+
+These commands will create a directory for each distribution type in the `dist` directory (not under version-control).
+
+### Creating Installers
+
+**NOTE**: this can take a *long* time and generally only needs to be done when preparing to publish a release.
+
+To create installers for all supported distributions (currently includes .deb, .exe. .dmg, .rpm):
+
+```bash
+npm run package:installer:all
+```
+
+will create installers in the `dist/installers` directory (not under version-control).
+
+Alternatively, you can call `npm run package:installer:deb64`, `npm run package:installer:rpm64`, `npm run package:installer:dmg`, and `npm run package:installer:exe` separately.  
+
+
+To include other installers, see the available list [here](https://github.com/electron-userland/electron-packager#distributable-creators) and edit the scripts entry in [package.json](package.json) (make sure to include a link from the package:installer:all entry as well).
 
 
 ## Development notes
