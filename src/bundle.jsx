@@ -1,8 +1,22 @@
 import React, { Component } from 'react';
 
+// import isElectron from 'is-electron'; // https://github.com/cheton/is-electron
+
 import {Link, generatePath} from './common';
 
+
+
+
 export class Bundle extends Component {
+  launchPythonClient = () => {
+    console.log("Bundle.launchPythonClient")
+    if (this.props.app.state.isElectron) {
+      window.require('electron').remote.getGlobal('launchPythonClient')('import phoebe');
+    } else {
+      alert("cannot launch from webapp... eventually this will raise a modal with a script you can copy and paste into a terminal")
+    }
+  }
+
   render() {
     var bundleid = this.props.match.params.bundleid
 
@@ -22,6 +36,8 @@ export class Bundle extends Component {
           :
           <Link to={generatePath(this.props.app.state.serverHost, bundleid, 'add_compute')}>b.add_compute</Link>
         }
+        <br/><br/>
+        <button onClick={this.launchPythonClient}>Launch Python Client</button>
         <br/><br/>
         <Link to={generatePath(this.props.app.state.serverHost)}>Close Bundle</Link>
         <br/><br/>

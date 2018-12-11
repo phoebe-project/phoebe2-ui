@@ -84,4 +84,10 @@ To include other installers, see the available list [here](https://github.com/el
 
 ## Development notes
 
+* Most state is held in the App component in [App.js](/src/App.js), including the server connection and current Bundle.  Flux, Redux, etc are currently overkill for what we need, so this allows all state to be in one place and easily passed down to other components by passing `app` as a property.
+
+* All Router components in [App.js](/src/App.js) should be wrapped in a Server component to handle parsing the URL and making sure the connection is correct.
+
+* All electron-only capability is handled in [electron-starter.js](/src/electron-starter.js) and exposed via `global.`.  These are then available from React components via `window.require('electron').remote.getGlobal()`.
+
 All .jsx files use [Babel](https://babeljs.io/) syntax with [ES6](http://es6-features.org/) support.
