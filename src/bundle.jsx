@@ -1,10 +1,11 @@
 import React, { Component } from 'react';
 
-import {Link, DisconnectServerButton} from './common';
+import {Link, generatePath} from './common';
 
 export class Bundle extends Component {
   render() {
     var bundleid = this.props.match.params.bundleid
+
     var modal = this.props.match.params.modal
     var modalContent = null;
 
@@ -19,12 +20,12 @@ export class Bundle extends Component {
         {modal ?
           modalContent
           :
-          <Link to={'/'+bundleid+'/add_compute'}>b.add_compute</Link>
+          <Link to={generatePath(this.props.app.state.serverHost, bundleid, 'add_compute')}>b.add_compute</Link>
         }
         <br/><br/>
-        <Link to={'/'}>Close Bundle</Link>
+        <Link to={generatePath(this.props.app.state.serverHost)}>Close Bundle</Link>
         <br/><br/>
-        <DisconnectServerButton app={this.props.app} closeBundle={true}/>
+        <Link to={generatePath()}>Close Bundle & Disconnect Server</Link>
       </div>
     )
   }
@@ -35,7 +36,7 @@ class Modal extends Component {
     return (
       <div>
         <p>{this.props.children}</p>
-        <Link to={'/'+this.props.match.params.bundleid}>Close Modal</Link>
+        <Link to={generatePath(this.props.app.state.serverHost, this.props.match.params.bundleid)}>Close Modal</Link>
       </div>
     )
   }
