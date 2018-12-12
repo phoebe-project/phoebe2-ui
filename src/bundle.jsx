@@ -28,7 +28,7 @@ export class Bundle extends Component {
     }
 
     return (
-      <div>
+      <div className="App">
         <h1 style={{textAlign: 'center', color: 'blue'}}>Bundle ({bundleid}) Content Here</h1>
         <p>Server running PHOEBE v{this.props.app.state.serverPhoebeVersion}</p>
         {modal ?

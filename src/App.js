@@ -8,7 +8,9 @@ import SocketIO from 'socket.io-client'; // https://www.npmjs.com/package/socket
 
 import history from './history'
 import {SplashBundle, SplashServer} from './splash';
-import {SettingsServers} from './settings';
+import {SplashBundle} from './splash-bundle';
+import {SplashServer} from './splash-server';
+import {SettingsServers, SettingsBundles} from './settings';
 import {Bundle} from './bundle';
 import {NotFound} from './errors';
 
@@ -76,13 +78,13 @@ class App extends Component {
   }
   render() {
     return (
-      // we're connected, so let's pass through the child, but allow access
-      // to this server via the child's this.props.server.
       <Router history={history}>
         <Switch>
           {/* NOTE: all Route components should be wrapped by a Server component to handle parsing the /:server (or lack there-of) and handing connecting/disconnecting to the websocket */}
           <Route exact path={process.env.PUBLIC_URL + '/'} render={(props) => <Server {...props} app={this}><SplashServer {...props} app={this}/></Server>}/>
           <Route exact path={process.env.PUBLIC_URL + '/settings/servers'} render={(props) => <Server {...props} app={this}><SettingsServers {...props} app={this}/></Server>}/>
+          <Route exact path={process.env.PUBLIC_URL + '/:server/settings/servers'} render={(props) => <Server {...props} app={this}><SettingsServers {...props} app={this}/></Server>}/>
+          <Route exact path={process.env.PUBLIC_URL + '/:server/settings/bundles'} render={(props) => <Server {...props} app={this}><SettingsBundles {...props} app={this}/></Server>}/>
           <Route path={process.env.PUBLIC_URL + '/:server/:bundleid/:modal'} render={(props) => <Server {...props} app={this}><Bundle {...props} app={this}/></Server>}/>
           <Route path={process.env.PUBLIC_URL + '/:server/:bundleid/:modal'} render={(props) => <Server {...props} app={this}><Bundle {...props} app={this}/></Server>}/>
           <Route path={process.env.PUBLIC_URL + '/:server/:bundleid'} render={(props) => <Server {...props} app={this}><Bundle {...props} app={this}/></Server>}/>

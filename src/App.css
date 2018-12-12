@@ -1,24 +1,217 @@
-.App {
-  text-align: center;
+html, body {
+    margin: 0;
+    padding: 0;
 }
 
-.App-logo {
-  animation: App-logo-spin infinite 20s linear;
-  height: 80px;
+body {
+  font-family: 'Ubuntu', sans-serif;
+  overflow: hidden;
+  position: absolute;
+  height: 100%;
+  width: 100%
 }
 
-.App-header {
-  background-color: #222;
-  height: 150px;
-  padding: 20px;
+div#root {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+}
+
+div.App {
+  position: inherit;
+  height: inherit;
+  width: inherit;
+}
+
+div.splash-scrollable-header {
+  margin: auto;
+  padding: 15px;
+  width: 50%;
+  height: 350px;
+  bottom: 0px;
+  position: absolute;
+  margin-bottom: 50px;
+  left: 25%;
+
+  /* border-radius: 5px 5px 5px 5px;
+  -moz-border-radius: 5px 5px 5px 5px;
+  -webkit-border-radius: 5px 5px 5px 5px;
+  border: 0px solid #000000;
+
+  -webkit-box-shadow: inset 0px 0px 40px -10px rgba(0,0,0,1);
+  -moz-box-shadow: inset 0px 0px 40px -10px rgba(0,0,0,1);
+  box-shadow: inset 0px 0px 40px -10px rgba(0,0,0,1); */
+}
+
+.disabled {
+  pointer-events: none !important;
+}
+
+@media screen and (max-width: 1000px){
+  /* CSS TO APPLY FOR SMALL WIDTH */
+  div.splash-scrollable-header{
+    width: 75%;
+    left: 12.5%;
+  }
+}
+
+@media screen and (max-width: 767px){
+  /* CSS TO APPLY FOR XS WIDTH (MOBILE) */
+  div.splash-scrollable-header{
+    width: 100%;
+    left: 0;
+  }
+}
+
+@media screen and (max-height: 700px){
+  div.splash-scrollable-header{
+    height: 50%
+  }
+}
+
+@media screen and (max-height: 400px){
+  div.splash-scrollable-header{
+    height: 80%
+  }
+}
+
+div.splash-scrollable {
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-top: 10px;
+  padding: 8px;
+  height: 100%;
+  width: 100%;
+}
+
+img {
+  max-width: 100%;
+}
+
+.img-center {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.img-flip-vert {
+        -moz-transform: scaleY(-1);
+        -o-transform: scaleY(-1);
+        -webkit-transform: scaleY(-1);
+        transform: scaleY(-1);
+        filter: FlipV;
+        -ms-filter: "FlipV";
+}
+
+h1, .h1 {
+  font-size: 40px;
+}
+
+h2, .h2 {
+  font-size: 30px;
+}
+
+h3, .h3 {
+  font-size: 24px;
+}
+
+p {
+  text-align: justify;
+  text-justify: inter-word;
+}
+
+a {
+  color: #2B71B1;
+}
+
+code {
+  color: #2B71B1;
+  background-color: #e6f2fe;
+}
+
+.logo-invert {
+  -webkit-filter: grayscale(1) invert(1) brightness(1.5);
+  filter: grayscale(1) invert(1) brightness(1.5);
+}
+
+.content-dark {
+  background-color: #2B71B1;
+  color: #D6D6D6;
+}
+
+.content-dark h1, .content-dark h2, .content-dark h3, .content-dark h4, .content-dark h5 {
+  color: #D6D6D6
+}
+
+.content-dark pre {
+  background-color: #456583;
+  border-color: #f5f5f5; /* same as pre background-color */
   color: white;
 }
 
-.App-intro {
-  font-size: large;
+.content-dark code {
+  color: #e6f2fe;
+  background-color: #456583;
 }
 
-@keyframes App-logo-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+.content-dark a {
+  color: #D6D6D6 !important;
+  font-weight: bold;
+}
+
+.content-dark a:hover {
+  color: white !important;
+}
+
+.content-dark img.img-handle-invert {
+   -webkit-filter: grayscale(1) invert(1) brightness(1.5);
+   filter: grayscale(1) invert(1) brightness(1.5);
+ }
+
+ /* BOOTSTRAP BUTTONS */
+
+
+ .btn-primary, .btn-primary:hover, .btn-primary:active, .btn-primary:focus {
+   background-color: transparent;
+   color: #2B71B1;
+   border: 1px solid #2B71B1;
+ }
+
+ .btn-transparent, .btn-transparent:focus, .btn-transparent-disabled {
+   background-color: transparent;
+   color: #D6D6D6 !important;
+   border-width: 1px;
+   border-color: #D6D6D6 !important;
+   border: 1px solid;
+   box-shadow: none;
+ }
+
+ .btn-transparent:hover {
+   text-decoration: none;
+   color: #ffffff !important;
+   border-color: #ffffff !important;
+   border-width: 1.2px;
+ }
+
+.btn-transparent-disabled, .btn-transparent-disabled:hover {
+  text-decoration: none;
+  border-color: #a1a1a1 !important;
+  pointer-events: none;
+}
+
+.splash-scrollable-btn-div {
+  display: inline-block;
+  height: 40px;
+  width: 100%;
+  /* overflow: hidden; */
+  /* text-align: left; */
+  margin: 0;
+  margin-bottom: 10px;
+}
+
+.splash-scrollable .btn-transparent, .splash-scrollable .btn-transparent-disabled {
+  height: 40px;
+  width: 100%;
+  overflow: hidden;
+  /* text-align: left; */
 }
