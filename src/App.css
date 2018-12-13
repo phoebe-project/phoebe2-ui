@@ -11,6 +11,10 @@ body {
   width: 100%
 }
 
+a {
+  text-decoration: none;
+}
+
 div#root {
   position: absolute;
   height: 100%;

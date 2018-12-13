@@ -1,19 +1,25 @@
 import React, { Component } from 'react';
-import {Link as RouterLink} from 'react-router-dom';
+import {Link as RouterLink, Router as RouterRouter, HashRouter as RouterHashRouter} from 'react-router-dom';
 
-// import history from './history'
+// import {history} from './history'
+
+export function isStaticFile() {
+  return window.location.pathname.includes('index.html')
+}
 
 export function generatePath(serverHost, bundleid, modal, filter) {
+  var prefix = ""
+  // if (isStaticFile()) {prefix = "#"}
   if (!serverHost) {
-    return "/"
+    return prefix+"/"
   } else if (!bundleid) {
-    return "/"+serverHost
+    return prefix+"/"+serverHost
   } else if (!modal) {
-    return "/"+serverHost+"/"+bundleid
+    return prefix+"/"+serverHost+"/"+bundleid
   } else if (!filter) {
-    return "/"+serverHost+"/"+bundleid+"/"+modal
+    return prefix+"/"+serverHost+"/"+bundleid+"/"+modal
   } else {
-    return "/"+serverHost+"/"+bundleid+"/"+modal+"/"+filter
+    return prefix+"/"+serverHost+"/"+bundleid+"/"+modal+"/"+filter
   }
 }
 
@@ -39,6 +45,21 @@ export function mapObject(object, callback) {
   return Object.keys(object).map(function (key) {
     return callback(key, object[key]);
   });
+}
+
+export class Router extends Component {
+  render() {
+    if (isStaticFile()) {
+      return (
+        <RouterHashRouter {...this.props}>{this.props.children}</RouterHashRouter>
+      )
+    } else {
+      return (
+        <RouterRouter {...this.props}>{this.props.children}</RouterRouter>
+      )
+    }
+
+  }
 }
 
 export class Link extends Component {

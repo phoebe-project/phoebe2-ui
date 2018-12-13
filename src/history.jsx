@@ -2,4 +2,19 @@
 
 import { createBrowserHistory } from 'history';
 
-export default createBrowserHistory();
+import {isStaticFile} from './common';
+
+export const history = createBrowserHistory();
+
+
+export function historyPush(url, app) {
+  if (isStaticFile()){
+    if (!url.startsWith("#")) {
+      url = '#'+url
+    }
+    window.location.hash = url;
+    app.router.refresh();
+  } else {
+    history.push(url);
+  }
+}

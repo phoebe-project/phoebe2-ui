@@ -1,13 +1,13 @@
 import React, { Component } from 'react';
-import {Router, Switch, Route} from 'react-router-dom'
+import {Switch, Route} from 'react-router-dom'
 import './App.css';
 
 import isElectron from 'is-electron'; // https://github.com/cheton/is-electron
 import SocketIO from 'socket.io-client'; // https://www.npmjs.com/package/socket.io-client
 
 
-import history from './history'
-import {SplashBundle, SplashServer} from './splash';
+import {history, historyPush} from './history'
+import {Router, generatePath, isStaticFile} from './common'
 import {SplashBundle} from './splash-bundle';
 import {SplashServer} from './splash-server';
 import {SettingsServers, SettingsBundles} from './settings';
@@ -34,7 +34,7 @@ class App extends Component {
       serverPhoebeVersion: null,
       settingsTheme: "default"
     };
-
+    this.router = React.createRef();
     this.socket = null;
   }
   componentDidMount() {
@@ -51,12 +51,11 @@ class App extends Component {
       this.serverDisconnect();
     }
 
-    this.socket = SocketIO("http://"+serverHost, socketOptions);
     this.setState({serverHost: serverHost, serverStatus: "connecting"});
+    this.socket = SocketIO("http://"+serverHost, socketOptions);
 
     this.socket.on('connect', (data) => {
       this.setState({serverStatus: "connected"});
-      // this.socket.emit('register client', {'clientid': self.appid});
     });
 
     this.socket.on('reconnect', (data) => {
@@ -64,8 +63,7 @@ class App extends Component {
     })
 
     this.socket.on('disconnect', (data) => {
-      this.setState({serverStatus: "disconnected", serverHost: null, serverPhoebeVersion: null});
-      history.push("/")
+      this.serverDisconnect();
     });
   }
   serverDisconnect = () => {
@@ -74,21 +72,28 @@ class App extends Component {
       this.socket.close();
       this.socket = null;
     }
-    this.setState({serverStatus: "disconnected", serverHost: null, serverPhoebeVersion: null})
+
+    this.setState({serverStatus: "disconnected", serverHost: null, serverPhoebeVersion: null});
   }
   render() {
+    let public_url
+    if (isStaticFile()) {
+      public_url = ""
+    } else {
+      public_url = process.env.PUBLIC_URL
+    }
     return (
-      <Router history={history}>
+      <Router history={history} ref={this.router}>
         <Switch>
           {/* NOTE: all Route components should be wrapped by a Server component to handle parsing the /:server (or lack there-of) and handing connecting/disconnecting to the websocket */}
-          <Route exact path={process.env.PUBLIC_URL + '/'} render={(props) => <Server {...props} app={this}><SplashServer {...props} app={this}/></Server>}/>
-          <Route exact path={process.env.PUBLIC_URL + '/settings/servers'} render={(props) => <Server {...props} app={this}><SettingsServers {...props} app={this}/></Server>}/>
-          <Route exact path={process.env.PUBLIC_URL + '/:server/settings/servers'} render={(props) => <Server {...props} app={this}><SettingsServers {...props} app={this}/></Server>}/>
-          <Route exact path={process.env.PUBLIC_URL + '/:server/settings/bundles'} render={(props) => <Server {...props} app={this}><SettingsBundles {...props} app={this}/></Server>}/>
-          <Route path={process.env.PUBLIC_URL + '/:server/:bundleid/:modal'} render={(props) => <Server {...props} app={this}><Bundle {...props} app={this}/></Server>}/>
-          <Route path={process.env.PUBLIC_URL + '/:server/:bundleid/:modal'} render={(props) => <Server {...props} app={this}><Bundle {...props} app={this}/></Server>}/>
-          <Route path={process.env.PUBLIC_URL + '/:server/:bundleid'} render={(props) => <Server {...props} app={this}><Bundle {...props} app={this}/></Server>}/>
-          <Route path={process.env.PUBLIC_URL + '/:server'} render={(props) => <Server {...props} app={this}><SplashBundle {...props} app={this}/></Server>}/>
+          <Route exact path={public_url + '/'} render={(props) => <Server {...props} app={this}><SplashServer {...props} app={this}/></Server>}/>
+          <Route exact path={public_url + '/settings/servers'} render={(props) => <Server {...props} serverNotRequired={true} app={this}><SettingsServers {...props} app={this}/></Server>}/>
+          <Route exact path={public_url + '/:server/settings/servers'} render={(props) => <Server {...props} serverNotRequired={true} app={this}><SettingsServers {...props} app={this}/></Server>}/>
+          <Route exact path={public_url + '/:server/settings/bundles'} render={(props) => <Server {...props} serverNotRequired={true} app={this}><SettingsBundles {...props} app={this}/></Server>}/>
+          <Route path={public_url + '/:server/:bundleid/:modal'} render={(props) => <Server {...props} app={this}><Bundle {...props} app={this}/></Server>}/>
+          <Route path={public_url + '/:server/:bundleid/:modal'} render={(props) => <Server {...props} app={this}><Bundle {...props} app={this}/></Server>}/>
+          <Route path={public_url + '/:server/:bundleid'} render={(props) => <Server {...props} app={this}><Bundle {...props} app={this}/></Server>}/>
+          <Route path={public_url + '/:server'} render={(props) => <Server {...props} app={this}><SplashBundle {...props} app={this}/></Server>}/>
           <Route path="*" component={NotFound} />
         </Switch>
       </Router>
@@ -108,26 +113,36 @@ class Server extends Component {
   // all server-related logic here.
   componentDidUpdate() {
     var server = this.props.match.params.server;
+
     if (server != this.props.app.state.serverHost) {
       // NOTE must be !=, not !==
       if (server) {
         // this.props.app.setState({serverHost: server})
+        console.log("connecting to server because of URL")
         this.props.app.serverConnect(server)
         // will in turn set this.props.app.state.serverHost if successful
       } else if (!server) {
+        console.log("disconnecting from server because of URL.  server="+server)
         this.props.app.serverDisconnect();
         // will reset this.props.app.state.serverHost to null
       }
     }
-
   }
   componentDidMount() {
     this.componentDidUpdate()
   }
   render() {
-    return (
-      this.props.children
-    )
+    if (this.props.app.state.serverStatus==='connected' || this.props.serverNotRequired) {
+      return (
+        this.props.children
+      )
+    } else {
+      return (
+        // then we'll display there server splash.  If a server is connecting/reconnecting
+        // then the splash server will show that state.
+        <SplashServer {...this.props}/>
+      )
+    }
   }
 }
 

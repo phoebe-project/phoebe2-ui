@@ -3,7 +3,7 @@ import fetch from 'node-fetch'; // https://github.com/bitinn/node-fetch
 
 import {Link, Image, generatePath} from './common';
 
-import history from './history';
+// import {history} from './history';
 import {LogoSplash} from './logo';
 
 
@@ -40,12 +40,13 @@ export class SplashServer extends Component {
 
           <div ref={this.splashScrollable} className="splash-scrollable">
             { this.props.app.state.isElectron ?
-              <ServerButton location={"127.0.0.1:"+window.require('electron').remote.getGlobal('pyPort')} isSpawned={true} app={this.props.app} splash={this}/>
+              <ServerButton location={"127.0.0.1:"+window.require('electron').remote.getGlobal('pyPort')} isSpawned={true} app={this.props.app} splash={this} match={this.props.match}/>
               :
               null
             }
             <ServerButton location="127.0.0.1:5555" app={this.props.app} splash={this}/>
             <ServerButton location="127.0.0.1:9999" app={this.props.app} splash={this}/>
+            <ServerButton location="127.0.0.1:5000" app={this.props.app} splash={this}/>
           </div>
         </div>
       </div>
@@ -76,13 +77,15 @@ class ServerStatusIcon extends Component {
     // this.props.connecting
     let title
     var classes = "fas fa-fw"
-    var style = {display: "inline-block", float: "left", marginTop: "4px", textAlign: "center"}
+    var style = {display: "inline-block", float: "left", marginTop: "4px", textAlign: "center", textDecoration: "none"}
+    var to = null;
     var onClick = null;
 
     if (this.props.connecting) {
       title = "cancel connection"
       style.pointerEvents = "all"
-      onClick = this.props.server.cancelConnection
+      to = generatePath();
+      onClick = this.props.serverButton.cancelConnect;
       if (this.state.hover) {
         classes += " fa-times"
       } else {
@@ -100,7 +103,7 @@ class ServerStatusIcon extends Component {
     }
 
     return (
-      <span style={style} className={classes} title={title} onClick={onClick} onMouseEnter={()=>{this.setState({hover:true})}} onMouseLeave={()=>{this.setState({hover:false})}}></span>
+      <Link style={style} className={classes} title={title} to={to} onClick={onClick} onMouseEnter={()=>{this.setState({hover:true})}} onMouseLeave={()=>{this.setState({hover:false})}}></Link>
     )
   }
 }
@@ -123,7 +126,7 @@ class ServerRemoveButton extends Component {
     if (this.props.connecting) {
       title = "cancel connection"
       style.pointerEvents = "all"
-      onClick = this.props.server.cancelConnection
+      onClick = this.props.serverButton.cancelConnection
       if (this.state.hover) {
         classes += " fa-times"
       } else {
@@ -153,11 +156,16 @@ class ServerVersionSpan extends Component {
     if (this.props.phoebeVersion) {
       style.border = "1px dotted #a1a1a1"
       text = this.props.phoebeVersion
-      title = "this servers is running PHOEBE "+this.props.phoebeVersion
+      title = "this server is running PHOEBE "+this.props.phoebeVersion
     } else {
       style.opacity = "0.5"
-      text = "scanning"
-      title = "scanning for PHOEBE server"
+      if (this.props.connecting) {
+        text = "reconnecting"
+        title = "waiting for server to reconnect"
+      } else {
+        text = "scanning"
+        title = "scanning for PHOEBE server"
+      }
     }
 
     return (
@@ -173,10 +181,9 @@ class ServerButton extends Component {
       phoebeVersion: null,
       parentId: null,
       hover: false,
-      connecting: false,
     };
   }
-  getInfo = (scanTimeout) => {
+  getInfo = (scanTimeout, cancelConnectIfFail) => {
     var location = this.props.location;
     if (!location.startsWith("http://")) {
       location = "http://" + location
@@ -201,7 +208,14 @@ class ServerButton extends Component {
       fetch(location+"/test")
         .then(res => res.json())
         .then(json => this.setState({phoebeVersion: json.data.phoebe_version, parentId: json.data.parentid}))
-        .catch(err => {this.cancelConnect(); this.setState({phoebeVersion: null, parentId: null}); this.getInfo(scanTimeout + 500)});
+        .catch(err => {
+          // if (cancelConnectIfFail) {
+          //   this.cancelConnect();
+          //   history.goBack();
+          // }
+          this.setState({phoebeVersion: null, parentId: null});
+          this.getInfo(scanTimeout + 500)
+        });
     }, scanTimeout);
 
   }
@@ -212,6 +226,11 @@ class ServerButton extends Component {
     // cancel the server getInfo loop if still running
     clearTimeout(this._infoloop);
   }
+  isConnecting = () => {
+    // we don't need to check the serverStatus... if this was connected we shouldn't be on this page
+    return this.props.app.state.serverHost===this.props.location
+    // return this.props.app.state.serverStatus === 'connecting' && this.props.app.state.serverHost===this.props.location
+  }
   hoverOn = () => {
     this.setState({hover: true});
   }
@@ -219,24 +238,21 @@ class ServerButton extends Component {
     this.setState({hover: false});
   }
   cancelConnect = (e) => {
-    if (this.state.connecting) {
+    if (this.isConnecting()) {
       console.log("ServerButton.cancelConnect "+this.props.location)
-      this.setState({connecting: false});
+      // if (this.props.match.params.bundleid) {
+      //   alert("TODO: add a confirmation before disconnecting if bundleid is present in URL")
+      // }
       this.props.splash.enableAllInput();
       this.props.app.serverDisconnect();
       if (e) {e.stopPropagation();}
     }
   }
   serverConnect = () => {
-    if (this.state.connecting) {
-      this.cancelConnect();
-    } else {
-      console.log("ServerButton.serverConnect "+this.props.location);
-      this.getInfo();
-      this.props.splash.disableAllInput();
-      this.setState({connecting: true});
-      this.props.app.serverConnect(this.props.location);
-    }
+    console.log("ServerButton.serverConnect "+this.props.location);
+    this.getInfo(0, true);
+    this.props.splash.disableAllInput();
+    this.props.app.serverConnect(this.props.location);
   }
   removeServer = (e) => {
     alert("this will eventually allow removing the entry from your list of scanned servers")
@@ -263,15 +279,15 @@ class ServerButton extends Component {
     var locationSpan = <span style={{display: "inline-block", float: "left", textAlign: "center", width: "calc(100% - 200px)"}}>{locationText}</span>
 
     var style={}
-    if (this.state.connecting) {
+    if (this.isConnecting()) {
       style = {pointerEvents: "none"}
     }
 
     return (
       <div onMouseEnter={this.hoverOn} onMouseLeave={this.hoverOff} className="splash-scrollable-btn-div" style={style}>
-        <span className={btnClassName} onClick={this.serverConnect} title={"connect to server at "+this.props.location+" running PHOEBE "+this.state.phoebeVersion}>
-          <ServerStatusIcon phoebeVersion={this.state.phoebeVersion} connecting={this.state.connecting} server={this}/>
-          <ServerVersionSpan phoebeVersion={this.state.phoebeVersion}/>
+        <Link className={btnClassName} to={generatePath(this.props.location)} title={"connect to server at "+this.props.location+" running PHOEBE "+this.state.phoebeVersion}>
+          <ServerStatusIcon phoebeVersion={this.state.phoebeVersion} connecting={this.isConnecting()} serverButton={this}/>
+          <ServerVersionSpan phoebeVersion={this.state.phoebeVersion} connecting={this.isConnecting()}/>
           {locationSpan}
           {this.props.isSpawned ?
             null
@@ -281,7 +297,7 @@ class ServerButton extends Component {
             </span>
           }
 
-        </span>
+        </Link>
       </div>
     )
 

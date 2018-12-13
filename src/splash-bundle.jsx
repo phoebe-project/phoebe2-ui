@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 
 import {Link, generatePath} from './common';
 
-import history from './history';
+// import {history} from './history';
 import {LogoSplash} from './logo';
 
 export class SplashBundle extends Component {
@@ -108,7 +108,7 @@ class NewBundleButton extends Component {
     } else if (this.props.children) {
       return (
         <div className="splash-scrollable-btn-div" style={this.props.style}>
-          <a className="btn btn-transparent" onClick={this.exposeChildren} onMouseOver={this.onMouseEnter} onMouseLeave={this.onMouseLeave}>{this.props.title}</a>
+          <span className="btn btn-transparent" onClick={this.exposeChildren} onMouseOver={this.onMouseEnter} onMouseLeave={this.onMouseLeave}>{this.props.title}</span>
           {/* NOTE: the following would allow exposing on hover... but then touch events somehow immediately get passed down to the exposed child */}
           {/* <a className="btn btn-transparent" onClick={this.exposeChildren} onMouseOver={this.exposeChildren} onMouseLeave={this.onMouseLeave}>{this.props.title}</a> */}
         </div>
@@ -116,7 +116,7 @@ class NewBundleButton extends Component {
     } else {
       return (
         <div className="splash-scrollable-btn-div" style={this.props.style}>
-          <Link className="btn btn-transparent" to={generatePath(this.props.app.state.serverHost, "bundleid-"+this.props.type)} onMouseOver={this.onMouseEnter} onMouseOut={this.onMouseLeave}>{this.props.title}</Link>
+          <span className="btn btn-transparent" to={generatePath(this.props.app.state.serverHost, "bundleid-"+this.props.type)} onMouseOver={this.onMouseEnter} onMouseOut={this.onMouseLeave}>{this.props.title}</span>
         </div>
       )
     }
