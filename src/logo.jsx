@@ -127,11 +127,20 @@ export class LogoSplash extends Component {
     var animationEffect = this.props.animationEffect || ""
     var additionalClasses = this.props.className || ""
 
+    var onMouseEnter = this.props.onMouseEnter || null;
+    if (onMouseEnter === 'showSingle') {
+      onMouseEnter = this.showSingle
+    } else if (onMouseEnter === 'showDetached') {
+      onMouseEnter = this.showDetached
+    } else if (onMouseEnter === 'showContact') {
+      onMouseEnter = this.showContact
+    }
+
     var divClasses = "PhoebeLogo"+" "+transitionIn+" "+animationEffect+" "+additionalClasses
     var pltStyle = this.props.pltStyle || {}
 
     return(
-      <div className={divClasses} ref={this.phoebelogo} onMouseEnter={this.props.onMouseEnter || null} onMouseLeave={this.clearTemporary}>
+      <div className={divClasses} ref={this.phoebelogo} onMouseEnter={onMouseEnter} onMouseLeave={this.clearTemporary}>
         <div className='PLT PLT1' style={pltStyle} ref={this.plt1}/>
         <div className='PLT PLT2' style={pltStyle} ref={this.plt2}/>
         <div className='PLT PLT3' style={pltStyle} ref={this.plt3}/>
