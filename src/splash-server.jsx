@@ -274,8 +274,10 @@ class ServerButton extends Component {
       style = {pointerEvents: "none"}
     }
 
+
     let removeColor
     if (this.state.removeConfirmed) {
+      btnClassName += " btn-transparent-remove"
       removeColor = "red"
       locationText = "click again to confirm removal"
     } else if (this.state.hover) {
@@ -286,9 +288,9 @@ class ServerButton extends Component {
 
     var locationSpan = <span style={{display: "inline-block", float: "left", textAlign: "center", width: "calc(100% - 200px)"}}>{locationText}</span>
 
-
     return (
-      <div onMouseEnter={this.hoverOn} onMouseLeave={this.hoverOff} className="splash-scrollable-btn-div" style={style}>
+      // NOTE: we use onMouseOver instead of onMouseEnter here so that it is triggered when a server above is removed
+      <div onMouseOver={this.hoverOn} onMouseLeave={this.hoverOff} className="splash-scrollable-btn-div" style={style}>
         <Link className={btnClassName} to={generatePath(this.props.location)} title={"connect to server at "+this.props.location+" running PHOEBE "+this.state.phoebeVersion}>
           <ServerStatusIcon phoebeVersion={this.state.phoebeVersion} connecting={this.isConnecting()} autoconnect={this.props.autoconnect} serverButton={this}/>
           <ServerVersionSpan phoebeVersion={this.state.phoebeVersion} connecting={this.isConnecting()} autoconnect={this.props.autoconnect}/>

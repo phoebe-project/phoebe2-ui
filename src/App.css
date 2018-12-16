@@ -195,7 +195,7 @@ code {
    color: #D6D6D6 !important;
    font-weight: 400;
    border-width: 1px;
-   border-color: #D6D6D6 !important;
+   border-color: #D6D6D6;
    border: 1px solid;
    box-shadow: none;
  }
@@ -211,6 +211,10 @@ code {
   text-decoration: none;
   border-color: #a1a1a1 !important;
   pointer-events: none;
+}
+
+.btn-transparent-remove, .btn-transparent-remove:hover {
+  border-color: red !important;
 }
 
 .splash-scrollable-btn-div {
