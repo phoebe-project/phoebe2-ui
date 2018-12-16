@@ -1,5 +1,6 @@
 // adapted from: https://github.com/csepulv/electron-with-create-react-app
 
+const fetch = require('electron-fetch').default;
 const child_process = require('child_process');
 
 const electron = require('electron');
@@ -31,7 +32,42 @@ function createWindow() {
         });
     mainWindow.loadURL(startUrl);
     // Open the DevTools.
-    mainWindow.webContents.openDevTools();
+    // mainWindow.webContents.openDevTools();
+
+    // Confirm before closing the app as that will kill the child-process server
+    mainWindow.showExitPrompt = true;
+    mainWindow.on('close', function(e) {
+      if (mainWindow.showExitPrompt) {
+        e.preventDefault();
+
+        if (global.pyPort) {
+          fetch("http://localhost:"+global.pyPort+"/test")
+            .then(res => res.json())
+            .then(json => {
+              // TODO: only show this if there are clients connected to the server.  Will need to have all clients subscribe and then have the server return the clientids in this fetch.
+              var choice = electron.dialog.showMessageBox(
+                {
+                    type: 'question',
+                    buttons: ['Quit', 'Cancel'],
+                    title: 'Quit PHOEBE and Kill Server?',
+                    message: `Are you sure you want to quit?  Closing this window will kill the child-process server running PHOEBE ${json.data.phoebe_version}`
+                });
+
+              if (choice===0) {
+                mainWindow.showExitPrompt = false;
+                mainWindow.close();
+              }
+            })
+            .catch(err => {
+              mainWindow.showExitPrompt = false;
+              mainWindow.close();
+            });
+        } else {
+          mainWindow.showExitPrompt = false;
+          mainWindow.close();
+        }
+      }
+    })
 
     // Emitted when the window is closed.
     mainWindow.on('closed', function () {
@@ -109,4 +145,5 @@ const exitPyProc = () => {
 
 
 app.on('ready', createPyProc);
+
 app.on('will-quit', exitPyProc);
