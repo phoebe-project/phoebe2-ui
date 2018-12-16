@@ -313,14 +313,14 @@
 }
 
 /* ignore hover effects on spinner */
-.animateSpinner > .PLTB {
+/* .animateSpinner > .PLTB {
   opacity: 0
-}
+} */
 
-.animateSpinner > .PLT8 {
+/* .animateSpinner > .PLT8 {
   animation: none !important;
   background-color: rgba(230, 230, 230, 0.65);
-}
+} */
 
 
 @keyframes shimmerFade {

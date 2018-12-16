@@ -82,3 +82,36 @@ export class Image extends Component {
     )
   }
 }
+
+export class CancelSpinnerIcon extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      hover: false
+    }
+  }
+  onCancel = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (this.props.onCancel) {
+      this.props.onCancel(e);
+    }
+  }
+  render() {
+    // onCancel
+
+    var classes = "fas fa-fw"
+    var style = {display: "inline-block", float: "left", marginTop: "4px", width: "20px", marginRight: "-20px", textAlign: "center", textDecoration: "none"}
+
+    style.pointerEvents = "all"
+    if (this.state.hover) {
+      classes += " fa-times"
+    } else {
+      classes += " fa-circle-notch fa-spin"
+    }
+
+    return (
+      <span {...this.props} style={style} className={classes} onClick={this.onCancel} onMouseEnter={()=>{this.setState({hover:true})}} onMouseLeave={()=>{this.setState({hover:false})}}/>
+    )
+  }
+}

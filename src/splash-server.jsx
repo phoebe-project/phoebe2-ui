@@ -66,17 +66,6 @@ export class SplashServer extends Component {
   }
 }
 
-export class SplashServerReconnect extends Component {
-  render() {
-    return (
-      <div>
-        <h1>Server connection to {this.props.app.state.serverHost} lost... reconnecting</h1>
-        <Link to={generatePath()}>Disconnect from Server</Link>
-      </div>
-    )
-  }
-}
-
 class ServerStatusIcon extends Component {
   constructor(props) {
     super(props);
@@ -275,15 +264,13 @@ class ServerButton extends Component {
     }
 
 
-    let removeColor
+    var removeStyle = {pointerEvents: "all"}
     if (this.state.removeConfirmed) {
       btnClassName += " btn-transparent-remove"
-      removeColor = "red"
+      removeStyle.color = "red"
       locationText = "click again to confirm removal"
-    } else if (this.state.hover) {
-      removeColor = "inherit"
-    } else {
-      removeColor = "transparent"
+    } else if (!this.state.hover) {
+      removeStyle.color = "transparent"
     }
 
     var locationSpan = <span style={{display: "inline-block", float: "left", textAlign: "center", width: "calc(100% - 200px)"}}>{locationText}</span>
@@ -298,8 +285,8 @@ class ServerButton extends Component {
           {this.props.isSpawned ?
             null
             :
-            <span className="d-none d-sm-block" style={{marginLeft: "calc(100px - 20px)", display: "inline-block", height: "40px", width: "20px", float: "left"}} to="#" onClick={this.removeServer} onMouseLeave={()=>{this.setState({removeConfirmed:false})}}>
-              <span className="far fa-fw fa-trash-alt" style={{pointerEvents: "all", color: removeColor}} title="remove server from list"/>
+            <span className="d-none d-sm-block" style={{marginLeft: "calc(100px - 20px)", display: "inline-block", width: "20px", float: "left"}} to="#" onClick={this.removeServer} onMouseLeave={()=>{this.setState({removeConfirmed:false})}}>
+              <span className="far fa-fw fa-trash-alt" style={removeStyle} title="remove server from list"/>
             </span>
           }
 
