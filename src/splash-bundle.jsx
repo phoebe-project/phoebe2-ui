@@ -13,6 +13,7 @@ export class SplashBundle extends Component {
   render() {
     return(
       <div className="App content-dark">
+        <Link style={{float: "left"}} title="choose different server" to={generatePath()}><span className="fa-lg fas fa-fw fa-broadcast-tower" style={{margin: "8px"}}/> {this.props.app.state.serverHost} [{this.props.app.state.serverPhoebeVersion}]</Link>
         <LogoSplash ref={this.logoSplash} transitionIn="transitionInNone"/>
 
         <div className="splash-scrollable-header">
@@ -22,9 +23,11 @@ export class SplashBundle extends Component {
 
 
           <p style={{textAlign: "center", marginBottom: "0px", paddingLeft: "10px", paddingRight: "10px"}}>
-            <Link style={{float: "left"}} title="choose different server" to={generatePath()}><span className="fas fa-fw fa-broadcast-tower"/></Link>
+            {/* <Link style={{float: "left"}} title="choose different server" to={generatePath()}><span className="fas fa-fw fa-broadcast-tower"/></Link> */}
+            {/* <Link style={{float: "left"}} title="choose different server" to={generatePath()}><span className="fas fa-fw fa-broadcast-tower"/>{this.props.app.state.serverHost}</Link> */}
             <b>Load Bundle</b>
-            <Link style={{float: "right"}} title="configure new bundle options" to={generatePath(this.props.app.state.serverHost, "settings", "bundles")}><span className="fas fa-fw fa-cog"/></Link></p>
+            {/* <Link style={{float: "right"}} title="configure new bundle options" to={generatePath(this.props.app.state.serverHost, "settings", "bundles")}><span className="fas fa-fw fa-cog"/></Link> */}
+          </p>
 
           <div className="splash-scrollable" style={{display: "inline-block", textAlign: "center"}}>
             <NewBundleButton title="From File" app={this.props.app} logoSplash={this.logoSplash}>

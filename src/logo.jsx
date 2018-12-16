@@ -36,7 +36,7 @@ export class LogoSplash extends Component {
     this.pltt4 = React.createRef();
   }
   clearTransitionIn = () => {
-    if (this.didClearTransitionIn==false) {
+    if (this.didClearTransitionIn===false) {
       this.phoebelogo.current.classList.remove(this.props.transitionIn || "transitionInNone");
       this.didClearTransitionIn = true;
     }

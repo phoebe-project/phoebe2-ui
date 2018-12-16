@@ -5,12 +5,11 @@ import './App.css';
 import isElectron from 'is-electron'; // https://github.com/cheton/is-electron
 import SocketIO from 'socket.io-client'; // https://www.npmjs.com/package/socket.io-client
 
-
-import {history, historyPush} from './history'
-import {Router, generatePath, isStaticFile} from './common'
+import {history} from './history'
+import {Router, isStaticFile} from './common'
 import {SplashBundle} from './splash-bundle';
 import {SplashServer} from './splash-server';
-import {SettingsServers, SettingsBundles} from './settings';
+// import {SettingsServers, SettingsBundles} from './settings';
 import {Bundle} from './bundle';
 import {NotFound} from './errors';
 
@@ -32,13 +31,34 @@ class App extends Component {
       serverHost: null,
       serverStatus: "disconnected",
       serverPhoebeVersion: null,
-      settingsTheme: "default"
+      serverAllowAutoconnect: true,
+      serverStartingChildProcess: isElectron(),
+      settingsServerHosts: [],
     };
     this.router = React.createRef();
     this.socket = null;
   }
+  getSettingFromStorage = (k) => {
+    return window.localStorage.getItem(k, null)
+  }
+  updateSetting = (k,v) => {
+    console.log("App.updateSetting "+k+"="+v)
+    window.localStorage.setItem(k,v)
+    // square bracket forces the value of k to be used instead of setting "k"
+    this.setState({[k]: v});
+  }
   componentDidMount() {
     this.setState({isElectron: isElectron()})
+    let defaultServerHosts
+    if (isElectron()) {
+      defaultServerHosts = null;
+    } else {
+      defaultServerHosts = "localhost"
+    }
+    var settingsServerHosts = this.getSettingFromStorage('settingsServerHosts') || defaultServerHosts
+    if (settingsServerHosts) {
+      this.setState({settingsServerHosts: settingsServerHosts.split(',')});
+    }
   }
   serverConnect = (server) => {
     var serverHost = server || this.props.match.params.server
@@ -52,14 +72,25 @@ class App extends Component {
     }
 
     this.setState({serverHost: serverHost, serverStatus: "connecting"});
+
+    fetch("http://"+serverHost+"/test")
+      .then(res => res.json())
+      .then(json => {
+        this.setState({serverPhoebeVersion: json.data.phoebe_version})
+      })
+      .catch(err => {
+        alert("server may no longer be available.  Cancel connetion to rescan.")
+        this.setState({phoebeVersion: null});
+      });
+
     this.socket = SocketIO("http://"+serverHost, socketOptions);
 
     this.socket.on('connect', (data) => {
-      this.setState({serverStatus: "connected"});
+      this.setState({serverStatus: "connected", serverStartingChildProcess: false, serverAllowAutoconnect: false});
     });
 
     this.socket.on('reconnect', (data) => {
-      this.setState({serverStatus: "reconnecting"})
+      this.setState({serverStatus: "reconnecting", serverAllowAutoconnect: true})
     })
 
     this.socket.on('disconnect', (data) => {
@@ -87,9 +118,9 @@ class App extends Component {
         <Switch>
           {/* NOTE: all Route components should be wrapped by a Server component to handle parsing the /:server (or lack there-of) and handing connecting/disconnecting to the websocket */}
           <Route exact path={public_url + '/'} render={(props) => <Server {...props} app={this}><SplashServer {...props} app={this}/></Server>}/>
-          <Route exact path={public_url + '/settings/servers'} render={(props) => <Server {...props} serverNotRequired={true} app={this}><SettingsServers {...props} app={this}/></Server>}/>
-          <Route exact path={public_url + '/:server/settings/servers'} render={(props) => <Server {...props} serverNotRequired={true} app={this}><SettingsServers {...props} app={this}/></Server>}/>
-          <Route exact path={public_url + '/:server/settings/bundles'} render={(props) => <Server {...props} serverNotRequired={true} app={this}><SettingsBundles {...props} app={this}/></Server>}/>
+          {/* <Route exact path={public_url + '/settings/servers'} render={(props) => <Server {...props} serverNotRequired={true} app={this}><SettingsServers {...props} app={this}/></Server>}/> */}
+          {/* <Route exact path={public_url + '/:server/settings/servers'} render={(props) => <Server {...props} serverNotRequired={true} app={this}><SettingsServers {...props} app={this}/></Server>}/> */}
+          {/* <Route exact path={public_url + '/:server/settings/bundles'} render={(props) => <Server {...props} serverNotRequired={true} app={this}><SettingsBundles {...props} app={this}/></Server>}/> */}
           <Route path={public_url + '/:server/:bundleid/:modal'} render={(props) => <Server {...props} app={this}><Bundle {...props} app={this}/></Server>}/>
           <Route path={public_url + '/:server/:bundleid/:modal'} render={(props) => <Server {...props} app={this}><Bundle {...props} app={this}/></Server>}/>
           <Route path={public_url + '/:server/:bundleid'} render={(props) => <Server {...props} app={this}><Bundle {...props} app={this}/></Server>}/>

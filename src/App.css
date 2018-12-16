@@ -128,6 +128,10 @@ a {
   color: #2B71B1;
 }
 
+a:hover {
+  text-decoration: none;
+}
+
 code {
   color: #2B71B1;
   background-color: #e6f2fe;
@@ -172,6 +176,11 @@ code {
    filter: grayscale(1) invert(1) brightness(1.5);
  }
 
+.content-dark ::placeholder {
+  color: white;
+  opacity: 0.5;
+}
+
  /* BOOTSTRAP BUTTONS */
 
 
@@ -184,6 +193,7 @@ code {
  .btn-transparent, .btn-transparent:focus, .btn-transparent-disabled {
    background-color: transparent;
    color: #D6D6D6 !important;
+   font-weight: 400;
    border-width: 1px;
    border-color: #D6D6D6 !important;
    border: 1px solid;
@@ -216,6 +226,7 @@ code {
 .splash-scrollable .btn-transparent, .splash-scrollable .btn-transparent-disabled {
   height: 40px;
   width: 100%;
+  font-weight: 400;
   overflow: hidden;
   /* text-align: left; */
 }

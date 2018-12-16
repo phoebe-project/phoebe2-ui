@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
+import {Redirect} from 'react-router-dom'
 import fetch from 'node-fetch'; // https://github.com/bitinn/node-fetch
 
-import {Link, Image, generatePath} from './common';
+import {Link, generatePath} from './common';
 
 // import {history} from './history';
 import {LogoSplash} from './logo';
@@ -26,6 +27,16 @@ export class SplashServer extends Component {
     }
   }
   render() {
+
+    let autoconnect
+    if (this.props.app.state.isElectron) {
+      autoconnect = this.props.app.state.settingsServerHosts.length === 0
+    } else {
+      autoconnect = this.props.app.state.settingsServerHosts.length === 1
+    }
+
+    autoconnect = autoconnect && this.props.app.state.serverAllowAutoconnect
+
     return(
       <div className="App content-dark">
         <LogoSplash animationEffect="animateShimmer"/>
@@ -36,17 +47,18 @@ export class SplashServer extends Component {
 
           <p style={{textAlign: "center", marginBottom: "0px", paddingLeft: "10px", paddingRight: "10px"}}>
             <b>Connect to Server</b>
-            <Link style={{float: "right"}} title="configure server settings" to="/settings/servers"><span className="fas fa-fw fa-cog"/></Link></p>
+            {/* <Link style={{float: "right"}} title="configure server settings" to="/settings/servers"><span className="fas fa-fw fa-cog"/></Link> */}
+          </p>
 
           <div ref={this.splashScrollable} className="splash-scrollable">
             { this.props.app.state.isElectron ?
-              <ServerButton location={"127.0.0.1:"+window.require('electron').remote.getGlobal('pyPort')} isSpawned={true} app={this.props.app} splash={this} match={this.props.match}/>
+              <ServerButton key={location} location={"localhost:"+window.require('electron').remote.getGlobal('pyPort')} autoconnect={autoconnect} isSpawned={true} app={this.props.app} splash={this} match={this.props.match}/>
               :
               null
             }
-            <ServerButton location="127.0.0.1:5555" app={this.props.app} splash={this}/>
-            <ServerButton location="127.0.0.1:9999" app={this.props.app} splash={this}/>
-            <ServerButton location="127.0.0.1:5000" app={this.props.app} splash={this}/>
+            {this.props.app.state.settingsServerHosts.map(location => <ServerButton key={location} location={location} autoconnect={autoconnect} app={this.props.app} splash={this}/>)}
+            <ServerAddButton app={this.props.app}/>
+
           </div>
         </div>
       </div>
@@ -91,6 +103,9 @@ class ServerStatusIcon extends Component {
       } else {
         classes += " fa-circle-notch fa-spin"
       }
+    } else if (this.props.autoconnect) {
+      title = "waiting, will autoconnect"
+      classes += " fa-circle-notch fa-spin"
     } else {
       classes += " fa-broadcast-tower"
       if (this.props.phoebeVersion) {
@@ -108,47 +123,6 @@ class ServerStatusIcon extends Component {
   }
 }
 
-class ServerRemoveButton extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      hover: false
-    }
-  }
-  render() {
-    // this.props.phoebeVersion
-    // this.props.connecting
-    let title
-    var classes = "fas fa-fw"
-    var style = {display: "inline-block", float: "left", marginTop: "4px", textAlign: "center"}
-    var onClick = null;
-
-    if (this.props.connecting) {
-      title = "cancel connection"
-      style.pointerEvents = "all"
-      onClick = this.props.serverButton.cancelConnection
-      if (this.state.hover) {
-        classes += " fa-times"
-      } else {
-        classes += " fa-circle-notch fa-spin"
-      }
-    } else {
-      classes += " fa-broadcast-tower"
-      if (this.props.phoebeVersion) {
-        title = "server available"
-        style.opacity = "1.0"
-      } else {
-        title = "searching for server"
-        style.opacity = "0.5"
-      }
-    }
-
-    return (
-      <span style={style} className={classes} title={title} onClick={onClick} onMouseEnter={()=>{this.setState({hover:true})}} onMouseLeave={()=>{this.setState({hover:false})}}></span>
-    )
-  }
-}
-
 class ServerVersionSpan extends Component {
   render() {
     let text, title
@@ -157,6 +131,10 @@ class ServerVersionSpan extends Component {
       style.border = "1px dotted #a1a1a1"
       text = this.props.phoebeVersion
       title = "this server is running PHOEBE "+this.props.phoebeVersion
+    } else if (this.props.autoconnect) {
+      style.opacity = "0.5"
+      text = "autoconnect"
+      title = "waiting for server... will autoconnect once available"
     } else {
       style.opacity = "0.5"
       if (this.props.connecting) {
@@ -181,6 +159,7 @@ class ServerButton extends Component {
       phoebeVersion: null,
       parentId: null,
       hover: false,
+      removeConfirmed: false,
     };
   }
   getInfo = (scanTimeout, cancelConnectIfFail) => {
@@ -189,11 +168,11 @@ class ServerButton extends Component {
       location = "http://" + location
     }
 
-    var scanTimeout = scanTimeout || 0;
+    scanTimeout = scanTimeout || 0;
     if (scanTimeout > 5000) {
       scanTimeout = 5000
     }
-    if (this.props.isSpawned) {
+    if (this.props.isSpawned && !this.state.phoebeVersion) {
       // then we're probably waiting, so let's keep this at 1 s
       scanTimeout = 1000
     }
@@ -207,7 +186,10 @@ class ServerButton extends Component {
       // this will then automatically queue a re-render of the underlying component
       fetch(location+"/test")
         .then(res => res.json())
-        .then(json => this.setState({phoebeVersion: json.data.phoebe_version, parentId: json.data.parentid}))
+        .then(json => {
+          this.setState({phoebeVersion: json.data.phoebe_version, parentId: json.data.parentid})
+          this.getInfo(5000)
+        })
         .catch(err => {
           // if (cancelConnectIfFail) {
           //   this.cancelConnect();
@@ -224,6 +206,7 @@ class ServerButton extends Component {
   }
   componentWillUnmount() {
     // cancel the server getInfo loop if still running
+    console.log("ServerButton.componentWillUnmount "+this.props.location)
     clearTimeout(this._infoloop);
   }
   isConnecting = () => {
@@ -248,17 +231,27 @@ class ServerButton extends Component {
       if (e) {e.stopPropagation();}
     }
   }
-  serverConnect = () => {
-    console.log("ServerButton.serverConnect "+this.props.location);
-    this.getInfo(0, true);
-    this.props.splash.disableAllInput();
-    this.props.app.serverConnect(this.props.location);
-  }
+  // serverConnect = () => {
+  //   console.log("ServerButton.serverConnect "+this.props.location);
+  //   this.getInfo(0, true);
+  //   this.props.splash.disableAllInput();
+  //   this.props.app.serverConnect(this.props.location);
+  // }
   removeServer = (e) => {
-    alert("this will eventually allow removing the entry from your list of scanned servers")
-    if (e) {e.stopPropagation();}
+    if (this.state.removeConfirmed) {
+      this.props.app.setState({serverAllowAutoconnect: false})
+      this.props.app.updateSetting('settingsServerHosts', this.props.app.state.settingsServerHosts.filter(item => item !== this.props.location))
+    } else {
+      this.setState({removeConfirmed: true})
+    }
+    if (e) {e.stopPropagation(); e.preventDefault(); return false;}
   }
   render() {
+    if (this.props.autoconnect && this.state.phoebeVersion && this.props.app.state.serverAllowAutoconnect && !this.isConnecting()) {
+      this.props.app.setState({serverAllowAutoconnect: false})
+      return <Redirect to={generatePath(this.props.location)}/>
+    }
+
     var btnClassName = "btn btn-transparent"
     if (!this.state.phoebeVersion) {
       btnClassName += " btn-transparent-disabled"
@@ -267,7 +260,7 @@ class ServerButton extends Component {
     let locationText
 
     if (this.props.isSpawned) {
-      if (this.state.phoebeVersion) {
+      if (this.state.phoebeVersion || !this.props.app.state.serverStartingChildProcess) {
         locationText = this.props.location + " (child process)"
       } else {
         locationText = "starting server as child process..."
@@ -276,28 +269,86 @@ class ServerButton extends Component {
       locationText = this.props.location
     }
 
-    var locationSpan = <span style={{display: "inline-block", float: "left", textAlign: "center", width: "calc(100% - 200px)"}}>{locationText}</span>
-
     var style={}
-    if (this.isConnecting()) {
+    if (this.isConnecting() || this.state.removeConfirmed) {
       style = {pointerEvents: "none"}
     }
+
+    let removeColor
+    if (this.state.removeConfirmed) {
+      removeColor = "red"
+      locationText = "click again to confirm removal"
+    } else if (this.state.hover) {
+      removeColor = "inherit"
+    } else {
+      removeColor = "transparent"
+    }
+
+    var locationSpan = <span style={{display: "inline-block", float: "left", textAlign: "center", width: "calc(100% - 200px)"}}>{locationText}</span>
+
 
     return (
       <div onMouseEnter={this.hoverOn} onMouseLeave={this.hoverOff} className="splash-scrollable-btn-div" style={style}>
         <Link className={btnClassName} to={generatePath(this.props.location)} title={"connect to server at "+this.props.location+" running PHOEBE "+this.state.phoebeVersion}>
-          <ServerStatusIcon phoebeVersion={this.state.phoebeVersion} connecting={this.isConnecting()} serverButton={this}/>
-          <ServerVersionSpan phoebeVersion={this.state.phoebeVersion} connecting={this.isConnecting()}/>
+          <ServerStatusIcon phoebeVersion={this.state.phoebeVersion} connecting={this.isConnecting()} autoconnect={this.props.autoconnect} serverButton={this}/>
+          <ServerVersionSpan phoebeVersion={this.state.phoebeVersion} connecting={this.isConnecting()} autoconnect={this.props.autoconnect}/>
           {locationSpan}
           {this.props.isSpawned ?
             null
             :
-            <span className="d-none d-sm-block" style={{marginLeft: "calc(100px - 20px)", display: "inline-block", height: "40px", width: "20px", float: "left"}} to="#" onClick={this.removeServer}>
-              <span className="far fa-fw fa-trash-alt" style={{pointerEvents: "all", color: this.state.hover ? "inherit" : "transparent"}} title="remove server from list"/>
+            <span className="d-none d-sm-block" style={{marginLeft: "calc(100px - 20px)", display: "inline-block", height: "40px", width: "20px", float: "left"}} to="#" onClick={this.removeServer} onMouseLeave={()=>{this.setState({removeConfirmed:false})}}>
+              <span className="far fa-fw fa-trash-alt" style={{pointerEvents: "all", color: removeColor}} title="remove server from list"/>
             </span>
           }
 
         </Link>
+      </div>
+    )
+
+  }
+}
+
+class ServerAddButton extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      enterInfo: false,
+    };
+    this.serverLocationInput = React.createRef()
+  }
+  addServer = (e) => {
+    var newServer = this.serverLocationInput.current.value
+    var servers = this.props.app.state.settingsServerHosts
+    // TODO: more validation that this is an acceptable value... otherwise we're just asking for failures in the entry
+    if (servers.indexOf(newServer)===-1) {
+      servers.push(newServer)
+      this.props.app.updateSetting('settingsServerHosts', servers)
+    } else {
+      alert(newServer+" was already in the list of servers")
+    }
+    this.setState({enterInfo: false})
+    if (e) {e.stopPropagation();}
+  }
+  componentDidUpdate() {
+    if (this.state.enterInfo) {
+      this.serverLocationInput.current.focus();
+    }
+  }
+  render() {
+    return (
+      <div onClick={()=>{this.setState({enterInfo: true}); this.props.app.setState({serverAllowAutoconnect: false})}} className="splash-scrollable-btn-div">
+        {this.state.enterInfo ?
+          <div>
+            <button className="btn btn-transparent" title="cancel" onClick={(e)=>{this.setState({enterInfo: false}); e.stopPropagation()}} style={{width: "40px", marginBottom: "2px", marginRight: "2px"}}><span className="fa fa-times"/></button>
+            <input ref={this.serverLocationInput} type="text" name="Server Location" className="form-control" placeholder="localhost:5555" style={{backgroundColor: "#2b71b1", color: "white", display: "inline-block", height: "40px", width: "calc(100% - 84px)"}} />
+            <button className="btn btn-transparent" title="add server" onClick={this.addServer} style={{width: "40px", marginBottom: "2px", marginLeft: "2px"}}><span className="fa fa-check"/></button>
+          </div>
+          :
+          <span className="btn btn-transparent" title="add new server">
+            <span className="fas fa-plus"/>
+          </span>
+        }
+
       </div>
     )
 

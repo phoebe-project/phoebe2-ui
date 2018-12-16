@@ -3,6 +3,14 @@ import React, {Component} from 'react';
 import {history} from './history';
 
 
+// class SettingsItem extends Component {
+//   render() {
+//     return (
+//       this.props.children
+//     )
+//   }
+// }
+
 export class SettingsPage extends Component {
   close = () => {
     history.goBack();
@@ -11,10 +19,9 @@ export class SettingsPage extends Component {
     var title = this.props.title || "Settings"
     return (
       <div className="App content-dark">
-        <h1>{title}</h1>
-        <p>Either saved in browser cache or ~/.phoebe</p>
+        <span onClick={this.close} title="close settings" className="fa-2x fas fa-chevron-left" style={{cursor: "pointer", padding: "10px"}}/>
+        <h1 style={{textAlign: 'center'}}>{title}</h1>
         {this.props.children}
-        <button onClick={this.close}>close</button>
       </div>
     )
   }
@@ -23,6 +30,8 @@ export class SettingsPage extends Component {
 export class SettingsServers extends Component {
 
   render() {
+    // var settingsServerHosts = this.props.app.state.settingsServerHosts
+
     return(
       <SettingsPage title="Configure Servers">
         <ul>

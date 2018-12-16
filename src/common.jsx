@@ -28,9 +28,7 @@ function processLink(link) {
     return link
   }
 
-  if (link.startsWith("#")) {
-    link = link
-  } else {
+  if (!link.startsWith("#")) {
     if (!link.startsWith("/")) {
       link = "/" + link
     }

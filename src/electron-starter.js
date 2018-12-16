@@ -31,7 +31,7 @@ function createWindow() {
         });
     mainWindow.loadURL(startUrl);
     // Open the DevTools.
-    // mainWindow.webContents.openDevTools();
+    mainWindow.webContents.openDevTools();
 
     // Emitted when the window is closed.
     mainWindow.on('closed', function () {
@@ -70,10 +70,15 @@ app.on('activate', function () {
 // functions that will be available to electron apps only.  These can be accessed
 // from JSX files if app.isElectron via
 // require('electron').remote.getGlobal('launchPythonClient'), for example
+
+// const electronStorage = require('electron-json-storage')
+// global.electronStorage = electronStorage
+
 const launchPythonClient = (cmd) => {
   return child_process.spawn('gnome-terminal', ['-e', 'python -i -c \''+cmd+'\'']);
 }
 global.launchPythonClient = launchPythonClient;
+
 
 // handle spawning a separate process to interact with PHOEBE via a flask server
 let pyProc = null;
