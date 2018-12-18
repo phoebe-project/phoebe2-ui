@@ -5,7 +5,7 @@ import './logo.css';
 export class LogoSpinner extends Component {
   render() {
     return(
-      <LogoSplash {...this.props} className="PhoebeLogoSpinner" animationEffect="animateSpinner"/>
+      <LogoSplash {...this.props} excludeTriple={true} className="PhoebeLogoSpinner" animationEffect="animateSpinner"/>
     )
   }
 }
@@ -156,10 +156,17 @@ export class LogoSplash extends Component {
         <div className='PLTB PLTB5' style={pltStyle} ref={this.pltb5}></div>
         <div className='PLTB PLTB6' style={pltStyle} ref={this.pltb6}></div>
         <div className='PLTB PLTB7' style={pltStyle} ref={this.pltb7}></div>
-        <div className='PLTT PLTT1' style={pltStyle} ref={this.pltt1}></div>
-        <div className='PLTT PLTT2' style={pltStyle} ref={this.pltt2}></div>
-        <div className='PLTT PLTT3' style={pltStyle} ref={this.pltt3}></div>
-        <div className='PLTT PLTT4' style={pltStyle} ref={this.pltt4}></div>
+        {this.props.excludeTriple ?
+          null
+          :
+          <React.Fragment>
+            <div className='PLTT PLTT1' style={pltStyle} ref={this.pltt1}></div>
+            <div className='PLTT PLTT2' style={pltStyle} ref={this.pltt2}></div>
+            <div className='PLTT PLTT3' style={pltStyle} ref={this.pltt3}></div>
+            <div className='PLTT PLTT4' style={pltStyle} ref={this.pltt4}></div>
+          </React.Fragment>
+        }
+
       </div>
     )
 
