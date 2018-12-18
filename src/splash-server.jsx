@@ -1,8 +1,7 @@
 import React, { Component } from 'react';
-import {Redirect} from 'react-router-dom'
-import fetch from 'node-fetch'; // https://github.com/bitinn/node-fetch
+import {Redirect} from 'react-router-dom';
 
-import {Link, generatePath} from './common';
+import {Link, generatePath, abortableFetch} from './common';
 
 // import {history} from './history';
 import {LogoSplash} from './logo';
@@ -173,7 +172,7 @@ class ServerButton extends Component {
       // if any of this fails, we'll enter the catch section and ignore this matching
       // if the test succeeds, update the entry in component.state
       // this will then automatically queue a re-render of the underlying component
-      fetch(location+"/test")
+      abortableFetch(location+"/test")
         .then(res => res.json())
         .then(json => {
           this.setState({phoebeVersion: json.data.phoebe_version, parentId: json.data.parentid})

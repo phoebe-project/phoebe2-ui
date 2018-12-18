@@ -128,7 +128,7 @@ const selectPort = () => {
 const createPyProc = () => {
   pyPort = selectPort();
   global.appid = 'desktop-randomstring'
-  pyProc = child_process.spawn('phoebe-server', [pyPort, appid]);
+  pyProc = child_process.spawn('phoebe-server', [pyPort, global.appid]);
   if (pyProc != null) {
     console.log('phoebe-server started on port: '+pyPort);
     // allow pyPort to be accessible from within the React app

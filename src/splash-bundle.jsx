@@ -1,9 +1,11 @@
 import React, { Component } from 'react';
+import {Redirect} from 'react-router-dom';
 
-import {Link, CancelSpinnerIcon, generatePath} from './common';
+import {Link, CancelSpinnerIcon, generatePath, abortableFetch} from './common';
 
-// import {history} from './history';
 import {LogoSplash} from './logo';
+
+
 
 export class SplashBundle extends Component {
   constructor(props) {
@@ -82,8 +84,12 @@ class NewBundleButton extends Component {
     this.state = {
       hover: false,
       bundleLoading: false,
+      bundleLoadingCancel: false,
+      redirectBundleid: null,
       exposeChildren: false,
     };
+    this.abortLoadBundleController = null;
+
   }
   exposeChildren = (event) => {
     event.preventDefault();
@@ -94,11 +100,45 @@ class NewBundleButton extends Component {
     console.log("NewBundleButton.loadBundle");
     this.props.splashBundle.setState({bundleLoading: true});
     this.setState({bundleLoading: true});
+
+    this.abortLoadBundleController = new window.AbortController();
+    abortableFetch("http://"+this.props.app.state.serverHost+"/new_bundle/"+this.props.type, {signal: this.abortLoadBundleController.signal})
+      .then(res => res.json())
+      .then(json => {
+        if (json.data.success) {
+          this.setState({redirectBundleid: json.data.bundleid})
+        } else {
+          alert("server error: "+json.data.error);
+          this.cancelLoadBundleSpinners();
+        }
+      }, err=> {
+        // then we canceled the request
+        console.log("received abort signal")
+        this.cancelLoadBundleSpinners();
+      })
+      .catch(err => {
+        if (err.name === 'AbortError') {
+          // then we canceled the request
+          console.log("received abort signal")
+          this.cancelLoadBundleSpinners();
+        } else {
+          alert("server error, try again")
+          this.cancelLoadBundleSpinners();
+        }
+
+      });
+
   }
-  cancelLoadBundle = (event) => {
-    console.log("NewBundleButton.cancelLoadBundle")
+  abortLoadBundle = (event) => {
+    console.log("NewBundleButton.abortLoadBundle")
     // TODO: will need to cancel or ignore server response
     // NOTE: event.stopPropogation and preventDefault handled by CancelSpinnerIcon Component
+    if (this.abortLoadBundleController) {
+      console.log("NewBundleButton.abortLoadBundle calling abort on controller")
+      this.abortLoadBundleController.abort();
+    }
+  }
+  cancelLoadBundleSpinners = () => {
     this.props.splashBundle.setState({bundleLoading: false});
     this.setState({bundleLoading: false});
   }
@@ -147,9 +187,13 @@ class NewBundleButton extends Component {
 
   }
   render () {
+    if (this.state.redirectBundleid) {
+      return (<Redirect to={generatePath(this.props.app.state.serverHost, this.state.redirectBundleid)}/>)
+    }
+
     var loadingSpan = null;
     if (this.state.bundleLoading) {
-      loadingSpan = <CancelSpinnerIcon onCancel={this.cancelLoadBundle} title="bundle loading (click to cancel)"/>
+      loadingSpan = <CancelSpinnerIcon onCancel={this.abortLoadBundle} title="bundle loading (this can take some time... click to cancel)"/>
     }
 
 

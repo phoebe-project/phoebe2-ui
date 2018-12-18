@@ -1,7 +1,12 @@
 import React, { Component } from 'react';
 import {Link as RouterLink, Router as RouterRouter, HashRouter as RouterHashRouter} from 'react-router-dom';
 
-// import {history} from './history'
+import isElectron from 'is-electron'; // https://github.com/cheton/is-electron
+
+// use native browser implementation if it supports aborting, otherwise use polyfill and whatwg-fetch
+import 'abortcontroller-polyfill';
+import {fetch} from 'whatwg-fetch';
+export const abortableFetch = ('signal' in new Request('')) ? window.fetch : fetch
 
 export function isStaticFile() {
   return window.location.pathname.includes('index.html')
