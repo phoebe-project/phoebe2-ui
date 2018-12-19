@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import {Redirect} from 'react-router-dom';
 
+import {Statusbar} from './ui';
 import {Link, CancelSpinnerIcon, generatePath, abortableFetch} from './common';
 
 import {LogoSplash} from './logo';
@@ -26,7 +27,8 @@ export class SplashBundle extends Component {
 
     return(
       <div className="App content-dark">
-        <Link style={{float: "left"}} title="choose different server" to={generatePath()}><span className="fa-lg fas fa-fw fa-broadcast-tower" style={{margin: "8px"}}/> {this.props.app.state.serverHost} [{this.props.app.state.serverPhoebeVersion}]</Link>
+        <Statusbar app={this.props.app} dark={true}/>
+
         <LogoSplash ref={this.logoSplash} transitionIn="transitionInNone" animationEffect={animationEffect}/>
 
         <div className="splash-scrollable-header">
@@ -73,6 +75,7 @@ export class SplashBundle extends Component {
             <NewBundleButton type='other' title="Custom Hierarchy" app={this.props.app} splashBundle={this} logoSplash={this.logoSplash}/>
           </div>
         </div>
+
       </div>
     );
   }

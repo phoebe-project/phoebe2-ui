@@ -20,7 +20,9 @@ function createWindow() {
     // Create the browser window.
     mainWindow = new BrowserWindow({
       width: 1200,
+      minWidth: 1000,
       height: 800,
+      minHeight: 500,
       icon: __dirname + '/icons/phoebe.png'
     });
 

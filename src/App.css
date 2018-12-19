@@ -25,6 +25,10 @@ div.App {
   position: inherit;
   height: inherit;
   width: inherit;
+  /* background-color: #2b71b138; */
+  /* background-color: rgba(69,101,131,0.10) */
+  /* background-color: #d6dee6; */
+  background-color: #f0f0f0;
 }
 
 div.splash-scrollable-header {
@@ -49,6 +53,15 @@ div.splash-scrollable-header {
 
 .disabled {
   pointer-events: none !important;
+}
+
+@media screen and (min-width: 1200px) {
+  div.splash-scrollable-header{
+    width: 50%;
+    left: 25;
+    padding-left: 5%;
+    padding-right: 5%;
+  }
 }
 
 @media screen and (max-width: 1000px){
@@ -143,7 +156,7 @@ code {
 }
 
 .content-dark {
-  background-color: #2B71B1;
+  background-color: #2B71B1 !important;
   color: #D6D6D6;
 }
 
@@ -181,6 +194,51 @@ code {
   opacity: 0.5;
 }
 
+.toolbar {
+  z-index: 99;
+
+  -webkit-box-shadow: 0px 4px 8px 0px rgba(69,101,131,0.75);
+  -moz-box-shadow: 0px 4px 8px 0px rgba(69,101,131,0.75);
+  box-shadow: 0px 4px 8px 0px rgba(69,101,131,0.75);
+}
+
+.statusbar {
+  /* -webkit-box-shadow: 0px -2px 2px 0px rgba(69,101,131,0.75);
+  -moz-box-shadow: 0px -2px 2px 0px rgba(69,101,131,0.75);
+  box-shadow: 0px -2px 2px 0px rgba(69,101,131,0.75); */
+  border-top: 1px solid rgba(69,101,131,0.75);
+}
+
+.content-dark > .statusbar  {
+  -webkit-box-shadow: none;
+  -moz-box-shadow: none;
+  box-shadow: none;
+  border: none;
+}
+
+.statusbar a, .statusbar span {
+  color: inherit;
+}
+
+.statusbar a:hover, .toolbar a:hover {
+  color: white;
+}
+
+.btn-phoebe-toolbar {
+  border-radius: 10px;
+}
+
+.btn-phoebe-toolbar:hover {
+/* .toolbar .btn :hover { */
+  color: white;
+  border-left: 1px solid white;
+  border-right: 1px solid white;
+}
+
+.divider {
+  background-color: rgba(69,101,131,0.75);
+}
+
  /* BOOTSTRAP BUTTONS */
 
 .btn-sub {
@@ -214,6 +272,7 @@ code {
  }
 
  .btn-transparent:hover {
+   background-color: #2c71b1e3;
    text-decoration: none;
    color: #ffffff !important;
    border-color: #ffffff !important;
@@ -228,6 +287,17 @@ code {
 
 .btn-transparent-remove, .btn-transparent-remove:hover {
   border-color: red !important;
+}
+
+.btn-blue {
+  color: #2B71B1;
+  padding: 4px;
+  border-radius: 4px;
+  border: 1px solid transparent;
+}
+
+.btn-blue:hover {
+  border: 1px solid #2B71B1;
 }
 
 .splash-scrollable-btn-div {
@@ -246,4 +316,109 @@ code {
   font-weight: 400;
   overflow: hidden;
   /* text-align: left; */
+}
+
+.phoebe-tag-header {
+  width: calc(100% + 20px);
+  margin-left: -10px; /* to counter the padding in the panel */
+  padding-left: 15px;
+  padding-right: 10px;
+  background-color: #2B71B1;
+  color: white;
+  cursor: pointer;
+  height: 32px;
+  font-weight: bold;
+  padding-top: 4px;
+  /* border-top: 1px solid white; */
+  margin-top: 5px;
+  border-radius: 4px;
+
+  -webkit-box-shadow: 0px 3px 3px 0px rgba(69,101,131,0.75);
+  -moz-box-shadow: 0px 3px 3px 0px rgba(69,101,131,0.75);
+  box-shadow: 0px 3px 3px 0px rgba(69,101,131,0.75);
+}
+
+.phoebe-tag-header a {
+  color: #D6D6D6 !important;
+  border: 1px solid transparent;
+}
+
+.phoebe-tag-header a:hover {
+  color: white !important;
+  border: 1px solid white;
+  border-radius: 4px;
+}
+
+.phoebe-tag-drawer {
+  width: calc(100% + 20px);
+  margin-bottom: -5px; /* to counter the padding and box-shadow on phoebe-tag-header */
+  padding-bottom: 10px;
+  margin-left: -10px;
+  padding-left: 15px;
+  min-height: 30px;
+  /* background-color: rgba(69,101,131,0.25); */
+  /* background-color:  #b9c6d1; */
+}
+
+.phoebe-parameter {
+  width: calc(100% - 20px);
+  margin: auto;
+  margin-bottom: 10px;
+  margin-top: 10px;
+  min-height: 30px;
+  padding-top: 3px;
+  padding-left: 10px;
+  padding-right: 10px;
+  background-color: white;
+  color: black;
+  border-radius: 4px;
+
+  -webkit-box-shadow: 4px 4px 8px 0px rgba(69,101,131,0.75);
+  -moz-box-shadow: 4px 4px 8px 0px rgba(69,101,131,0.75);
+  box-shadow: 4px 4px 8px 0px rgba(69,101,131,0.75);
+
+}
+
+.phoebe-parameter-header {
+  width: 100%;
+  cursor: pointer;
+}
+
+.phoebe-parameter-content {
+  padding-top: 10px;
+  padding-bottom: 20px;
+  /* border-top: 1px solid black; */
+}
+
+.phoebe-modal-screen {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(69,101,131,0.3);
+  padding: 5%;
+  z-index: 999;
+}
+
+.phoebe-modal {
+  width: 100%;
+  height: 100%;
+  margin: auto;
+  max-width: 1000px;
+  background-color: #2B71B1;
+  border-radius: 4px;
+  border: 1px solid rgba(69,101,131,1);
+
+  -webkit-box-shadow: 4px 4px 8px 0px rgba(69,101,131,0.75);
+  -moz-box-shadow: 4px 4px 8px 0px rgba(69,101,131,0.75);
+  box-shadow: 4px 4px 8px 0px rgba(69,101,131,0.75);
+
+  color: #D6D6D6;
+}
+
+.phoebe-modal a{
+  color: #D6D6D6 !important;
+}
+
+.phoebe-modal a:hover{
+  color: white !important;
 }

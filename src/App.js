@@ -11,6 +11,7 @@ import {SplashBundle} from './splash-bundle';
 import {SplashServer} from './splash-server';
 // import {SettingsServers, SettingsBundles} from './settings';
 import {Bundle} from './bundle';
+import {PSPanel} from './panel-ps';
 import {NotFound} from './errors';
 
 const socketOptions = {
@@ -121,7 +122,7 @@ class App extends Component {
           {/* <Route exact path={public_url + '/settings/servers'} render={(props) => <Server {...props} serverNotRequired={true} app={this}><SettingsServers {...props} app={this}/></Server>}/> */}
           {/* <Route exact path={public_url + '/:server/settings/servers'} render={(props) => <Server {...props} serverNotRequired={true} app={this}><SettingsServers {...props} app={this}/></Server>}/> */}
           {/* <Route exact path={public_url + '/:server/settings/bundles'} render={(props) => <Server {...props} serverNotRequired={true} app={this}><SettingsBundles {...props} app={this}/></Server>}/> */}
-          <Route path={public_url + '/:server/:bundleid/:modal'} render={(props) => <Server {...props} app={this}><Bundle {...props} app={this}/></Server>}/>
+          <Route path={public_url + '/:server/:bundleid/ps'} render={(props) => <Server {...props} app={this}><PSPanel {...props} app={this}/></Server>}/>
           <Route path={public_url + '/:server/:bundleid/:modal'} render={(props) => <Server {...props} app={this}><Bundle {...props} app={this}/></Server>}/>
           <Route path={public_url + '/:server/:bundleid'} render={(props) => <Server {...props} app={this}><Bundle {...props} app={this}/></Server>}/>
           <Route path={public_url + '/:server'} render={(props) => <Server {...props} app={this}><SplashBundle {...props} app={this}/></Server>}/>
