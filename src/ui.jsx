@@ -105,10 +105,17 @@ export class Statusbar extends Component {
       divStyle.color = "#D6D6D6"
     }
 
+    let serverPath
+    if (this.props.bundleid) {
+      serverPath = generatePath(this.props.app.state.serverHost, this.props.bundleid, 'servers')
+    } else {
+      serverPath = generatePath()
+    }
+
 
     return (
       <div style={divStyle} className="statusbar">
-        <Link style={{fontWeight: "inherit", fontSize: "inherit"}} title="choose different server" to={generatePath()}>
+        <Link style={{fontWeight: "inherit", fontSize: "inherit"}} title="choose different server" to={serverPath}>
           <span className="fa-md fas fa-fw fa-broadcast-tower" style={{margin: "4px"}}/>
           <span style={{margin: "4px", border: "1px dotted #a1a1a1", paddingLeft: "2px", paddingRight: "2px"}}>{this.props.app.state.serverPhoebeVersion}</span>
           <span style={{margin: "4px"}}>{this.props.app.state.serverHost}</span>

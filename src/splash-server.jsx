@@ -25,7 +25,13 @@ export class SplashServer extends Component {
       element.classList.remove('disabled');
     }
   }
+  // componentDidMount = () => {
+  //   if (this.props.match.params.bundleid) {
+  //     this.disableAllInput();
+  //   }
+  // }
   render() {
+    var bundleid = this.props.match.params.bundleid
 
     let autoconnect
     if (this.props.app.state.isElectron) {
@@ -34,7 +40,7 @@ export class SplashServer extends Component {
       autoconnect = this.props.app.state.settingsServerHosts.length === 1
     }
 
-    autoconnect = autoconnect && this.props.app.state.serverAllowAutoconnect
+    autoconnect = autoconnect && this.props.app.state.serverAllowAutoconnect && !bundleid
 
     return(
       <div className="App content-dark">
@@ -45,7 +51,12 @@ export class SplashServer extends Component {
           {/* <p>Current connection: {this.props.app.state.serverHost} ({this.props.app.state.serverStatus})</p> */}
 
           <p style={{textAlign: "center", marginBottom: "0px", paddingLeft: "10px", paddingRight: "10px"}}>
-            <b>Connect to Server</b>
+            {bundleid ?
+              <b>Switch to Server</b>
+              :
+              <b>Connect to Server</b>
+            }
+
             {/* <Link style={{float: "right"}} title="configure server settings" to="/settings/servers"><span className="fas fa-fw fa-cog"/></Link> */}
           </p>
 
@@ -55,7 +66,7 @@ export class SplashServer extends Component {
               :
               null
             }
-            {this.props.app.state.settingsServerHosts.map(location => <ServerButton key={location} location={location} autoconnect={autoconnect} app={this.props.app} splash={this}/>)}
+            {this.props.app.state.settingsServerHosts.map(location => <ServerButton key={location} location={location} autoconnect={autoconnect} app={this.props.app} splash={this} match={this.props.match}/>)}
             <ServerAddButton app={this.props.app}/>
 
           </div>
@@ -74,22 +85,28 @@ class ServerStatusIcon extends Component {
   }
   render() {
     // this.props.phoebeVersion
-    // this.props.connecting
+    // this.props.status ('connecting', 'connected', null)
     let title
     var classes = "fas fa-fw"
     var style = {display: "inline-block", float: "left", marginTop: "4px", textAlign: "center", textDecoration: "none"}
     var to = null;
     var onClick = null;
 
-    if (this.props.connecting) {
-      title = "cancel connection"
+    if (this.props.status) {
+      if (this.props.status === 'connecting') {
+        title = "cancel connection"
+      } else {
+        title = "cancel connection and close bundle"
+      }
       style.pointerEvents = "all"
       to = generatePath();
       onClick = this.props.serverButton.cancelConnect;
       if (this.state.hover) {
         classes += " fa-times"
-      } else {
+      } else if (this.props.status === 'connecting'){
         classes += " fa-circle-notch fa-spin"
+      } else {
+        classes += " fa-check"
       }
     } else if (this.props.autoconnect) {
       title = "waiting, will autoconnect"
@@ -125,7 +142,7 @@ class ServerVersionSpan extends Component {
       title = "waiting for server... will autoconnect once available"
     } else {
       style.opacity = "0.5"
-      if (this.props.connecting) {
+      if (this.props.status === 'connecting') {
         text = "reconnecting"
         title = "waiting for server to reconnect"
       } else {
@@ -148,6 +165,7 @@ class ServerButton extends Component {
       parentId: null,
       hover: false,
       removeConfirmed: false,
+      status: null,
     };
   }
   getInfo = (scanTimeout, cancelConnectIfFail) => {
@@ -191,16 +209,25 @@ class ServerButton extends Component {
   }
   componentDidMount() {
     this.getInfo();
+    // this.componentDidUpdate();
+  }
+  componentDidUpdate() {
+    var status = null
+    if (this.props.app.state.serverHost===this.props.location) {
+      if (this.props.match.params.bundleid) {
+        status = 'connected'
+      } else {
+        status = 'connecting'
+      }
+    }
+    if (status !== this.state.status) {
+      this.setState({status: status});
+    }
   }
   componentWillUnmount() {
     // cancel the server getInfo loop if still running
     console.log("ServerButton.componentWillUnmount "+this.props.location)
     clearTimeout(this._infoloop);
-  }
-  isConnecting = () => {
-    // we don't need to check the serverStatus... if this was connected we shouldn't be on this page
-    return this.props.app.state.serverHost===this.props.location
-    // return this.props.app.state.serverStatus === 'connecting' && this.props.app.state.serverHost===this.props.location
   }
   hoverOn = () => {
     this.setState({hover: true});
@@ -209,14 +236,24 @@ class ServerButton extends Component {
     this.setState({hover: false});
   }
   cancelConnect = (e) => {
-    if (this.isConnecting()) {
-      console.log("ServerButton.cancelConnect "+this.props.location)
-      // if (this.props.match.params.bundleid) {
-      //   alert("TODO: add a confirmation before disconnecting if bundleid is present in URL")
-      // }
-      this.props.splash.enableAllInput();
-      this.props.app.serverDisconnect();
-      if (e) {e.stopPropagation();}
+    console.log("ServerButton.cancelConnect "+this.props.location)
+    if (e) {e.stopPropagation();}
+
+    if (this.state.status) {
+      var doDisconnect = true
+      if (this.state.status==='connected') {
+        var doDisconnect = confirm("Disconnecting will close the bundle and any unsaved changes will be lost.  Continue?")
+      }
+
+      if (doDisconnect) {
+        // if (this.props.match.params.bundleid) {
+        //   alert("TODO: add a confirmation before disconnecting if bundleid is present in URL")
+        // }
+        this.props.splash.enableAllInput();
+        this.props.app.serverDisconnect();
+      } else {
+        e.preventDefault();
+      }
     }
   }
   // serverConnect = () => {
@@ -235,7 +272,7 @@ class ServerButton extends Component {
     if (e) {e.stopPropagation(); e.preventDefault(); return false;}
   }
   render() {
-    if (this.props.autoconnect && this.state.phoebeVersion && this.props.app.state.serverAllowAutoconnect && !this.isConnecting()) {
+    if (this.props.autoconnect && this.state.phoebeVersion && this.props.app.state.serverAllowAutoconnect && !this.state.status) {
       this.props.app.setState({serverAllowAutoconnect: false})
       return <Redirect to={generatePath(this.props.location)}/>
     }
@@ -258,7 +295,7 @@ class ServerButton extends Component {
     }
 
     var style={}
-    if (this.isConnecting() || this.state.removeConfirmed) {
+    if (this.state.status==='connecting' || this.state.removeConfirmed) {
       style = {pointerEvents: "none"}
     }
 
@@ -274,14 +311,20 @@ class ServerButton extends Component {
 
     var locationSpan = <span style={{display: "inline-block", float: "left", textAlign: "center", width: "calc(100% - 200px)"}}>{locationText}</span>
 
+    var to = generatePath(this.props.location);
+    if (this.props.match.params.bundleid) {
+      // TODO: will need to send messages to new/old server and copy the bundle over - possibly getting a new ID
+      to = generatePath(this.props.location, this.props.match.params.bundleid);
+    }
+
     return (
       // NOTE: we use onMouseOver instead of onMouseEnter here so that it is triggered when a server above is removed
       <div onMouseOver={this.hoverOn} onMouseLeave={this.hoverOff} className="splash-scrollable-btn-div" style={style}>
-        <Link className={btnClassName} to={generatePath(this.props.location)} title={"connect to server at "+this.props.location+" running PHOEBE "+this.state.phoebeVersion}>
-          <ServerStatusIcon phoebeVersion={this.state.phoebeVersion} connecting={this.isConnecting()} autoconnect={this.props.autoconnect} serverButton={this}/>
-          <ServerVersionSpan phoebeVersion={this.state.phoebeVersion} connecting={this.isConnecting()} autoconnect={this.props.autoconnect}/>
+        <Link className={btnClassName} to={to} title={"connect to server at "+this.props.location+" running PHOEBE "+this.state.phoebeVersion}>
+          <ServerStatusIcon phoebeVersion={this.state.phoebeVersion} status={this.state.status} autoconnect={this.props.autoconnect} serverButton={this}/>
+          <ServerVersionSpan phoebeVersion={this.state.phoebeVersion} status={this.state.status} autoconnect={this.props.autoconnect}/>
           {locationSpan}
-          {this.props.isSpawned ?
+          {this.props.isSpawned || this.state.status ?
             null
             :
             <span className="d-none d-sm-block" style={{marginLeft: "calc(100px - 20px)", display: "inline-block", width: "20px", float: "left"}} to="#" onClick={this.removeServer} onMouseLeave={()=>{this.setState({removeConfirmed:false})}}>

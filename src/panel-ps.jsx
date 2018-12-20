@@ -107,7 +107,10 @@ export class PSPanel extends Component {
         url = window.location.origin + window.location.pathname + "#" + url
       }
 
-      win = window.open(url, '_blank');
+      var windowName = Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 5);
+      win = window.open(url,
+                        windowName,
+                        'height=400,width=600,left=50,top=20,resizable=yes,scrollbars=yes,toolbar=no,menubar=no,location=no,directories=no,status=no');
       win.focus();
     }
   }
