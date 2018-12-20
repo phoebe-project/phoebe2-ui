@@ -53,6 +53,19 @@ class Parameter extends Component {
     // propogation stopped by Checkbox component
     alert("toggling adjust not implemented")
   }
+  shouldComponentUpdate(nextProps, nextState) {
+    if (nextState !== this.state) {
+      return true
+    }
+    if (nextProps.value !== this.props.value) {
+      return true
+    }
+    if (nextProps.adjust !== this.props.adjust) {
+      return true
+    }
+    // adjustable, description, or changes to bundle should not cause updates
+    return false;
+  }
   render() {
     return (
       <div className='phoebe-parameter'>
@@ -134,10 +147,6 @@ export class PSPanel extends Component {
         </div>
 
         <div style={{paddingTop: "10px"}}>
-          {/* <Parameter twig='teff@primary@component' value="6000 K" description='effective temperature' adjustable={true} adjust={false}/>
-          <Parameter twig='teff@secondary@component' value="6000 K" description='effective temperature' adjustable={true} adjust={true}/>
-          <Parameter twig='atm@primary@compute' value="ck2004" description='atmosphere model'/>
-          <Parameter twig='ltte@phoebe01@compute' value="True" description='atmosphere model'/> */}
           {params ?
             mapObject(params, (uniqueid, param) => <Parameter key={uniqueid} twig={param.twig} value={param.valuestr} description={param.description}/>)
             :

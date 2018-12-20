@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import {Redirect} from 'react-router-dom';
 
+import ReactQueryParams from 'react-query-params'; // https://github.com/jeff3dx/react-query-params
 // import isElectron from 'is-electron'; // https://github.com/cheton/is-electron
 import PanelGroup from 'react-panelgroup'; // https://www.npmjs.com/package/react-panelgroup
 
@@ -10,7 +11,7 @@ import {FigurePanel} from './panel-figures';
 import {Link, generatePath, abortableFetch} from './common';
 import {Toolbar, Statusbar, Panel} from './ui';
 
-export class Bundle extends Component {
+export class Bundle extends ReactQueryParams {
   constructor(props) {
     super(props);
     this.state = {
