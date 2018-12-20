@@ -108,9 +108,9 @@ export class PSPanel extends Component {
     if (this.props.app.state.isElectron) {
       // set frame: false?
       if (isStaticFile()) {
-        url = window.location.origin + window.location.pathname + "#" + url
+        url = window.location.origin + window.location.pathname + "#" + url + window.location.search
       } else {
-        url = window.location.origin + url
+        url = window.location.origin + url + window.location.search;
       }
       win = new BrowserWindow({width: 600, height: 400, minWidth: 600, minHeight: 400});
       win.on('close', () => {win = null});
@@ -118,7 +118,9 @@ export class PSPanel extends Component {
       win.show();
     } else {
       if (isStaticFile()) {
-        url = window.location.origin + window.location.pathname + "#" + url
+        url = window.location.origin + window.location.pathname + "#" + url + window.location.search
+      } else {
+        url = url + window.location.search
       }
 
       var windowName = Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 5);
@@ -148,7 +150,11 @@ export class PSPanel extends Component {
 
         <div style={{paddingTop: "10px"}}>
           {params ?
-            mapObject(params, (uniqueid, param) => <Parameter key={uniqueid} twig={param.twig} value={param.valuestr} description={param.description}/>)
+            mapObject(params, (uniqueid, param) => {
+              if (this.props.bundle.state.paramsfilteredids.indexOf(uniqueid)!==-1) {
+                return (<Parameter key={uniqueid} twig={param.twig} value={param.valuestr} description={param.description}/>)
+              }
+            })
             :
             <LogoSpinner pltStyle={{backgroundColor: "rgb(43, 113, 177)"}}/>
           }

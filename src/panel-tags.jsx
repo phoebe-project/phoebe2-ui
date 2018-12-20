@@ -183,7 +183,7 @@ export class TagPanel extends Component {
     return (
       <Panel>
         <div style={{padding: "10px"}}>
-          Showing: ???/{this.props.bundle.state.nparams} parameters
+          Showing: {this.props.bundle.state.paramsfilteredids.length}/{this.props.bundle.state.nparams} parameters
         </div>
 
         <TagGroup title="Context" bundle={this.props.bundle} bundleid={this.props.bundleid} expanded={true} tags={tags.contexts || null}/>

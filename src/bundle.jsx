@@ -8,7 +8,7 @@ import PanelGroup from 'react-panelgroup'; // https://www.npmjs.com/package/reac
 import {TagPanel} from './panel-tags';
 import {PSPanel} from './panel-ps';
 import {FigurePanel} from './panel-figures';
-import {Link, generatePath, abortableFetch} from './common';
+import {Link, generatePath, abortableFetch, mapObject} from './common';
 import {Toolbar, Statusbar, Panel} from './ui';
 
 export class Bundle extends ReactQueryParams {
@@ -19,6 +19,7 @@ export class Bundle extends ReactQueryParams {
       bundleid: props.match.params.bundleid,
       showFigurePanel: false,
       params: null,
+      paramsfilteredids: [],
       tags: null,
       nparams: 0,
     };
@@ -55,6 +56,30 @@ export class Bundle extends ReactQueryParams {
       });
   }
   componentDidUpdate() {
+    if (this.state.params && this.queryParams) {
+      console.log("Bundle.componentDidUpdate recomputing paramsfilteredids")
+      var paramsfilteredids = [];
+      var includeThisParam = true;
+      mapObject(this.state.params, (uniqueid, param) => {
+        includeThisParam = true
+        mapObject(this.queryParams, (group, tags) => {
+          if (tags.length && tags.indexOf(param[group])===-1){
+            includeThisParam = false
+          }
+        })
+        if (includeThisParam) {
+          paramsfilteredids.push(uniqueid)
+        }
+      })
+
+      if (paramsfilteredids.length !== this.state.paramsfilteredids.length) {
+        // since we're only allowing one tag to be added or removed, we can
+        // hopefully rely that the length will change if the filter changes at all
+        this.setState({paramsfilteredids: paramsfilteredids})
+      }
+
+    }
+
 
   }
   render() {
