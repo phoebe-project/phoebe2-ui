@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import {Redirect} from 'react-router-dom';
 
-import {Link, generatePath, isStaticFile} from './common';
+import {Link, generatePath, isStaticFile, mapObject} from './common';
+import {LogoSpinner} from './logo';
 import {Panel} from './ui';
 
 import isElectron from 'is-electron'; // https://github.com/cheton/is-electron
@@ -116,6 +117,7 @@ export class PSPanel extends Component {
   }
   render() {
     var bundleid = this.props.bundleid || this.props.match.params.bundleid
+    var params = this.props.bundle.state.params
 
     return (
       <Panel backgroundColor="#e4e4e4">
@@ -132,10 +134,15 @@ export class PSPanel extends Component {
         </div>
 
         <div style={{paddingTop: "10px"}}>
-          <Parameter twig='teff@primary@component' value="6000 K" description='effective temperature' adjustable={true} adjust={false}/>
+          {/* <Parameter twig='teff@primary@component' value="6000 K" description='effective temperature' adjustable={true} adjust={false}/>
           <Parameter twig='teff@secondary@component' value="6000 K" description='effective temperature' adjustable={true} adjust={true}/>
           <Parameter twig='atm@primary@compute' value="ck2004" description='atmosphere model'/>
-          <Parameter twig='ltte@phoebe01@compute' value="True" description='atmosphere model'/>
+          <Parameter twig='ltte@phoebe01@compute' value="True" description='atmosphere model'/> */}
+          {params ?
+            mapObject(params, (uniqueid, param) => <Parameter key={uniqueid} twig={param.twig} value={param.valuestr} description={param.description}/>)
+            :
+            <LogoSpinner pltStyle={{backgroundColor: "rgb(43, 113, 177)"}}/>
+          }
         </div>
 
       </Panel>

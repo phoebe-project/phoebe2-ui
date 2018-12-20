@@ -20,6 +20,7 @@ div#root {
   height: 100%;
   width: 100%;
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
 div.App {
@@ -301,6 +302,19 @@ code {
   border: 1px solid #2B71B1;
 }
 
+.btn-tag {
+  background-color: #2B71B1;
+  color: #D7D7D7;
+  padding: 2px 10px 2px 2px;
+  margin: 1px 2px 1px 2px;
+  border-radius: 4px;
+  font-size: 0.9em;
+  line-height: 0.9em;
+  text-align: left;
+  width: calc(100% - 3px);
+  max-width: 150px
+}
+
 .splash-scrollable-btn-div {
   display: inline-block;
   height: 40px;
@@ -353,10 +367,11 @@ code {
 .phoebe-tag-drawer {
   width: calc(100% + 20px);
   margin-bottom: -5px; /* to counter the padding and box-shadow on phoebe-tag-header */
+  padding-top: 10px;
   padding-bottom: 10px;
   margin-left: -10px;
-  padding-left: 15px;
   min-height: 30px;
+  text-align: center;
   /* background-color: rgba(69,101,131,0.25); */
   /* background-color:  #b9c6d1; */
 }

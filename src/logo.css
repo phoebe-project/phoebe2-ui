@@ -288,6 +288,10 @@
   animation: spinnerFade 1200ms infinite ease-in-out;
 }
 
+.animateSpinner > .PLT8 {
+  animation: none;
+}
+
 /* handle spinner delays */
 .animateSpinner > .PLT1 {
   animation-delay: 0ms;

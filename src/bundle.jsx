@@ -7,12 +7,63 @@ import PanelGroup from 'react-panelgroup'; // https://www.npmjs.com/package/reac
 import {TagPanel} from './panel-tags';
 import {PSPanel} from './panel-ps';
 import {FigurePanel} from './panel-figures';
-import {Link, generatePath} from './common';
+import {Link, generatePath, abortableFetch} from './common';
 import {Toolbar, Statusbar, Panel} from './ui';
 
 export class Bundle extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      redirect: null,
+      bundleid: props.match.params.bundleid,
+      showFigurePanel: false,
+      params: null,
+      tags: null,
+      nparams: 0,
+    };
+  }
+  componentDidMount() {
+    this.abortGetParamsController = new window.AbortController();
+    abortableFetch("http://"+this.props.app.state.serverHost+"/bundle/"+this.state.bundleid, {signal: this.abortGetParamsController.signal})
+      .then(res => res.json())
+      .then(json => {
+        if (json.data.success) {
+          this.setState({params: json.data.parameters, tags: json.data.tags, nparams: Object.keys(json.data.parameters).length})
+        } else {
+          alert("server error: "+json.data.error);
+          this.setState({params: null, tags: null});
+          this.setState({redirect: generatePath(this.props.app.state.serverHost)})
+          // this.cancelLoadBundleSpinners();
+        }
+      }, err=> {
+        // then we canceled the request
+        console.log("received abort signal")
+        // this.cancelLoadBundleSpinners();
+      })
+      .catch(err => {
+        if (err.name === 'AbortError') {
+          // then we canceled the request
+          console.log("received abort signal")
+          // this.cancelLoadBundleSpinners();
+        } else {
+          alert("server error, try again")
+          // this.cancelLoadBundleSpinners();
+          this.setState({params: null, tags: null, nparams: 0})
+        }
+
+      });
+  }
+  componentDidUpdate() {
+
+  }
   render() {
-    var bundleid = this.props.match.params.bundleid
+    if (this.state.redirect) {
+      return (<Redirect to={this.state.redirect}/>)
+    }
+
+    if (this.props.PSPanelOnly) {
+      return (<PSPanel app={this.props.app} bundleid={this.state.bundleid} bundle={this}/>)
+    }
 
     var modal = this.props.match.params.modal
     var modalContent = null;
@@ -23,26 +74,37 @@ export class Bundle extends Component {
                      </Modal>
     }
 
+    let panelWidths
+    if (this.state.showFigurePanel) {
+      panelWidths = [
+                      {size: 490, minSize:300, resize: "dynamic"},
+                      {minSize:440, resize: "stretch"},
+                      {size: 250, minSize:250, resize: "dynamic"}
+                     ]
+    } else {
+      panelWidths = [
+                      {size: 490, minSize:300, resize: "dynamic"},
+                      {minSize:440, resize: "stretch"},
+                      {size: 0, minSize:0, resize: "fixed"}
+                     ]
+    }
+
     return (
       <div className="App">
         {modalContent}
         <Toolbar app={this.props.app}/>
-        <Statusbar app={this.props.app} bundleid={bundleid}/>
+        <Statusbar app={this.props.app} bundleid={this.state.bundleid}/>
 
         <div className="d-none d-lg-block" style={{paddingTop: "50px", paddingBottom: "28px", height: "100%"}}>
-          {/* need to support down to width of 990 for d-lg */}
-          <PanelGroup panelWidths={[
-                                      {size: 400, minSize:300, resize: "dynamic"},
-                                      {minSize:440, resize: "stretch"},
-                                      {size: 400, minSize:250, resize: "dynamic"}
-                                   ]}>
-            <TagPanel app={this.props.app} bundleid={bundleid}/>
-            <PSPanel app={this.props.app} bundleid={bundleid} showPopoutButton={true}/>
-            <FigurePanel app={this.props.app} bundleid={bundleid}/>
+          {/* need to support down to width of 990 for d-lg.  Tag starts at width needed for 3 columns */}
+          <PanelGroup panelWidths={panelWidths}>
+            <TagPanel app={this.props.app} bundleid={this.state.bundleid} bundle={this}/>
+            <PSPanel app={this.props.app} bundleid={this.state.bundleid} bundle={this} showPopoutButton={true}/>
+            <FigurePanel app={this.props.app} bundleid={this.state.bundleid}/>
           </PanelGroup>
         </div>
         <div className="d-block d-lg-none" style={{paddingTop: "50px", paddingBottom: "28px", height: "100%"}}>
-          <PSPanel app={this.props.app} bundleid={bundleid}/>
+          <PSPanel app={this.props.app} bundleid={this.state.bundleid} bundle={this}/>
         </div>
 
 

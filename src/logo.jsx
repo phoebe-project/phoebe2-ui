@@ -5,7 +5,7 @@ import './logo.css';
 export class LogoSpinner extends Component {
   render() {
     return(
-      <LogoSplash {...this.props} excludeTriple={true} className="PhoebeLogoSpinner" animationEffect="animateSpinner"/>
+      <LogoSplash {...this.props} excludeBinary={true} excludeTriple={true} className="PhoebeLogoSpinner" animationEffect="animateSpinner"/>
     )
   }
 }
@@ -149,13 +149,19 @@ export class LogoSplash extends Component {
         <div className='PLT PLT6' style={pltStyle} ref={this.plt6}/>
         <div className='PLT PLT7' style={pltStyle} ref={this.plt7}/>
         <div className='PLT PLT8' style={pltStyle} ref={this.plt8}/>
-        <div className='PLTB PLTB1' style={pltStyle} ref={this.pltb1}></div>
-        <div className='PLTB PLTB2' style={pltStyle} ref={this.pltb2}></div>
-        <div className='PLTB PLTB3' style={pltStyle} ref={this.pltb3}></div>
-        <div className='PLTB PLTB4' style={pltStyle} ref={this.pltb4}></div>
-        <div className='PLTB PLTB5' style={pltStyle} ref={this.pltb5}></div>
-        <div className='PLTB PLTB6' style={pltStyle} ref={this.pltb6}></div>
-        <div className='PLTB PLTB7' style={pltStyle} ref={this.pltb7}></div>
+        {this.props.excludeBinary ?
+          null
+          :
+          <React.Fragment>
+            <div className='PLTB PLTB1' style={pltStyle} ref={this.pltb1}></div>
+            <div className='PLTB PLTB2' style={pltStyle} ref={this.pltb2}></div>
+            <div className='PLTB PLTB3' style={pltStyle} ref={this.pltb3}></div>
+            <div className='PLTB PLTB4' style={pltStyle} ref={this.pltb4}></div>
+            <div className='PLTB PLTB5' style={pltStyle} ref={this.pltb5}></div>
+            <div className='PLTB PLTB6' style={pltStyle} ref={this.pltb6}></div>
+            <div className='PLTB PLTB7' style={pltStyle} ref={this.pltb7}></div>
+          </React.Fragment>
+        }
         {this.props.excludeTriple ?
           null
           :

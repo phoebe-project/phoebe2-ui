@@ -62,11 +62,11 @@ export class SplashServer extends Component {
 
           <div ref={this.splashScrollable} className="splash-scrollable">
             { this.props.app.state.isElectron ?
-              <ServerButton key={location} location={"localhost:"+window.require('electron').remote.getGlobal('pyPort')} autoconnect={autoconnect} isSpawned={true} app={this.props.app} splash={this} match={this.props.match}/>
+              <ServerButton key={location} location={"localhost:"+window.require('electron').remote.getGlobal('pyPort')} autoconnect={autoconnect} switchServer={this.props.switchServer} isSpawned={true} app={this.props.app} splash={this} match={this.props.match}/>
               :
               null
             }
-            {this.props.app.state.settingsServerHosts.map(location => <ServerButton key={location} location={location} autoconnect={autoconnect} app={this.props.app} splash={this} match={this.props.match}/>)}
+            {this.props.app.state.settingsServerHosts.map(location => <ServerButton key={location} location={location} autoconnect={autoconnect} switchServer={this.props.switchServer} app={this.props.app} splash={this} match={this.props.match}/>)}
             <ServerAddButton app={this.props.app}/>
 
           </div>
@@ -214,7 +214,7 @@ class ServerButton extends Component {
   componentDidUpdate() {
     var status = null
     if (this.props.app.state.serverHost===this.props.location) {
-      if (this.props.match.params.bundleid) {
+      if (this.props.switchServer) {
         status = 'connected'
       } else {
         status = 'connecting'
