@@ -18,6 +18,7 @@
     "is-electron": "^2.2.0",
     "react": "^16.1.1",
     "react-dom": "^16.1.1",
+    "react-flip-move": "^3.0.3",
     "react-panelgroup": "^1.0.7",
     "react-query-params": "^1.0.9",
     "react-router-dom": "^4.3.1",

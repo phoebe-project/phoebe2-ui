@@ -1,11 +1,14 @@
 import React, { Component } from 'react';
 import {Redirect} from 'react-router-dom';
 
-import {Link, generatePath, isStaticFile, mapObject} from './common';
+import FlipMove from 'react-flip-move'; // https://github.com/joshwcomeau/react-flip-move
+
+import {Link, generatePath, isStaticFile, mapObject, filterObjectByKeys} from './common';
 import {LogoSpinner} from './logo';
 import {Panel} from './ui';
 
 import isElectron from 'is-electron'; // https://github.com/cheton/is-electron
+
 
 let BrowserWindow;
 if (isElectron()) {
@@ -99,9 +102,14 @@ class Parameter extends Component {
 }
 
 export class PSPanel extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+    };
+    this.prevNParams = 0;
+  }
   popPS = () => {
     var bundleid = this.props.bundleid || this.props.match.params.bundleid
-
 
     var url = generatePath(this.props.app.state.serverHost, bundleid, 'ps');
     let win;
@@ -130,9 +138,15 @@ export class PSPanel extends Component {
       win.focus();
     }
   }
+
   render() {
     var bundleid = this.props.bundleid || this.props.match.params.bundleid
-    var params = this.props.bundle.state.params
+    var params = this.props.bundle.state.params || {}
+
+    var paramsFiltered = filterObjectByKeys(params, this.props.bundle.state.paramsfilteredids)
+    // animations can be laggy, and not even that effective, when there are a lot of items
+    var enablePSAnimation = Math.abs(this.props.bundle.state.paramsfilteredids.length - this.prevNParams) <= 20;
+    this.prevNParams = this.props.bundle.state.paramsfilteredids.length
 
     return (
       <Panel backgroundColor="#e4e4e4">
@@ -149,12 +163,12 @@ export class PSPanel extends Component {
         </div>
 
         <div style={{paddingTop: "10px"}}>
-          {params ?
-            mapObject(params, (uniqueid, param) => {
-              if (this.props.bundle.state.paramsfilteredids.indexOf(uniqueid)!==-1) {
+          {this.props.bundle.state.paramsfilteredids.length ?
+            <FlipMove appearAnimation={false} enterAnimation="fade" leaveAnimation="fade" disableAllAnimations={!enablePSAnimation}>
+              {mapObject(paramsFiltered, (uniqueid, param) => {
                 return (<Parameter key={uniqueid} twig={param.twig} value={param.valuestr} description={param.description}/>)
-              }
-            })
+              })}
+            </FlipMove>
             :
             <LogoSpinner pltStyle={{backgroundColor: "rgb(43, 113, 177)"}}/>
           }

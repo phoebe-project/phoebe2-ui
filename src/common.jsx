@@ -50,6 +50,22 @@ export function mapObject(object, callback) {
   });
 }
 
+// export function filterObject(object, callback) {
+  // return Object.keys(object).filter(function (key) {
+    // return callback(key, object[key]);
+  // })
+// }
+
+export function filterObjectByKeys (object, keys) {
+  return Object.keys(object).reduce((accum, key) => {
+    if (keys.includes(key)) {
+      return { ...accum, [key]: object[key] }
+    } else {
+      return accum
+    }
+  }, {})
+}
+
 export class Router extends Component {
   render() {
     if (isStaticFile()) {
