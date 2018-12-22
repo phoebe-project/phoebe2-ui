@@ -21,6 +21,7 @@ export class Bundle extends ReactQueryParams {
       params: null,
       paramsfilteredids: [],
       tags: null,
+      tagsAvailable: null,
       nparams: 0,
     };
   }
@@ -55,31 +56,60 @@ export class Bundle extends ReactQueryParams {
 
       });
   }
+  filter = (params, filter, ignoreGroups=[]) => {
+    // if (!ignoreGroups) {
+    //   ignoreGroups = []
+    // }
+
+    var paramsfilteredids = [];
+    var includeThisParam = true;
+    mapObject(params, (uniqueid, param) => {
+      includeThisParam = true
+      mapObject(filter, (group, tags) => {
+        if (ignoreGroups.indexOf(group)===-1 && tags.length && tags.indexOf(param[group])===-1){
+          includeThisParam = false
+        }
+      })
+      if (includeThisParam) {
+        paramsfilteredids.push(uniqueid)
+      }
+    })
+    return paramsfilteredids;
+
+  }
   componentDidUpdate() {
     if (this.state.params && this.queryParams) {
       console.log("Bundle.componentDidUpdate recomputing paramsfilteredids")
-      var paramsfilteredids = [];
-      var includeThisParam = true;
-      mapObject(this.state.params, (uniqueid, param) => {
-        includeThisParam = true
-        mapObject(this.queryParams, (group, tags) => {
-          if (tags.length && tags.indexOf(param[group])===-1){
-            includeThisParam = false
-          }
-        })
-        if (includeThisParam) {
-          paramsfilteredids.push(uniqueid)
-        }
-      })
+
+      // determine which parameters (by a list of uniqueids) is in the filtered PS
+      var paramsfilteredids = this.filter(this.state.params, this.queryParams);
 
       if (paramsfilteredids.length !== this.state.paramsfilteredids.length) {
         // since we're only allowing one tag to be added or removed, we can
         // hopefully rely that the length will change if the filter changes at all
-        this.setState({paramsfilteredids: paramsfilteredids})
+        this.setState({paramsfilteredids: paramsfilteredids});
+
+        // determine "availability" of all tags
+        var tagsAvailable = {}
+        var paramsfilteredids_thisgroup = null;
+        mapObject(this.state.tags, (group, tags) => {
+          // i.e. group='componnet', tags=['binary', 'primary', 'secondary']
+
+          // determine filtered PS excluding this group
+          paramsfilteredids_thisgroup = this.filter(this.state.params, this.queryParams, [group.slice(0,-1)]);
+
+          // loop through all parameters in that filter and gather the tags in THIS group - this will be available, whether selected or not
+          tagsAvailable[group] = []
+          paramsfilteredids_thisgroup.forEach(uniqueid => {
+            if (tagsAvailable[group].indexOf(this.state.params[uniqueid][group.slice(0,-1)])===-1) {
+              tagsAvailable[group].push(this.state.params[uniqueid][group.slice(0,-1)]);
+            }
+          })
+        });
+
+        this.setState({tagsAvailable: tagsAvailable});
       }
-
     }
-
 
   }
   render() {

@@ -41,6 +41,7 @@ class Tag extends Component {
     this.state = {
       hover: false,
       selected: false,
+      isAvailable: true,
     }
   }
   componentDidMount() {
@@ -68,6 +69,19 @@ class Tag extends Component {
       this.addToFilter()
     }
   }
+  isAvailable = () => {
+    if (!this.props.bundle.state.tagsAvailable || !this.props.bundle.state.tagsAvailable[this.props.group+'s']) {
+      return true
+    }
+    return this.props.bundle.state.tagsAvailable[this.props.group+'s'].indexOf(this.props.tag) !== -1
+  }
+  componentDidUpdate() {
+    var isAvailable = this.isAvailable();
+
+    if (isAvailable != this.state.isAvailable) {
+      this.setState({isAvailable: isAvailable})
+    }
+  }
   render() {
     var className = "btn btn-tag"
     var iconClassName = "fas fa-fw"
@@ -75,19 +89,15 @@ class Tag extends Component {
       className += " btn-tag-selected"
       iconClassName += " fa-times"
     } else {
-      if (this.props.available) {
-        if (this.props.currentGroupFilter.length > 0) {
-          className += " btn-tag-available"
-        } else {
-          className += " btn-tag-selected"
-        }
-        iconClassName += " fa-plus"
-
-      } else {
-        className += " btn-tag-unavailable"
-      }
-
+      className += " btn-tag-unselected"
+      iconClassName += " fa-plus"
     }
+
+    if (!this.state.isAvailable) {
+      className += " btn-tag-unavailable"
+    }
+
+
 
     var iconStyle = {}
     if (!this.state.hover) {
@@ -163,7 +173,7 @@ class TagGroup extends Component {
         {this.state.expanded ?
           <div className='phoebe-tag-drawer'>
             {tags ?
-              tags.map(t => <Tag key={t} bundle={this.props.bundle} group={group} currentGroupFilter={this.state.currentGroupFilter} tag={t} available={true}/>)
+              tags.map(t => <Tag key={t} bundle={this.props.bundle} group={group} currentGroupFilter={this.state.currentGroupFilter} tag={t}/>)
               :
               null
             }
@@ -186,16 +196,16 @@ export class TagPanel extends Component {
           Showing: {this.props.bundle.state.paramsfilteredids.length}/{this.props.bundle.state.nparams} parameters
         </div>
 
-        <TagGroup title="Context" bundle={this.props.bundle} bundleid={this.props.bundleid} expanded={true} tags={tags.contexts || null}/>
-        <TagGroup title="Kind" bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.kinds || null}></TagGroup>
-        <TagGroup title="Constraint" bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.constraints || null}></TagGroup>
-        <TagGroup title="Component" bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.components || null} add={true} rename={true} remove={true}></TagGroup>
-        <TagGroup title="Feature" bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.features || null} add={true} rename={true} remove={true}></TagGroup>
-        <TagGroup title="Dataset" bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.datasets || null} add={true} rename={true} remove={true}></TagGroup>
-        <TagGroup title="Figure" bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.figures || null} add={true} rename={true} remove={true}></TagGroup>
-        <TagGroup title="Compute" bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.computes || null} add={true} rename={true} remove={true} run={true}></TagGroup>
-        <TagGroup title="Model" bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.models || null} add={false} rename={true} remove={true}></TagGroup>
-        <TagGroup title="Qualifier" bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.qualifiers || null} expanded={true}></TagGroup>
+        <TagGroup title="Context" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} expanded={true} tags={tags.contexts || null}/>
+        <TagGroup title="Kind" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.kinds || null}></TagGroup>
+        <TagGroup title="Constraint" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.constraints || null}></TagGroup>
+        <TagGroup title="Component" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.components || null} add={true} rename={true} remove={true}></TagGroup>
+        <TagGroup title="Feature" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.features || null} add={true} rename={true} remove={true}></TagGroup>
+        <TagGroup title="Dataset" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.datasets || null} add={true} rename={true} remove={true}></TagGroup>
+        <TagGroup title="Figure" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.figures || null} add={true} rename={true} remove={true}></TagGroup>
+        <TagGroup title="Compute" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.computes || null} add={true} rename={true} remove={true} run={true}></TagGroup>
+        <TagGroup title="Model" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.models || null} add={false} rename={true} remove={true}></TagGroup>
+        <TagGroup title="Qualifier" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.qualifiers || null} expanded={true}></TagGroup>
 
       </Panel>
     )

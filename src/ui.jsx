@@ -78,10 +78,10 @@ export class Toolbar extends Component {
           <ToolbarButton iconClassNames="fas fa-redo" title="redo" onClick={this.notImplementedAlert}/>
         </div>
         <div className="d-none d-lg-inline-block" style={{position: "absolute", width: "250px", left: "calc(50% - 125px)"}}>
-          <span className="btn btn-transparent" title="rerun model" style={{marginTop: "6px"}} onClick={this.notImplementedAlert}>
+          {/* <span className="btn btn-transparent" title="rerun model" style={{marginTop: "6px"}} onClick={this.notImplementedAlert}>
             <span className="fa-fw fa-lg fas fa-play" style={{marginRight: "4px"}}/>
             rerun latest model
-          </span>
+          </span> */}
         </div>
         <div style={{float: "right", marginRight: "10px"}}>
           <ToolbarButton iconClassNames="fas fa-question" title="help" onClick={this.notImplementedAlert}/>
