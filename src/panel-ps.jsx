@@ -32,12 +32,19 @@ class Checkbox extends Component {
   render() {
     var classNames = "fa-fw fa-square"
     if ((this.props.checked && !this.state.hover) || (!this.props.checked && this.state.hover)) {
-      classNames += " far"
-    } else {
       classNames += " fas"
+    } else {
+      classNames += " far"
     }
 
-    return (<span style={{color: "#2B71B1"}} className={classNames} onMouseEnter={()=>{this.setState({hover: true})}} onMouseLeave={()=>{this.setState({hover: false})}} onClick={this.onClick}/>)
+    var title = this.props.title || null;
+    if (this.props.checked && this.props.checkedTitle) {
+      title = this.props.checkedTitle
+    } else if (!this.props.checked && this.props.uncheckedTitle) {
+      title = this.props.uncheckedTitle
+    }
+
+    return (<span style={{color: "#2B71B1"}} className={classNames} title={title} onMouseEnter={()=>{this.setState({hover: true})}} onMouseLeave={()=>{this.setState({hover: false})}} onClick={this.onClick}/>)
   }
 
 }
@@ -47,28 +54,59 @@ class Parameter extends Component {
     super(props);
     this.state = {
       expanded: this.props.expanded,
+      pinned: false,
     };
   }
   toggleExpanded = () => {
     this.setState({expanded: !this.state.expanded})
   }
-  toggleAdjust = (e) => {
-    // propogation stopped by Checkbox component
-    alert("toggling adjust not implemented")
+  addToPinned = () => {
+    var pinned = this.props.bundle.queryParams.pinned || []
+    var newPinned = pinned.concat(this.props.uniqueid)
+    this.props.bundle.setQueryParams({pinned: newPinned})
   }
-  shouldComponentUpdate(nextProps, nextState) {
-    if (nextState !== this.state) {
-      return true
+  removeFromPinned = () => {
+    var pinned = this.props.bundle.queryParams.pinned || []
+    let newPinned;
+    if (pinned.length===1) {
+      newPinned = [ ];
+    } else {
+      newPinned = pinned.filter(uniqueid => uniqueid !== this.props.uniqueid)
     }
-    if (nextProps.value !== this.props.value) {
-      return true
-    }
-    if (nextProps.adjust !== this.props.adjust) {
-      return true
-    }
-    // adjustable, description, or changes to bundle should not cause updates
-    return false;
+    this.props.bundle.setQueryParams({pinned: newPinned})
   }
+  togglePinned = () => {
+    if (this.state.pinned) {
+      this.setState({pinned: false})
+      this.removeFromPinned();
+    } else {
+      this.setState({pinned: true})
+      this.addToPinned();
+    }
+  }
+  componentDidMount() {
+    this.componentDidUpdate();
+  }
+  componentDidUpdate() {
+    var pinned = this.props.bundle.queryParams.pinned || []
+    var ispinned = pinned.indexOf(this.props.uniqueid) !== -1
+    if (ispinned != this.state.pinned) {
+      this.setState({pinned: ispinned})
+    }
+  }
+  // shouldComponentUpdate(nextProps, nextState) {
+  //   if (nextState !== this.state) {
+  //     return true
+  //   }
+  //   if (nextProps.value !== this.props.value) {
+  //     return true
+  //   }
+  //   if (nextProps.adjust !== this.props.adjust) {
+  //     return true
+  //   }
+  //   // adjustable, description, or changes to bundle should not cause updates
+  //   return false;
+  // }
   render() {
     return (
       <div className='phoebe-parameter'>
@@ -77,11 +115,10 @@ class Parameter extends Component {
             {this.props.value}
           </span>
 
-          {this.props.adjustable ?
-            <Checkbox checked={this.props.adjust} onClick={this.toggleAdjust} />
-
+          {this.props.pinnable ?
+            <Checkbox checked={this.state.pinned} onClick={this.togglePinned} checkedTitle="unpin parameter" uncheckedTitle="pin parameter" />
             :
-            <div style={{display: "inline-block", width: "20px"}}>&nbsp;</div>
+            null
           }
           <span style={{marginLeft: "10px"}}>
             {this.props.twig}
@@ -163,10 +200,10 @@ export class PSPanel extends Component {
         </div>
 
         <div style={{paddingTop: "10px"}}>
-          {this.props.bundle.state.paramsfilteredids.length ?
+          {this.props.bundle.state.paramsfilteredids.length || Object.keys(this.props.bundle.queryParams).length ?
             <FlipMove appearAnimation={false} enterAnimation="fade" leaveAnimation="fade" disableAllAnimations={!enablePSAnimation}>
               {mapObject(paramsFiltered, (uniqueid, param) => {
-                return (<Parameter key={uniqueid} twig={param.twig} value={param.valuestr} description={param.description}/>)
+                return (<Parameter key={uniqueid} bundle={this.props.bundle} uniqueid={uniqueid} pinnable={!this.props.PSPanelOnly} twig={param.twig} value={param.valuestr} description={param.description}/>)
               })}
             </FlipMove>
             :

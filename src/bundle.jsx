@@ -60,13 +60,14 @@ export class Bundle extends ReactQueryParams {
     // if (!ignoreGroups) {
     //   ignoreGroups = []
     // }
+    var ignoreGroupsFilter = ignoreGroups.concat("pinned")
 
     var paramsfilteredids = [];
     var includeThisParam = true;
     mapObject(params, (uniqueid, param) => {
       includeThisParam = true
       mapObject(filter, (group, tags) => {
-        if (ignoreGroups.indexOf(group)===-1 && tags.length && tags.indexOf(param[group])===-1){
+        if (ignoreGroupsFilter.indexOf(group)===-1 && tags.length && tags.indexOf(param[group])===-1){
           includeThisParam = false
         }
       })
@@ -74,6 +75,18 @@ export class Bundle extends ReactQueryParams {
         paramsfilteredids.push(uniqueid)
       }
     })
+
+
+    if (ignoreGroups.indexOf("pinned")===-1){
+      var pinned = filter.pinned || []
+      pinned.forEach(uniqueid => {
+        if (paramsfilteredids.indexOf(uniqueid)===-1) {
+          paramsfilteredids.push(uniqueid)
+        }
+      })
+    }
+
+
     return paramsfilteredids;
 
   }
@@ -96,7 +109,7 @@ export class Bundle extends ReactQueryParams {
           // i.e. group='componnet', tags=['binary', 'primary', 'secondary']
 
           // determine filtered PS excluding this group
-          paramsfilteredids_thisgroup = this.filter(this.state.params, this.queryParams, [group.slice(0,-1)]);
+          paramsfilteredids_thisgroup = this.filter(this.state.params, this.queryParams, ["pinned", group.slice(0,-1)]);
 
           // loop through all parameters in that filter and gather the tags in THIS group - this will be available, whether selected or not
           tagsAvailable[group] = []
@@ -118,7 +131,7 @@ export class Bundle extends ReactQueryParams {
     }
 
     if (this.props.PSPanelOnly) {
-      return (<PSPanel app={this.props.app} bundleid={this.state.bundleid} bundle={this}/>)
+      return (<PSPanel app={this.props.app} bundleid={this.state.bundleid} bundle={this} PSPanelOnly={this.props.PSPanelOnly}/>)
     }
 
     var modal = this.props.match.params.modal

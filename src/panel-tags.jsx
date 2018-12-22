@@ -35,6 +35,94 @@ class TagHeaderButton extends Component {
   }
 }
 
+class TagClearFilterButton extends Component{
+  constructor(props) {
+    super(props);
+    this.state = {
+      hover: false
+    }
+  }
+  onClear = () => {
+    if (this.props.group) {
+      this.props.bundle.setQueryParams({[this.props.group]: []})
+    } else {
+      // var currentthis.props.currentGroupFilter
+      Object.keys(this.props.bundle.queryParams).forEach(group => {
+        if (group !== 'pinned') {
+          this.props.bundle.setQueryParams({[group]: []})
+        }
+      })
+    }
+  }
+  render() {
+    var showButton = false;
+    if (this.props.group) {
+      if (this.props.bundle.queryParams[this.props.group] && this.props.bundle.queryParams[this.props.group].length > 0) {
+        showButton = true;
+      }
+    } else {
+      Object.keys(this.props.bundle.queryParams).forEach(group => {
+        if (group !== 'pinned' && this.props.bundle.queryParams[group].length > 0) {
+          showButton = true;
+        }
+      })
+
+    }
+
+    if (this.props.bundle.state.paramsfilteredids.length === 0) {
+      showButton = false;
+    }
+
+    var title = "reset filter"
+
+    if (this.props.group==='pinned') {
+      title = "clear pinned parameters"
+    } else if (this.props.group) {
+      title = "clear "+this.props.group+" filter"
+    }
+
+    var padding = this.props.padding || "6px"
+
+    return (
+      <div style={{width: "100%", padding: padding, textAlign: "center"}}>
+        {showButton ?
+          <span style={{width: "50%", maxWidth: "300px", minWidth: "100px"}} className="btn btn-tag btn-tag-clear" onClick={this.onClear} onMouseEnter={()=>this.setState({hover:true})} onMouseLeave={()=>this.setState({hover:false})}>{title}</span>
+          :
+          null
+        }
+      </div>
+    )
+  }
+}
+
+class TagOnlyPinnedButton extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      selected: false,
+    }
+  }
+  toggleOnlyPinned = () => {
+    this.setState({selected: !this.state.selected})
+
+  }
+  render() {
+    let title
+    if (this.state.selected) {
+      title = "show only pinned parameters"
+    } else {
+      title = "include non-pinned parameters"
+    }
+
+    return (
+      <div style={{width: "100%", padding: "2px", textAlign: "center"}}>
+        <span style={{width: "50%", maxWidth: "300px", minWidth: "100px"}} className="btn btn-tag btn-tag-clear" onClick={this.toggleOnlyPinned}>{title}</span>
+      </div>
+
+    )
+  }
+}
+
 class Tag extends Component {
   constructor(props) {
     super(props);
@@ -45,7 +133,7 @@ class Tag extends Component {
     }
   }
   componentDidMount() {
-    this.setState({selected: this.props.currentGroupFilter.indexOf(this.props.tag)!==-1})
+    this.componentDidUpdate();
   }
   addToFilter = () => {
     var newGroupFilter = this.props.currentGroupFilter.concat(this.props.tag)
@@ -76,6 +164,11 @@ class Tag extends Component {
     return this.props.bundle.state.tagsAvailable[this.props.group+'s'].indexOf(this.props.tag) !== -1
   }
   componentDidUpdate() {
+    var selected = this.props.currentGroupFilter.indexOf(this.props.tag)!==-1
+    if (selected != this.state.selected) {
+      this.setState({selected: selected})
+    }
+
     var isAvailable = this.isAvailable();
 
     if (isAvailable != this.state.isAvailable) {
@@ -177,11 +270,54 @@ class TagGroup extends Component {
               :
               null
             }
+            <TagClearFilterButton bundle={this.props.bundle} group={group}/>
+
           </div>
           :
           null
         }
       </React.Fragment>
+    )
+  }
+}
+
+class FilterBox extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      expanded: false,
+    };
+  }
+  toggleExpanded = () => {
+    this.setState({expanded: !this.state.expanded})
+  }
+  render() {
+    var pinned = this.props.bundle.queryParams.pinned || []
+
+    return (
+      <div className="phoebe-parameter" style={{padding: "10px"}}>
+        <span style={{width: "100px", display: "inline-block"}}>Showing:</span><b>{this.props.bundle.state.paramsfilteredids.length}/{this.props.bundle.state.nparams}</b> parameters<br/>
+        <TagClearFilterButton bundle={this.props.bundle} group={false} padding="2px"/>
+
+
+        <span style={{width: "100px", display: "inline-block"}}>Including:</span>{pinned.length} pinned parameter{pinned.length !== 1 && "s"}
+        <TagOnlyPinnedButton bundle={this.props.bundle} padding="2px"/>
+        <TagClearFilterButton bundle={this.props.bundle} group="pinned" padding="2px"/>
+
+        <span style={{width: "100px", display: "inline-block"}}>Excluding:</span>??? advanced parameters<span style={{float: "right", color: "#2B71B1", cursor: "pointer"}} onClick={this.toggleExpanded}>{this.state.expanded ? "hide options" : "show options"}</span>
+        {this.state.expanded ?
+          <React.Fragment>
+            <br/>
+            <input type="checkbox" disabled/> show constraints<br/>
+            <input type="checkbox" disabled/> show parameters with a single option<br/>
+            <input type="checkbox" disabled/> show parameters tagged _default<br/>
+            <input type="checkbox" disabled/> show irrelevant parameters<br/>
+            <input type="checkbox" disabled/> show advanced parameters<br/>
+          </React.Fragment>
+          :
+          null
+        }
+      </div>
     )
   }
 }
@@ -192,9 +328,7 @@ export class TagPanel extends Component {
 
     return (
       <Panel>
-        <div style={{padding: "10px"}}>
-          Showing: {this.props.bundle.state.paramsfilteredids.length}/{this.props.bundle.state.nparams} parameters
-        </div>
+        <FilterBox bundle={this.props.bundle}/>
 
         <TagGroup title="Context" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} expanded={true} tags={tags.contexts || null}/>
         <TagGroup title="Kind" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.kinds || null}></TagGroup>

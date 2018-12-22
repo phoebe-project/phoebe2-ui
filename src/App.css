@@ -319,7 +319,12 @@ code {
   width: calc(100% - 3px);
   max-width: 150px;
   font-style: italic;
+}
 
+.btn-tag-clear {
+  text-align: center;
+  border: 1px solid black;
+  font-style: normal;
 }
 
 .btn-tag-selected {
@@ -345,10 +350,10 @@ code {
 }
 
 .btn-tag-unavailable {
-  text-decoration: line-through;
+  /* text-decoration: line-through; */
   /* background-color: white; */
-  color: gray;
-  /* border: 1px solid gray; */
+  color: lightgray;
+  /* border: 1px solid lightgray; */
   pointer-events: none;
   box-shadow: none;
 }
