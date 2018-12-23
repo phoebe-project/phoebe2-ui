@@ -22,6 +22,8 @@ export class Bundle extends ReactQueryParams {
       paramsfilteredids: [],
       tags: null,
       tagsAvailable: null,
+      nAdvancedHiddenEach: {},
+      nAdvancedHiddenTotal: 0,
       nparams: 0,
     };
   }
@@ -56,25 +58,62 @@ export class Bundle extends ReactQueryParams {
 
       });
   }
+  inAdvanced = (param, advanced) => {
+    const advancedAll = ['not_visible', 'is_default', 'is_advanced', 'is_single', 'is_constraint'];
+    var inAdvanced = []
+    for (var i=0; i<advancedAll.length; i++) {
+      if (advanced.indexOf(advancedAll[i]) == -1 && param.advanced_filter.indexOf(advancedAll[i]) !== -1) {
+        inAdvanced.push(advancedAll[i])
+      }
+    }
+    return inAdvanced
+  }
   filter = (params, filter, ignoreGroups=[]) => {
-    // if (!ignoreGroups) {
-    //   ignoreGroups = []
-    // }
-    var ignoreGroupsFilter = ignoreGroups.concat("pinned")
+    var ignoreGroupsFilter = ignoreGroups.concat(["pinned", "advanced"])
 
+    var nAdvancedHiddenEach = {};
+    var nAdvancedHiddenTotal = 0;
+    var inAdvancedAll = null
     var paramsfilteredids = [];
     var includeThisParam = true;
-    mapObject(params, (uniqueid, param) => {
-      includeThisParam = true
-      mapObject(filter, (group, tags) => {
-        if (ignoreGroupsFilter.indexOf(group)===-1 && tags.length && tags.indexOf(param[group])===-1){
-          includeThisParam = false
+
+    var advanced = filter.advanced || []
+
+    if (ignoreGroups.indexOf("advanced")!==-1 || advanced.indexOf("onlyPinned")===-1) {
+      mapObject(params, (uniqueid, param) => {
+        inAdvancedAll = param.advanced_filter;
+
+        // include this in counts
+        inAdvancedAll.forEach(advancedItem => {
+          if (Object.keys(nAdvancedHiddenEach).indexOf(advancedItem) === -1) {
+            nAdvancedHiddenEach[advancedItem] = 0
+          }
+          nAdvancedHiddenEach[advancedItem] += 1
+        })
+
+        // determine initial visibility based on advanced filter
+        var includeThisParam = true;
+        inAdvancedAll.forEach(advancedItem => {
+          if (advanced.indexOf(advancedItem) === -1) {
+            includeThisParam = false;
+          }
+        })
+
+        if (!includeThisParam) {
+          // then we need to add this param to the total count of excluded because of advanced filter
+          nAdvancedHiddenTotal += 1;
+        }
+
+        mapObject(filter, (group, tags) => {
+          if (ignoreGroupsFilter.indexOf(group)===-1 && tags.length && tags.indexOf(param[group])===-1){
+            includeThisParam = false
+          }
+        })
+        if (includeThisParam) {
+          paramsfilteredids.push(uniqueid)
         }
       })
-      if (includeThisParam) {
-        paramsfilteredids.push(uniqueid)
-      }
-    })
+    }
 
 
     if (ignoreGroups.indexOf("pinned")===-1){
@@ -86,8 +125,7 @@ export class Bundle extends ReactQueryParams {
       })
     }
 
-
-    return paramsfilteredids;
+    return [paramsfilteredids, nAdvancedHiddenEach, nAdvancedHiddenTotal];
 
   }
   componentDidUpdate() {
@@ -95,12 +133,15 @@ export class Bundle extends ReactQueryParams {
       console.log("Bundle.componentDidUpdate recomputing paramsfilteredids")
 
       // determine which parameters (by a list of uniqueids) is in the filtered PS
-      var paramsfilteredids = this.filter(this.state.params, this.queryParams);
+      var filteredInfo = this.filter(this.state.params, this.queryParams);
+      var paramsfilteredids = filteredInfo[0];
+      var nAdvancedHiddenEach = filteredInfo[1];
+      var nAdvancedHiddenTotal = filteredInfo[2];
 
       if (paramsfilteredids.length !== this.state.paramsfilteredids.length) {
         // since we're only allowing one tag to be added or removed, we can
         // hopefully rely that the length will change if the filter changes at all
-        this.setState({paramsfilteredids: paramsfilteredids});
+        this.setState({paramsfilteredids: paramsfilteredids, nAdvancedHiddenEach: nAdvancedHiddenEach, nAdvancedHiddenTotal: nAdvancedHiddenTotal});
 
         // determine "availability" of all tags
         var tagsAvailable = {}
@@ -109,7 +150,7 @@ export class Bundle extends ReactQueryParams {
           // i.e. group='componnet', tags=['binary', 'primary', 'secondary']
 
           // determine filtered PS excluding this group
-          paramsfilteredids_thisgroup = this.filter(this.state.params, this.queryParams, ["pinned", group.slice(0,-1)]);
+          paramsfilteredids_thisgroup = this.filter(this.state.params, this.queryParams, ["advanced", "pinned", group.slice(0,-1)])[0];
 
           // loop through all parameters in that filter and gather the tags in THIS group - this will be available, whether selected or not
           tagsAvailable[group] = []

@@ -108,6 +108,10 @@ class Parameter extends Component {
   //   return false;
   // }
   render() {
+    var sliceIndex = this.props.twig.indexOf("@")
+    var qualifier = this.props.twig.slice(0, sliceIndex);
+    var twigRemainder = this.props.twig.slice(sliceIndex)
+
     return (
       <div className='phoebe-parameter'>
         <div className='phoebe-parameter-header' onClick={this.toggleExpanded}>
@@ -120,8 +124,11 @@ class Parameter extends Component {
             :
             null
           }
-          <span style={{marginLeft: "10px"}}>
-            {this.props.twig}
+          <span style={{marginLeft: "10px", fontWeight: "bold"}}>
+            {qualifier}
+            <span style={{color: "slategray", fontWeight: "normal"}}>
+              {twigRemainder}
+            </span>
           </span>
 
         </div>

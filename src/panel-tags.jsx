@@ -62,7 +62,7 @@ class TagClearFilterButton extends Component{
       }
     } else {
       Object.keys(this.props.bundle.queryParams).forEach(group => {
-        if (group !== 'pinned' && this.props.bundle.queryParams[group].length > 0) {
+        if (["pinned", "advanced"].indexOf(group)===-1 && this.props.bundle.queryParams[group].length > 0) {
           showButton = true;
         }
       })
@@ -102,21 +102,53 @@ class TagOnlyPinnedButton extends Component {
       selected: false,
     }
   }
-  toggleOnlyPinned = () => {
-    this.setState({selected: !this.state.selected})
-
+  addToFilter = () => {
+    var currentAdvanced = this.props.bundle.queryParams.advanced || []
+    var newAdvanced = currentAdvanced.concat("onlyPinned")
+    this.props.bundle.setQueryParams({advanced: newAdvanced})
+  }
+  removeFromFilter = () => {
+    let newAdvanced;
+    var currentAdvanced = this.props.bundle.queryParams.advanced || []
+    if (this.props.bundle.queryParams.length===1) {
+      newAdvanced = [ ];
+    } else {
+      newAdvanced = currentAdvanced.filter(v => v !== "onlyPinned")
+    }
+    this.props.bundle.setQueryParams({advanced: newAdvanced})
+  }
+  onClick = () => {
+    if (this.state.selected) {
+      this.setState({selected: false})
+      this.removeFromFilter();
+    } else {
+      this.setState({selected: true})
+      this.addToFilter()
+    }
+  }
+  componentDidMount() {
+    this.componentDidUpdate();
+  }
+  componentDidUpdate() {
+    var advanced = this.props.bundle.queryParams.advanced || []
+    var selected = advanced.indexOf("onlyPinned")!==-1
+    if (selected != this.state.selected) {
+      this.setState({selected: selected})
+    }
   }
   render() {
     let title
     if (this.state.selected) {
-      title = "show only pinned parameters"
-    } else {
       title = "include non-pinned parameters"
+
+    } else {
+      title = "show only pinned parameters"
+
     }
 
     return (
       <div style={{width: "100%", padding: "2px", textAlign: "center"}}>
-        <span style={{width: "50%", maxWidth: "300px", minWidth: "100px"}} className="btn btn-tag btn-tag-clear" onClick={this.toggleOnlyPinned}>{title}</span>
+        <span style={{width: "50%", maxWidth: "300px", minWidth: "100px"}} className="btn btn-tag btn-tag-clear" onClick={this.onClick}>{title}</span>
       </div>
 
     )
@@ -233,7 +265,7 @@ class TagGroup extends Component {
 
     var group = this.props.title.toLowerCase()
     var tags = this.props.tags || [];
-    var currentGroupFilter = this.props.bundle.queryParams[this.props.group] || []
+    // var currentGroupFilter = this.props.bundle.queryParams[this.props.group] || []
 
     return (
       <React.Fragment>
@@ -291,32 +323,74 @@ class FilterBox extends Component {
   toggleExpanded = () => {
     this.setState({expanded: !this.state.expanded})
   }
+  toggleCheckbox = (advanced, checked) => {
+    var currentAdvanced = this.props.bundle.queryParams.advanced || []
+    let newAdvanced
+    if (checked) {
+      newAdvanced = currentAdvanced.concat(advanced)
+    } else {
+      newAdvanced = currentAdvanced.filter(v => v !== advanced)
+    }
+    // console.log("toggleCheckbox "+advanced+" "+checked+" "+currentAdvanced+"->"+newAdvanced)
+    this.props.bundle.setQueryParams({advanced: newAdvanced})
+  }
+  toggleIsConstraint = (e) => {
+    this.toggleCheckbox("is_constraint", e.currentTarget.checked)
+  }
+  toggleIsSingle = (e) => {
+    this.toggleCheckbox("is_single", e.currentTarget.checked)
+  }
+  toggleIsDefault = (e) => {
+    this.toggleCheckbox("is_default", e.currentTarget.checked)
+  }
+  toggleNotVisible = (e) => {
+    this.toggleCheckbox("not_visible", e.currentTarget.checked)
+  }
+  toggleIsAdvanced = (e) => {
+    this.toggleCheckbox("is_advanced", e.currentTarget.checked)
+  }
   render() {
     var pinned = this.props.bundle.queryParams.pinned || []
 
+    var advanced = this.props.bundle.queryParams.advanced || []
+    var advancedOnlyPinned = advanced.indexOf("onlyPinned")!==-1
+
     return (
       <div className="phoebe-parameter" style={{padding: "10px"}}>
-        <span style={{width: "100px", display: "inline-block"}}>Showing:</span><b>{this.props.bundle.state.paramsfilteredids.length}/{this.props.bundle.state.nparams}</b> parameters<br/>
-        <TagClearFilterButton bundle={this.props.bundle} group={false} padding="2px"/>
-
-
-        <span style={{width: "100px", display: "inline-block"}}>Including:</span>{pinned.length} pinned parameter{pinned.length !== 1 && "s"}
-        <TagOnlyPinnedButton bundle={this.props.bundle} padding="2px"/>
-        <TagClearFilterButton bundle={this.props.bundle} group="pinned" padding="2px"/>
-
-        <span style={{width: "100px", display: "inline-block"}}>Excluding:</span>??? advanced parameters<span style={{float: "right", color: "#2B71B1", cursor: "pointer"}} onClick={this.toggleExpanded}>{this.state.expanded ? "hide options" : "show options"}</span>
-        {this.state.expanded ?
+        {advancedOnlyPinned ?
           <React.Fragment>
-            <br/>
-            <input type="checkbox" disabled/> show constraints<br/>
-            <input type="checkbox" disabled/> show parameters with a single option<br/>
-            <input type="checkbox" disabled/> show parameters tagged _default<br/>
-            <input type="checkbox" disabled/> show irrelevant parameters<br/>
-            <input type="checkbox" disabled/> show advanced parameters<br/>
+            <span style={{width: "100px", display: "inline=-block"}}>Showing:</span><b>{pinned.length}</b> pinned parameter{pinned.length !==1  && "s"}
+              <TagOnlyPinnedButton bundle={this.props.bundle} padding="2px"/>
           </React.Fragment>
+
           :
-          null
+          <React.Fragment>
+            <span style={{width: "100px", display: "inline-block"}}>Showing:</span><b>{this.props.bundle.state.paramsfilteredids.length}/{this.props.bundle.state.nparams}</b> parameters<br/>
+            <TagClearFilterButton bundle={this.props.bundle} group={false} padding="2px"/>
+
+            <span style={{width: "100px", display: "inline-block"}}>Including:</span>{pinned.length} pinned parameter{pinned.length !== 1 && "s"}
+            {pinned.length > 0 && <TagOnlyPinnedButton bundle={this.props.bundle} padding="2px"/>}
+            <TagClearFilterButton bundle={this.props.bundle} group="pinned" padding="2px"/>
+
+            <span style={{width: "100px", display: "inline-block"}}>Excluding:</span>{this.props.bundle.state.nAdvancedHiddenTotal} advanced parameters<span style={{float: "right", color: "#2B71B1", cursor: "pointer"}} onClick={this.toggleExpanded}>{this.state.expanded ? "hide options" : "show options"}</span>
+            {this.state.expanded ?
+              <React.Fragment>
+                <br/>
+                <input type="checkbox" checked={advanced.indexOf("is_constraint")!==-1} onChange={this.toggleIsConstraint}/> show constraints ({this.props.bundle.state.nAdvancedHiddenEach.is_constraint || 0})<br/>
+                <input type="checkbox" checked={advanced.indexOf("is_single")!==-1} onChange={this.toggleIsSingle}/> show parameters with a single option ({this.props.bundle.state.nAdvancedHiddenEach.is_single || 0})<br/>
+                <input type="checkbox" checked={advanced.indexOf("is_default")!==-1} onChange={this.toggleIsDefault}/> show parameters tagged _default ({this.props.bundle.state.nAdvancedHiddenEach.is_default || 0})<br/>
+                <input type="checkbox" checked={advanced.indexOf("not_visible")!==-1} onChange={this.toggleNotVisible}/> show irrelevant parameters ({this.props.bundle.state.nAdvancedHiddenEach.not_visible || 0})<br/>
+                <input type="checkbox" checked={advanced.indexOf("is_advanced")!==-1} onChange={this.toggleIsAdvanced}/> show advanced parameters ({this.props.bundle.state.nAdvancedHiddenEach.is_advanced || 0})<br/>
+              </React.Fragment>
+              :
+              null
+            }
+          </React.Fragment>
+
         }
+
+
+
       </div>
     )
   }
