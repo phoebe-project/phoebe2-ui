@@ -8,6 +8,14 @@ import 'abortcontroller-polyfill';
 import {fetch} from 'whatwg-fetch';
 export const abortableFetch = ('signal' in new Request('')) ? window.fetch : fetch
 
+
+let BrowserWindow;
+if (isElectron()) {
+  BrowserWindow = window.require('electron').remote.BrowserWindow
+} else {
+  BrowserWindow = null;
+}
+
 export function isStaticFile() {
   return window.location.pathname.includes('index.html')
 }
@@ -48,6 +56,37 @@ export function mapObject(object, callback) {
   return Object.keys(object).map(function (key) {
     return callback(key, object[key]);
   });
+}
+
+export function popUpWindow(url, search) {
+  let win;
+  if (isElectron()) {
+    // set frame: false?
+    if (isStaticFile()) {
+      url = window.location.origin + window.location.pathname + "#" + url + search
+    } else {
+      url = window.location.origin + url + search;
+    }
+    win = new BrowserWindow({width: 600, height: 400, minWidth: 600, minHeight: 400});
+    win.on('close', () => {win = null});
+    win.loadURL(url);
+    win.show();
+  } else {
+    if (isStaticFile()) {
+      url = window.location.origin + window.location.pathname + "#" + url +search
+    } else {
+      url = url + search
+    }
+
+    var windowName = Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 5);
+    win = window.open(url,
+                      windowName,
+                      'height=400,width=600,left=50,top=20,resizable=yes,scrollbars=yes,toolbar=no,menubar=no,location=no,directories=no,status=no');
+    win.focus();
+  }
+
+  return win
+
 }
 
 // export function filterObject(object, callback) {

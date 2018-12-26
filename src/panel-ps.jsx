@@ -3,19 +3,12 @@ import {Redirect} from 'react-router-dom';
 
 import FlipMove from 'react-flip-move'; // https://github.com/joshwcomeau/react-flip-move
 
-import {Link, generatePath, isStaticFile, mapObject, filterObjectByKeys} from './common';
+import {Link, generatePath, isStaticFile, abortableFetch, mapObject, filterObjectByKeys, popUpWindow} from './common';
 import {LogoSpinner} from './logo';
 import {Panel} from './ui';
+import {Tag} from './panel-tags';
 
 import isElectron from 'is-electron'; // https://github.com/cheton/is-electron
-
-
-let BrowserWindow;
-if (isElectron()) {
-  BrowserWindow = window.require('electron').remote.BrowserWindow
-} else {
-  BrowserWindow = null;
-}
 
 class Checkbox extends Component {
   constructor(props) {
@@ -44,7 +37,12 @@ class Checkbox extends Component {
       title = this.props.uncheckedTitle
     }
 
-    return (<span style={{color: "#2B71B1"}} className={classNames} title={title} onMouseEnter={()=>{this.setState({hover: true})}} onMouseLeave={()=>{this.setState({hover: false})}} onClick={this.onClick}/>)
+    return (
+      <span style={{color: "#2B71B1", cursor: "pointer"}} title={title} onMouseEnter={()=>{this.setState({hover: true})}} onMouseLeave={()=>{this.setState({hover: false})}} onClick={this.onClick}>
+        <span className={classNames}/>
+        {this.props.children}
+      </span>
+    )
   }
 
 }
@@ -53,12 +51,24 @@ class Parameter extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      expanded: this.props.expanded,
       pinned: false,
+      receivedDetails: false,
+      details: {},
+      expanded: false
     };
+    this.abortGetDetailsController = null;
+    this.ref = React.createRef();
+
+    this.expandFromClick = false;
   }
   toggleExpanded = () => {
-    this.setState({expanded: !this.state.expanded})
+    if (this.props.PSPanel.state.expandedParameter===this.props.uniqueid) {
+        this.props.PSPanel.setState({expandedParameter: null})
+    } else {
+      // try to prevent the scroll action
+      this.expandFromClick = true;
+      this.props.PSPanel.setState({expandedParameter: this.props.uniqueid})
+    }
   }
   addToPinned = () => {
     var pinned = this.props.bundle.queryParams.pinned || []
@@ -93,6 +103,20 @@ class Parameter extends Component {
     if (ispinned != this.state.pinned) {
       this.setState({pinned: ispinned})
     }
+
+    var expanded = this.props.PSPanel.state.expandedParameter===this.props.uniqueid || this.props.bundle.state.paramsfilteredids.length===1;
+    if (expanded != this.state.expanded) {
+      this.setState({expanded: expanded})
+      if (expanded && !this.expandFromClick) {
+        this.ref.current.scrollIntoView(true);
+      }
+      if (this.expandFromClick) {
+        // reset so clicking on a link will use scroll behavior
+        this.expandFromClick = false
+      }
+    }
+
+
   }
   // shouldComponentUpdate(nextProps, nextState) {
   //   if (nextState !== this.state) {
@@ -110,10 +134,40 @@ class Parameter extends Component {
   render() {
     var sliceIndex = this.props.twig.indexOf("@")
     var qualifier = this.props.twig.slice(0, sliceIndex);
-    var twigRemainder = this.props.twig.slice(sliceIndex)
+    var twigRemainder = this.props.twig.slice(sliceIndex);
+
+
+    if (this.state.expanded && !this.state.receivedDetails) {
+      this.setState({receivedDetails: true})
+
+      this.abortGetDetailsController = new window.AbortController();
+      abortableFetch("http://"+this.props.app.state.serverHost+"/parameter/"+this.props.bundle.state.bundleid+"/"+this.props.uniqueid, {signal: this.abortGetDetailsController.signal})
+        .then(res => res.json())
+        .then(json => {
+          if (json.data.success) {
+            this.setState({details: json.data.parameter})
+          } else {
+            alert("server error: "+json.data.error);
+            this.setState({receivedDetails: true, details: {}});
+          }
+        }, err=> {
+          console.log("received abort signal")
+        })
+        .catch(err => {
+          if (err.name === 'AbortError') {
+            console.log("received abort signal")
+          } else {
+            alert("server error, try again")
+            this.setState({receivedDetails: true, details: {}})
+          }
+
+        });
+
+
+    }
 
     return (
-      <div className='phoebe-parameter'>
+      <div ref={this.ref} className='phoebe-parameter'>
         <div className='phoebe-parameter-header' onClick={this.toggleExpanded}>
           <span style={{float: "right"}}>
             {this.props.value}
@@ -135,7 +189,83 @@ class Parameter extends Component {
 
         {this.state.expanded ?
           <div className='phoebe-parameter-content'>
-            Description: {this.props.description}
+            <ParameterDetailsItem title="Description">
+              {this.state.details.description || null}
+            </ParameterDetailsItem>
+
+            <ParameterDetailsItem title="Tags">
+                <span style={{display: "inline-block"}}>
+                  {this.props.paramOverview.context && <div><Tag bundle={this.props.bundle} group="context" includeGroup={true} currentGroupFilter={null} tag={this.props.paramOverview.context}/></div>}
+                  {this.props.paramOverview.kind && <div><Tag bundle={this.props.bundle} group="kind" includeGroup={true} currentGroupFilter={null} tag={this.props.paramOverview.kind}/></div>}
+                  {this.props.paramOverview.constraint && <div><Tag bundle={this.props.bundle} group="constraint" includeGroup={true} currentGroupFilter={null} tag={this.props.paramOverview.constraint}/></div>}
+                  {this.props.paramOverview.component && <div><Tag bundle={this.props.bundle} group="component" includeGroup={true} currentGroupFilter={null} tag={this.props.paramOverview.component}/></div>}
+                  {this.props.paramOverview.feature && <div><Tag bundle={this.props.bundle} group="feature" includeGroup={true} currentGroupFilter={null} tag={this.props.paramOverview.feature}/></div>}
+                  {this.props.paramOverview.dataset && <div><Tag bundle={this.props.bundle} group="dataset" includeGroup={true} currentGroupFilter={null} tag={this.props.paramOverview.dataset}/></div>}
+                  {this.props.paramOverview.figure && <div><Tag bundle={this.props.bundle} group="figure" includeGroup={true} currentGroupFilter={null} tag={this.props.paramOverview.figure}/></div>}
+                  {this.props.paramOverview.compute && <div><Tag bundle={this.props.bundle} group="compute" includeGroup={true} currentGroupFilter={null} tag={this.props.paramOverview.compute}/></div>}
+                  {this.props.paramOverview.model && <div><Tag bundle={this.props.bundle} group="model" includeGroup={true} currentGroupFilter={null} tag={this.props.paramOverview.model}/></div>}
+                </span>
+            </ParameterDetailsItem>
+
+            {this.state.details.limits && (this.state.details.limits[0]!==null || this.state.details.limits[1]!==null) ?
+              <ParameterDetailsItem title="Limits">
+                {this.state.details.limits[0]!==null ?
+                  this.state.details.limits[0]
+                  :
+                  <span>-&infin;</span>
+                }
+                &rarr;
+                {this.state.details.limits[1]!=null ?
+                  this.state.details.limits[1]
+                  :
+                  <span>&infin;</span>
+                }
+                {this.state.details.limits[2] ?
+                  <span style={{marginLeft: "5px"}}>({this.state.details.limits[2]})</span>
+                  :
+                  null
+                }
+              </ParameterDetailsItem>
+              :
+              null
+            }
+
+            {Object.keys(this.state.details.constraint || {}).length ?
+              <ParameterDetailsItem title="Constraint">
+                <div style={{display: "inline-block"}}>
+                  {mapObject(this.state.details.constraint, (uniqueid, twig) => {
+                    return <ParameterDetailsItemPin key={uniqueid} app={this.props.app} bundle={this.props.bundle} PSPanel={this.props.PSPanel} uniqueid={uniqueid}>{twig}</ParameterDetailsItemPin>
+                  })}
+                </div>
+              </ParameterDetailsItem>
+            :
+            null
+            }
+
+            {Object.keys(this.state.details.constrains || {}).length ?
+              <ParameterDetailsItem title="Constrains">
+                <div style={{display: "inline-block"}}>
+                  {mapObject(this.state.details.constrains, (uniqueid, twig) => {
+                    return <ParameterDetailsItemPin key={uniqueid} app={this.props.app} bundle={this.props.bundle} PSPanel={this.props.PSPanel} uniqueid={uniqueid}>{twig}</ParameterDetailsItemPin>
+                  })}
+                </div>
+              </ParameterDetailsItem>
+            :
+            null
+            }
+
+            {Object.keys(this.state.details.related_to || {}).length ?
+              <ParameterDetailsItem title="Related to">
+                <div style={{display: "inline-block"}}>
+                  {mapObject(this.state.details.related_to, (uniqueid, twig) => {
+                    return <ParameterDetailsItemPin key={uniqueid} app={this.props.app} bundle={this.props.bundle} PSPanel={this.props.PSPanel} uniqueid={uniqueid}>{twig}</ParameterDetailsItemPin>
+                  })}
+                </div>
+              </ParameterDetailsItem>
+            :
+            null
+            }
+
           </div>
           :
           null
@@ -145,10 +275,79 @@ class Parameter extends Component {
   }
 }
 
+class ParameterDetailsItem extends Component {
+  render() {
+    if (!this.props.children) {
+      return null
+    }
+    return (
+      <div style={{marginTop: "10px"}}>
+        <span style={{display: "inline-block", minWidth: "120px", marginRight: "10px", textAlign: "right", verticalAlign: "top"}}>
+          {this.props.title}:
+        </span>
+        <span>
+          {this.props.children}
+        </span>
+      </div>
+    )
+  }
+}
+
+class ParameterDetailsItemPin extends Component {
+  constructor(props) {
+    super(props);
+    // this.state = {
+      // pinned: false,
+    // };
+  }
+  addToPinned = () => {
+    var pinned = this.props.bundle.queryParams.pinned || []
+    var newPinned = pinned.concat(this.props.uniqueid)
+    this.props.bundle.setQueryParams({pinned: newPinned})
+  }
+  expandParameter = () => {
+    this.props.PSPanel.setState({expandedParameter: this.props.uniqueid})
+  }
+  popParameter = () => {
+    var bundleid = this.props.bundle.state.bundleid || this.props.bundle.match.params.bundleid
+
+    var url = generatePath(this.props.app.state.serverHost, bundleid, 'ps');
+    var win = popUpWindow(url, `?advanced=["onlyPinned"]&pinned=["${this.props.uniqueid}"]`);
+
+  }
+  render() {
+    var isCurrentlyVisible = this.props.bundle.state.paramsfilteredids.indexOf(this.props.uniqueid) !== -1
+
+    return (
+      <div>
+        <span style={{marginRight: "10px", color: "#2B71B1", cursor: "pointer"}} title="open parameter in external window" onClick={this.popParameter} className="fas fa-fw fa-external-link-alt"/>
+        {isCurrentlyVisible ?
+          <span style={{color: "#2B71B1", cursor: "pointer"}} onClick={this.expandParameter} title="go to parameter">
+            <span className="fa-fw fas fa-link"/>
+            <span style={{marginLeft: "4px"}}>
+              {this.props.children}
+            </span>
+          </span>
+          :
+          <Checkbox checked={false} onClick={this.addToPinned} checkedTitle="unpin parameter" uncheckedTitle="pin parameter">
+            <span style={{marginLeft: "4px"}}>
+              {this.props.children}
+            </span>
+          </Checkbox>
+        }
+
+
+
+      </div>
+    )
+  }
+}
+
 export class PSPanel extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      expandedParameter: null,
     };
     this.prevNParams = 0;
   }
@@ -156,31 +355,7 @@ export class PSPanel extends Component {
     var bundleid = this.props.bundleid || this.props.match.params.bundleid
 
     var url = generatePath(this.props.app.state.serverHost, bundleid, 'ps');
-    let win;
-    if (this.props.app.state.isElectron) {
-      // set frame: false?
-      if (isStaticFile()) {
-        url = window.location.origin + window.location.pathname + "#" + url + window.location.search
-      } else {
-        url = window.location.origin + url + window.location.search;
-      }
-      win = new BrowserWindow({width: 600, height: 400, minWidth: 600, minHeight: 400});
-      win.on('close', () => {win = null});
-      win.loadURL(url);
-      win.show();
-    } else {
-      if (isStaticFile()) {
-        url = window.location.origin + window.location.pathname + "#" + url + window.location.search
-      } else {
-        url = url + window.location.search
-      }
-
-      var windowName = Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 5);
-      win = window.open(url,
-                        windowName,
-                        'height=400,width=600,left=50,top=20,resizable=yes,scrollbars=yes,toolbar=no,menubar=no,location=no,directories=no,status=no');
-      win.focus();
-    }
+    var win = popUpWindow(url, window.location.search);
   }
   orderByChanged = (e) => {
     var value = "Context"
@@ -235,7 +410,7 @@ export class PSPanel extends Component {
 
             orderByTags.map(orderByTag => {
 
-              return <PSGroup bundle={this.props.bundle} orderBy={orderBy} orderByTag={orderByTag} paramsFiltered={paramsFiltered} enablePSAnimation={enablePSAnimation} PSPanelOnly={this.props.PSPanelOnly}/>
+              return <PSGroup app={this.props.app} bundle={this.props.bundle} PSPanel={this} orderBy={orderBy} orderByTag={orderByTag} paramsFiltered={paramsFiltered} enablePSAnimation={enablePSAnimation} PSPanelOnly={this.props.PSPanelOnly}/>
 
 
 
@@ -257,7 +432,7 @@ class PSGroup extends Component {
     var parameters = []
     parameters = mapObject(this.props.paramsFiltered, (uniqueid, param) => {
       if (param[this.props.orderBy]===this.props.orderByTag) {
-        return (<Parameter key={uniqueid} bundle={this.props.bundle} uniqueid={uniqueid} pinnable={!this.props.PSPanelOnly} twig={param.twig} value={param.valuestr} description={param.description}/>)
+        return (<Parameter key={uniqueid} app={this.props.app} bundle={this.props.bundle} PSPanel={this.props.PSPanel} paramOverview={param} uniqueid={uniqueid} pinnable={!this.props.PSPanelOnly} twig={param.twig} value={param.valuestr} description={param.description}/>)
       }
     })
 

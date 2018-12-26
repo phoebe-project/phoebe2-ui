@@ -74,7 +74,7 @@ class App extends Component {
 
     this.setState({serverHost: serverHost, serverStatus: "connecting"});
 
-    fetch("http://"+serverHost+"/test")
+    fetch("http://"+serverHost+"/info")
       .then(res => res.json())
       .then(json => {
         this.setState({serverPhoebeVersion: json.data.phoebe_version})

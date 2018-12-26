@@ -43,7 +43,7 @@ function createWindow() {
         e.preventDefault();
 
         if (global.pyPort) {
-          fetch("http://localhost:"+global.pyPort+"/test")
+          fetch("http://localhost:"+global.pyPort+"/info")
             .then(res => res.json())
             .then(json => {
               // TODO: only show this if there are clients connected to the server.  Will need to have all clients subscribe and then have the server return the clientids in this fetch.

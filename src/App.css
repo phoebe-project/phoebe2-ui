@@ -319,6 +319,7 @@ code {
   width: calc(100% - 3px);
   max-width: 150px;
   font-style: italic;
+  overflow: hidden;
 }
 
 .btn-tag-clear {

@@ -155,10 +155,11 @@ class TagOnlyPinnedButton extends Component {
   }
 }
 
-class Tag extends Component {
+export class Tag extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      currentGroupFilter: [],
       hover: false,
       selected: false,
       isAvailable: true,
@@ -168,15 +169,15 @@ class Tag extends Component {
     this.componentDidUpdate();
   }
   addToFilter = () => {
-    var newGroupFilter = this.props.currentGroupFilter.concat(this.props.tag)
+    var newGroupFilter = this.state.currentGroupFilter.concat(this.props.tag)
     this.props.bundle.setQueryParams({[this.props.group]: newGroupFilter})
   }
   removeFromFilter = () => {
     let newGroupFilter;
-    if (this.props.currentGroupFilter.length===1) {
+    if (this.state.currentGroupFilter.length===1) {
       newGroupFilter = [ ];
     } else {
-      newGroupFilter = this.props.currentGroupFilter.filter(tag => tag !== this.props.tag)
+      newGroupFilter = this.state.currentGroupFilter.filter(tag => tag !== this.props.tag)
     }
     this.props.bundle.setQueryParams({[this.props.group]: newGroupFilter})
   }
@@ -196,23 +197,45 @@ class Tag extends Component {
     return this.props.bundle.state.tagsAvailable[this.props.group+'s'].indexOf(this.props.tag) !== -1
   }
   componentDidUpdate() {
-    var selected = this.props.currentGroupFilter.indexOf(this.props.tag)!==-1
-    if (selected != this.state.selected) {
-      this.setState({selected: selected})
+
+    if (this.props.currentGroupFilter) {
+      if (this.props.currentGroupFilter !== this.state.currentGroupFilter) {
+        this.setState({currentGroupFilter: this.props.currentGroupFilter})
+      }
+    } else {
+      var currentGroupFilter = this.props.bundle.queryParams[this.props.group.toLowerCase()] || null
+      if (currentGroupFilter !== this.state.currentGroupFilter && currentGroupFilter != null) {
+        this.setState({currentGroupFilter: currentGroupFilter})
+      }
     }
 
-    var isAvailable = this.isAvailable();
 
-    if (isAvailable != this.state.isAvailable) {
-      this.setState({isAvailable: isAvailable})
+    if (this.state.currentGroupFilter) {
+      var selected = this.state.currentGroupFilter.indexOf(this.props.tag)!==-1
+      if (selected != this.state.selected) {
+        this.setState({selected: selected})
+      }
+
+      var isAvailable = this.isAvailable();
+
+      if (isAvailable != this.state.isAvailable) {
+        this.setState({isAvailable: isAvailable})
+      }
     }
+
+  }
+  componentDidMount() {
+    this.componentDidUpdate()
   }
   render() {
     var className = "btn btn-tag"
     var iconClassName = "fas fa-fw"
+    var title = "add to filter"
+    var style={}
     if (this.state.selected) {
       className += " btn-tag-selected"
       iconClassName += " fa-times"
+      title = "remove from filter"
     } else {
       className += " btn-tag-unselected"
       iconClassName += " fa-plus"
@@ -229,9 +252,22 @@ class Tag extends Component {
       iconStyle.color = 'transparent'
     }
 
+    if (this.props.includeGroup) {
+      style.maxWidth = "200px"
+    }
+
 
     return (
-      <span className={className} onClick={this.onClick} onMouseEnter={()=>this.setState({hover:true})} onMouseLeave={()=>this.setState({hover:false})}><span style={iconStyle} className={iconClassName}/> {this.props.tag}</span>
+      <span className={className} style={style} title={title} onClick={this.onClick} onMouseEnter={()=>this.setState({hover:true})} onMouseLeave={()=>this.setState({hover:false})}><span style={iconStyle} className={iconClassName}/>
+        {this.props.includeGroup ?
+          <span>
+            {this.props.group}:
+          </span>
+          :
+          null
+        }
+        {this.props.tag}
+      </span>
     )
   }
 }

@@ -190,7 +190,7 @@ class ServerButton extends Component {
       // if any of this fails, we'll enter the catch section and ignore this matching
       // if the test succeeds, update the entry in component.state
       // this will then automatically queue a re-render of the underlying component
-      abortableFetch(location+"/test")
+      abortableFetch(location+"/info")
         .then(res => res.json())
         .then(json => {
           this.setState({phoebeVersion: json.data.phoebe_version, parentId: json.data.parentid})
