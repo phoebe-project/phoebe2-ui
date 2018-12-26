@@ -182,15 +182,27 @@ export class PSPanel extends Component {
       win.focus();
     }
   }
-
+  orderByChanged = (e) => {
+    var value = "Context"
+    if (e) {
+      value = e.nativeEvent.srcElement.value
+    }
+    this.props.bundle.setQueryParams({orderBy: value})
+  }
   render() {
     var bundleid = this.props.bundleid || this.props.match.params.bundleid
     var params = this.props.bundle.state.params || {}
 
     var paramsFiltered = filterObjectByKeys(params, this.props.bundle.state.paramsfilteredids)
-    // animations can be laggy, and not even that effective, when there are a lot of items
-    var enablePSAnimation = Math.abs(this.props.bundle.state.paramsfilteredids.length - this.prevNParams) <= 20;
+    // animations can be laggy, and not even that effective, when there are a
+    // lot of changes.  So we'll check the change in length as well as the
+    // length itself (in the case of changing orderBy)
+    var enablePSAnimation = Math.abs(this.props.bundle.state.paramsfilteredids.length - this.prevNParams) <= 20 && this.props.bundle.state.paramsfilteredids.length <= 20;
     this.prevNParams = this.props.bundle.state.paramsfilteredids.length
+
+    var orderBy = this.props.bundle.queryParams.orderBy || 'context'
+    var orderByTags = this.props.bundle.state.tags[orderBy+'s'] || []
+    orderByTags = orderByTags.concat([null]);
 
     return (
       <Panel backgroundColor="#e4e4e4">
@@ -203,16 +215,33 @@ export class PSPanel extends Component {
         }
 
         <div style={{paddingTop: "10px", paddingLeft: "10px"}}>
-          Order by: [Context]
+          Order by:
+          <select onChange={this.orderByChanged}>
+              <option value="context" selected={orderBy==='context' ? 'selected' : false}>Context</option>
+              <option value="kind" selected={orderBy==='kind' ? 'selected' : false}>Kind</option>
+              <option value="constraint" selected={orderBy==='constraint' ? 'selected' : false}>Constraint</option>
+              <option value="component" selected={orderBy==='component' ? 'selected' : false}>Component</option>
+              <option value="feature" selected={orderBy==='feature' ? 'selected' : false}>Feature</option>
+              <option value="dataset" selected={orderBy==='dataset' ? 'selected' : false}>Dataset</option>
+              <option value="figure" selected={orderBy==='figure' ? 'selected' : false}>Figure</option>
+              <option value="compute" selected={orderBy==='compute' ? 'selected' : false}>Compute</option>
+              <option value="model" selected={orderBy==='model' ? 'selected' : false}>Model</option>
+              <option value="qualifier" selected={orderBy==='qualifier' ? 'selected' : false}>Qualifier</option>
+          </select>
         </div>
 
         <div style={{paddingTop: "10px"}}>
           {this.props.bundle.state.paramsfilteredids.length || Object.keys(this.props.bundle.queryParams).length ?
-            <FlipMove appearAnimation={false} enterAnimation="fade" leaveAnimation="fade" disableAllAnimations={!enablePSAnimation}>
-              {mapObject(paramsFiltered, (uniqueid, param) => {
-                return (<Parameter key={uniqueid} bundle={this.props.bundle} uniqueid={uniqueid} pinnable={!this.props.PSPanelOnly} twig={param.twig} value={param.valuestr} description={param.description}/>)
-              })}
-            </FlipMove>
+
+            orderByTags.map(orderByTag => {
+
+              return <PSGroup bundle={this.props.bundle} orderBy={orderBy} orderByTag={orderByTag} paramsFiltered={paramsFiltered} enablePSAnimation={enablePSAnimation} PSPanelOnly={this.props.PSPanelOnly}/>
+
+
+
+            })
+
+
             :
             <LogoSpinner pltStyle={{backgroundColor: "rgb(43, 113, 177)"}}/>
           }
@@ -220,5 +249,32 @@ export class PSPanel extends Component {
 
       </Panel>
     )
+  }
+}
+
+class PSGroup extends Component {
+  render() {
+    var parameters = []
+    parameters = mapObject(this.props.paramsFiltered, (uniqueid, param) => {
+      if (param[this.props.orderBy]===this.props.orderByTag) {
+        return (<Parameter key={uniqueid} bundle={this.props.bundle} uniqueid={uniqueid} pinnable={!this.props.PSPanelOnly} twig={param.twig} value={param.valuestr} description={param.description}/>)
+      }
+    })
+
+    if (parameters.some(v => v!==undefined)) {
+      return (
+        <div>
+          <b key={this.props.orderByTag}>{this.props.orderBy}: {this.props.orderByTag===null ? "None" : this.props.orderByTag}</b>
+
+          <FlipMove appearAnimation={false} enterAnimation="fade" leaveAnimation="fade" maintainContainerHeight={true} disableAllAnimations={!this.props.enablePSAnimation}>
+            {parameters}
+          </FlipMove>
+        </div>
+      )
+    } else {
+      return null
+    }
+
+
   }
 }

@@ -20,8 +20,8 @@ export class Bundle extends ReactQueryParams {
       showFigurePanel: false,
       params: null,
       paramsfilteredids: [],
-      tags: null,
-      tagsAvailable: null,
+      tags: {},
+      tagsAvailable: {},
       nAdvancedHiddenEach: {},
       nAdvancedHiddenTotal: 0,
       nparams: 0,
@@ -69,7 +69,7 @@ export class Bundle extends ReactQueryParams {
     return inAdvanced
   }
   filter = (params, filter, ignoreGroups=[]) => {
-    var ignoreGroupsFilter = ignoreGroups.concat(["pinned", "advanced"])
+    var ignoreGroupsFilter = ignoreGroups.concat(["pinned", "advanced", "orderBy"])
 
     var nAdvancedHiddenEach = {};
     var nAdvancedHiddenTotal = 0;
@@ -145,6 +145,7 @@ export class Bundle extends ReactQueryParams {
 
         // determine "availability" of all tags
         var tagsAvailable = {}
+        var tagsAvailableUnsorted = []
         var paramsfilteredids_thisgroup = null;
         mapObject(this.state.tags, (group, tags) => {
           // i.e. group='componnet', tags=['binary', 'primary', 'secondary']

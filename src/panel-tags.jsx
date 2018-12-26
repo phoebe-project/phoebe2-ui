@@ -48,7 +48,7 @@ class TagClearFilterButton extends Component{
     } else {
       // var currentthis.props.currentGroupFilter
       Object.keys(this.props.bundle.queryParams).forEach(group => {
-        if (group !== 'pinned') {
+        if (["pinned", "orderBy", "advanced"].indexOf(group) === -1) {
           this.props.bundle.setQueryParams({[group]: []})
         }
       })
@@ -62,7 +62,7 @@ class TagClearFilterButton extends Component{
       }
     } else {
       Object.keys(this.props.bundle.queryParams).forEach(group => {
-        if (["pinned", "advanced"].indexOf(group)===-1 && this.props.bundle.queryParams[group].length > 0) {
+        if (["pinned", "advanced", "orderBy"].indexOf(group)===-1 && this.props.bundle.queryParams[group].length > 0) {
           showButton = true;
         }
       })
