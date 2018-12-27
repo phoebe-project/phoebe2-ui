@@ -3,7 +3,7 @@ import {Redirect} from 'react-router-dom';
 
 import FlipMove from 'react-flip-move'; // https://github.com/joshwcomeau/react-flip-move
 
-import {Link, generatePath, isStaticFile, abortableFetch, mapObject, filterObjectByKeys, popUpWindow} from './common';
+import {Link, Twig, generatePath, isStaticFile, abortableFetch, mapObject, filterObjectByKeys, popUpWindow} from './common';
 import {LogoSpinner} from './logo';
 import {Panel} from './ui';
 import {Tag} from './panel-tags';
@@ -132,11 +132,6 @@ class Parameter extends Component {
   //   return false;
   // }
   render() {
-    var sliceIndex = this.props.twig.indexOf("@")
-    var qualifier = this.props.twig.slice(0, sliceIndex);
-    var twigRemainder = this.props.twig.slice(sliceIndex);
-
-
     if (this.state.expanded && !this.state.receivedDetails) {
       this.setState({receivedDetails: true})
 
@@ -179,10 +174,7 @@ class Parameter extends Component {
             null
           }
           <span style={{marginLeft: "10px", fontWeight: "bold"}}>
-            {qualifier}
-            <span style={{color: "slategray", fontWeight: "normal"}}>
-              {twigRemainder}
-            </span>
+            <Twig twig={this.props.twig}/>
           </span>
 
         </div>
@@ -204,6 +196,7 @@ class Parameter extends Component {
                   {this.props.paramOverview.figure && <div><Tag bundle={this.props.bundle} group="figure" includeGroup={true} currentGroupFilter={null} tag={this.props.paramOverview.figure}/></div>}
                   {this.props.paramOverview.compute && <div><Tag bundle={this.props.bundle} group="compute" includeGroup={true} currentGroupFilter={null} tag={this.props.paramOverview.compute}/></div>}
                   {this.props.paramOverview.model && <div><Tag bundle={this.props.bundle} group="model" includeGroup={true} currentGroupFilter={null} tag={this.props.paramOverview.model}/></div>}
+                  {this.props.paramOverview.qualifier && <div><Tag bundle={this.props.bundle} group="qualifier" includeGroup={true} currentGroupFilter={null} tag={this.props.paramOverview.qualifier}/></div>}
                 </span>
             </ParameterDetailsItem>
 
@@ -234,7 +227,7 @@ class Parameter extends Component {
               <ParameterDetailsItem title="Constraint">
                 <div style={{display: "inline-block"}}>
                   {mapObject(this.state.details.constraint, (uniqueid, twig) => {
-                    return <ParameterDetailsItemPin key={uniqueid} app={this.props.app} bundle={this.props.bundle} PSPanel={this.props.PSPanel} uniqueid={uniqueid}>{twig}</ParameterDetailsItemPin>
+                    return <ParameterDetailsItemPin key={uniqueid} app={this.props.app} bundle={this.props.bundle} PSPanel={this.props.PSPanel} uniqueid={uniqueid} twig={twig}/>
                   })}
                 </div>
               </ParameterDetailsItem>
@@ -246,7 +239,7 @@ class Parameter extends Component {
               <ParameterDetailsItem title="Constrains">
                 <div style={{display: "inline-block"}}>
                   {mapObject(this.state.details.constrains, (uniqueid, twig) => {
-                    return <ParameterDetailsItemPin key={uniqueid} app={this.props.app} bundle={this.props.bundle} PSPanel={this.props.PSPanel} uniqueid={uniqueid}>{twig}</ParameterDetailsItemPin>
+                    return <ParameterDetailsItemPin key={uniqueid} app={this.props.app} bundle={this.props.bundle} PSPanel={this.props.PSPanel} uniqueid={uniqueid} twig={twig}/>
                   })}
                 </div>
               </ParameterDetailsItem>
@@ -258,7 +251,7 @@ class Parameter extends Component {
               <ParameterDetailsItem title="Related to">
                 <div style={{display: "inline-block"}}>
                   {mapObject(this.state.details.related_to, (uniqueid, twig) => {
-                    return <ParameterDetailsItemPin key={uniqueid} app={this.props.app} bundle={this.props.bundle} PSPanel={this.props.PSPanel} uniqueid={uniqueid}>{twig}</ParameterDetailsItemPin>
+                    return <ParameterDetailsItemPin key={uniqueid} app={this.props.app} bundle={this.props.bundle} PSPanel={this.props.PSPanel} uniqueid={uniqueid} twig={twig}/>
                   })}
                 </div>
               </ParameterDetailsItem>
@@ -320,22 +313,14 @@ class ParameterDetailsItemPin extends Component {
 
     return (
       <div>
-        <span style={{marginRight: "10px", color: "#2B71B1", cursor: "pointer"}} title="open parameter in external window" onClick={this.popParameter} className="fas fa-fw fa-external-link-alt"/>
         {isCurrentlyVisible ?
-          <span style={{color: "#2B71B1", cursor: "pointer"}} onClick={this.expandParameter} title="go to parameter">
-            <span className="fa-fw fas fa-link"/>
-            <span style={{marginLeft: "4px"}}>
-              {this.props.children}
-            </span>
-          </span>
+          <span style={{color: "#2B71B1", cursor: "pointer"}} className="fa-fw fas fa-sign-in-alt" onClick={this.expandParameter} title="go to parameter"/>
           :
-          <Checkbox checked={false} onClick={this.addToPinned} checkedTitle="unpin parameter" uncheckedTitle="pin parameter">
-            <span style={{marginLeft: "4px"}}>
-              {this.props.children}
-            </span>
-          </Checkbox>
+          <Checkbox checked={false} onClick={this.addToPinned} checkedTitle="unpin parameter" uncheckedTitle="pin parameter"/>
         }
+        <span style={{marginLeft: "4px", color: "#2B71B1", cursor: "pointer"}} title="open parameter in external window" onClick={this.popParameter} className="fas fa-fw fa-external-link-alt"/>
 
+        <Twig twig={this.props.twig}/>
 
 
       </div>

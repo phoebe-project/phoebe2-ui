@@ -175,3 +175,19 @@ export class CancelSpinnerIcon extends Component {
     )
   }
 }
+
+export class Twig extends Component {
+  render() {
+
+    var sliceIndex = this.props.twig.indexOf("@")
+    var qualifier = this.props.twig.slice(0, sliceIndex);
+    var twigRemainder = this.props.twig.slice(sliceIndex);
+
+    return (
+      <span style={{marginLeft: "4px"}}>
+        <span style={{fontWeight: "bold"}}>{qualifier}</span>
+        <span style={{fontWeight: "normal", color: "slategray"}}>{twigRemainder}</span>
+      </span>
+    )
+  }
+}
