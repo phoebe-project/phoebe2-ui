@@ -197,7 +197,7 @@ class Parameter extends Component {
                 <span style={{display: "inline-block"}}>
                   {this.props.paramOverview.context && <div><Tag bundle={this.props.bundle} group="context" includeGroup={true} currentGroupFilter={null} tag={this.props.paramOverview.context}/></div>}
                   {this.props.paramOverview.kind && <div><Tag bundle={this.props.bundle} group="kind" includeGroup={true} currentGroupFilter={null} tag={this.props.paramOverview.kind}/></div>}
-                  {this.props.paramOverview.constraint && <div><Tag bundle={this.props.bundle} group="constraint" includeGroup={true} currentGroupFilter={null} tag={this.props.paramOverview.constraint}/></div>}
+                  {/* {this.props.paramOverview.constraint && <div><Tag bundle={this.props.bundle} group="constraint" includeGroup={true} currentGroupFilter={null} tag={this.props.paramOverview.constraint}/></div>} */}
                   {this.props.paramOverview.component && <div><Tag bundle={this.props.bundle} group="component" includeGroup={true} currentGroupFilter={null} tag={this.props.paramOverview.component}/></div>}
                   {this.props.paramOverview.feature && <div><Tag bundle={this.props.bundle} group="feature" includeGroup={true} currentGroupFilter={null} tag={this.props.paramOverview.feature}/></div>}
                   {this.props.paramOverview.dataset && <div><Tag bundle={this.props.bundle} group="dataset" includeGroup={true} currentGroupFilter={null} tag={this.props.paramOverview.dataset}/></div>}
@@ -394,7 +394,7 @@ export class PSPanel extends Component {
           <select onChange={this.orderByChanged}>
               <option value="context" selected={orderBy==='context' ? 'selected' : false}>Context</option>
               <option value="kind" selected={orderBy==='kind' ? 'selected' : false}>Kind</option>
-              <option value="constraint" selected={orderBy==='constraint' ? 'selected' : false}>Constraint</option>
+              {/* <option value="constraint" selected={orderBy==='constraint' ? 'selected' : false}>Constraint</option> */}
               <option value="component" selected={orderBy==='component' ? 'selected' : false}>Component</option>
               <option value="feature" selected={orderBy==='feature' ? 'selected' : false}>Feature</option>
               <option value="dataset" selected={orderBy==='dataset' ? 'selected' : false}>Dataset</option>
