@@ -1,14 +1,14 @@
 import React, { Component } from 'react';
-import {Redirect} from 'react-router-dom';
+// import {Redirect} from 'react-router-dom';
 
 import FlipMove from 'react-flip-move'; // https://github.com/joshwcomeau/react-flip-move
 
-import {Link, Twig, generatePath, isStaticFile, abortableFetch, mapObject, filterObjectByKeys, popUpWindow} from './common';
+import {Link, Twig, generatePath, abortableFetch, mapObject, filterObjectByKeys, popUpWindow} from './common';
 import {LogoSpinner} from './logo';
 import {Panel} from './ui';
 import {Tag} from './panel-tags';
 
-import isElectron from 'is-electron'; // https://github.com/cheton/is-electron
+// import isElectron from 'is-electron'; // https://github.com/cheton/is-electron
 
 class Checkbox extends Component {
   constructor(props) {
@@ -100,12 +100,12 @@ class Parameter extends Component {
   componentDidUpdate() {
     var pinned = this.props.bundle.queryParams.pinned || []
     var ispinned = pinned.indexOf(this.props.uniqueid) !== -1
-    if (ispinned != this.state.pinned) {
+    if (ispinned !== this.state.pinned) {
       this.setState({pinned: ispinned})
     }
 
     var expanded = this.props.PSPanel.state.expandedParameter===this.props.uniqueid || this.props.bundle.state.paramsfilteredids.length===1;
-    if (expanded != this.state.expanded) {
+    if (expanded !== this.state.expanded) {
       this.setState({expanded: expanded})
       if (expanded && !this.expandFromClick) {
         this.ref.current.scrollIntoView(true);
@@ -287,12 +287,12 @@ class ParameterDetailsItem extends Component {
 }
 
 class ParameterDetailsItemPin extends Component {
-  constructor(props) {
-    super(props);
+  // constructor(props) {
+    // super(props);
     // this.state = {
       // pinned: false,
     // };
-  }
+  // }
   addToPinned = () => {
     var pinned = this.props.bundle.queryParams.pinned || []
     var newPinned = pinned.concat(this.props.uniqueid)
@@ -350,8 +350,8 @@ export class PSPanel extends Component {
     this.props.bundle.setQueryParams({orderBy: value})
   }
   render() {
-    var bundleid = this.props.bundleid || this.props.match.params.bundleid
     var params = this.props.bundle.state.params || {}
+    var tags = this.props.bundle.state.tags || {}
 
     var paramsFiltered = filterObjectByKeys(params, this.props.bundle.state.paramsfilteredids)
     // animations can be laggy, and not even that effective, when there are a
@@ -361,7 +361,7 @@ export class PSPanel extends Component {
     this.prevNParams = this.props.bundle.state.paramsfilteredids.length
 
     var orderBy = this.props.bundle.queryParams.orderBy || 'context'
-    var orderByTags = this.props.bundle.state.tags[orderBy+'s'] || []
+    var orderByTags = tags[orderBy+'s'] || []
     orderByTags = orderByTags.concat([null]);
 
     return (
@@ -376,17 +376,17 @@ export class PSPanel extends Component {
 
         <div style={{paddingTop: "10px", paddingLeft: "10px"}}>
           Order by:
-          <select onChange={this.orderByChanged}>
-              <option value="context" selected={orderBy==='context' ? 'selected' : false}>Context</option>
-              <option value="kind" selected={orderBy==='kind' ? 'selected' : false}>Kind</option>
-              {/* <option value="constraint" selected={orderBy==='constraint' ? 'selected' : false}>Constraint</option> */}
-              <option value="component" selected={orderBy==='component' ? 'selected' : false}>Component</option>
-              <option value="feature" selected={orderBy==='feature' ? 'selected' : false}>Feature</option>
-              <option value="dataset" selected={orderBy==='dataset' ? 'selected' : false}>Dataset</option>
-              <option value="figure" selected={orderBy==='figure' ? 'selected' : false}>Figure</option>
-              <option value="compute" selected={orderBy==='compute' ? 'selected' : false}>Compute</option>
-              <option value="model" selected={orderBy==='model' ? 'selected' : false}>Model</option>
-              <option value="qualifier" selected={orderBy==='qualifier' ? 'selected' : false}>Qualifier</option>
+          <select onChange={this.orderByChanged} defaultValue={orderBy}>
+              <option value="context">Context</option>
+              <option value="kind">Kind</option>
+              {/* <option value="constraint">Constraint</option> */}
+              <option value="component">Component</option>
+              <option value="feature">Feature</option>
+              <option value="dataset">Dataset</option>
+              <option value="figure">Figure</option>
+              <option value="compute">Compute</option>
+              <option value="model">Model</option>
+              <option value="qualifier">Qualifier</option>
           </select>
         </div>
 

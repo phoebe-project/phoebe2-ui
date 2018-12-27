@@ -9,7 +9,7 @@ import {TagPanel} from './panel-tags';
 import {PSPanel} from './panel-ps';
 import {FigurePanel} from './panel-figures';
 import {Link, generatePath, abortableFetch, mapObject} from './common';
-import {Toolbar, Statusbar, Panel} from './ui';
+import {Toolbar, Statusbar} from './ui';
 
 export class Bundle extends ReactQueryParams {
   constructor(props) {
@@ -62,7 +62,7 @@ export class Bundle extends ReactQueryParams {
     const advancedAll = ['not_visible', 'is_default', 'is_advanced', 'is_single', 'is_constraint'];
     var inAdvanced = []
     for (var i=0; i<advancedAll.length; i++) {
-      if (advanced.indexOf(advancedAll[i]) == -1 && param.advanced_filter.indexOf(advancedAll[i]) !== -1) {
+      if (advanced.indexOf(advancedAll[i]) === -1 && param.advanced_filter.indexOf(advancedAll[i]) !== -1) {
         inAdvanced.push(advancedAll[i])
       }
     }
@@ -92,7 +92,7 @@ export class Bundle extends ReactQueryParams {
         })
 
         // determine initial visibility based on advanced filter
-        var includeThisParam = true;
+        includeThisParam = true;
         inAdvancedAll.forEach(advancedItem => {
           if (advanced.indexOf(advancedItem) === -1) {
             includeThisParam = false;
@@ -145,7 +145,6 @@ export class Bundle extends ReactQueryParams {
 
         // determine "availability" of all tags
         var tagsAvailable = {}
-        var tagsAvailableUnsorted = []
         var paramsfilteredids_thisgroup = null;
         mapObject(this.state.tags, (group, tags) => {
           // i.e. group='componnet', tags=['binary', 'primary', 'secondary']

@@ -242,7 +242,7 @@ class ServerButton extends Component {
     if (this.state.status) {
       var doDisconnect = true
       if (this.state.status==='connected') {
-        var doDisconnect = confirm("Disconnecting will close the bundle and any unsaved changes will be lost.  Continue?")
+        doDisconnect = confirm("Disconnecting will close the bundle and any unsaved changes will be lost.  Continue?")
       }
 
       if (doDisconnect) {

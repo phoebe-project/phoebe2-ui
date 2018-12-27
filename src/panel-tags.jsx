@@ -132,7 +132,7 @@ class TagOnlyPinnedButton extends Component {
   componentDidUpdate() {
     var advanced = this.props.bundle.queryParams.advanced || []
     var selected = advanced.indexOf("onlyPinned")!==-1
-    if (selected != this.state.selected) {
+    if (selected !== this.state.selected) {
       this.setState({selected: selected})
     }
   }
@@ -164,9 +164,6 @@ export class Tag extends Component {
       selected: false,
       isAvailable: true,
     }
-  }
-  componentDidMount() {
-    this.componentDidUpdate();
   }
   addToFilter = () => {
     var newGroupFilter = this.state.currentGroupFilter.concat(this.props.tag)
@@ -212,13 +209,13 @@ export class Tag extends Component {
 
     if (this.state.currentGroupFilter) {
       var selected = this.state.currentGroupFilter.indexOf(this.props.tag)!==-1
-      if (selected != this.state.selected) {
+      if (selected !== this.state.selected) {
         this.setState({selected: selected})
       }
 
       var isAvailable = this.isAvailable();
 
-      if (isAvailable != this.state.isAvailable) {
+      if (isAvailable !== this.state.isAvailable) {
         this.setState({isAvailable: isAvailable})
       }
     }

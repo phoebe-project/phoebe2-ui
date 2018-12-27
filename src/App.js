@@ -11,7 +11,7 @@ import {SplashBundle} from './splash-bundle';
 import {SplashServer} from './splash-server';
 // import {SettingsServers, SettingsBundles} from './settings';
 import {Bundle} from './bundle';
-import {PSPanel} from './panel-ps';
+// import {PSPanel} from './panel-ps';
 import {NotFound} from './errors';
 
 const socketOptions = {
@@ -61,6 +61,17 @@ class App extends Component {
       this.setState({settingsServerHosts: settingsServerHosts.split(',')});
     }
   }
+  getServerPhoebeVersion = (serverHost) => {
+    fetch("http://"+serverHost+"/info")
+      .then(res => res.json())
+      .then(json => {
+        this.setState({serverPhoebeVersion: json.data.phoebe_version})
+      })
+      .catch(err => {
+        alert("server may no longer be available.  Cancel connetion to rescan.")
+        this.setState({phoebeVersion: null});
+      });
+  }
   serverConnect = (server) => {
     var serverHost = server || this.props.match.params.server
 
@@ -74,15 +85,7 @@ class App extends Component {
 
     this.setState({serverHost: serverHost, serverStatus: "connecting"});
 
-    fetch("http://"+serverHost+"/info")
-      .then(res => res.json())
-      .then(json => {
-        this.setState({serverPhoebeVersion: json.data.phoebe_version})
-      })
-      .catch(err => {
-        alert("server may no longer be available.  Cancel connetion to rescan.")
-        this.setState({phoebeVersion: null});
-      });
+    this.getServerPhoebeVersion(serverHost);
 
     this.socket = SocketIO("http://"+serverHost, socketOptions);
 
@@ -91,7 +94,8 @@ class App extends Component {
     });
 
     this.socket.on('reconnect', (data) => {
-      this.setState({serverStatus: "reconnecting", serverAllowAutoconnect: true})
+      this.getServerPhoebeVersion(serverHost);
+      this.setState({serverStatus: "reconnecting", serverAllowAutoconnect: true});
     })
 
     this.socket.on('disconnect', (data) => {

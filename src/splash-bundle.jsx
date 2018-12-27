@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import {Redirect} from 'react-router-dom';
 
 import {Statusbar} from './ui';
-import {Link, CancelSpinnerIcon, generatePath, abortableFetch} from './common';
+import {CancelSpinnerIcon, generatePath, abortableFetch} from './common';
 
 import {LogoSplash} from './logo';
 

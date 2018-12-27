@@ -75,7 +75,7 @@ export function popUpWindow(url, search) {
     if (isStaticFile()) {
       url = window.location.origin + window.location.pathname + "#" + url +search
     } else {
-      url = url + search
+      url += search
     }
 
     var windowName = Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 5);
