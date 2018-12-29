@@ -41,6 +41,7 @@ export class Toolbar extends Component {
     // TODO: only ask for confirmation if this is the only client attached to this bundle AND there are no unsaved changed
     var result = confirm('You may lose any unsaved changes by closing the bundle.  Continue?')
     if (result) {
+      this.props.bundle.clearQueryParams();
       this.setState({redirectTo: generatePath(this.props.app.state.serverHost)})
       // TODO: need to tell server that we're disconnecting from the bundle.
     }
@@ -49,6 +50,7 @@ export class Toolbar extends Component {
     // TODO: only ask for confirmation if this is the only client attached to this bundle AND there are no unsaved changed
     var result = confirm('You may lose any unsaved changes by closing the bundle.  Continue?')
     if (result) {
+      this.props.bundle.clearQueryParams();
       this.setState({redirectTo: generatePath(this.props.app.state.serverHost, "open")})
       // TODO: need to tell server that we're disconnecting from the bundle.
     }

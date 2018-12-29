@@ -30,6 +30,15 @@ export class Bundle extends ReactQueryParams {
       nparams: 0,
     };
   }
+  clearQueryParams = () => {
+    var newQueryParams = {}
+    Object.keys(this.queryParams).forEach( k => {
+        newQueryParams[k] = [];
+    })
+    this.setQueryParams(newQueryParams)
+
+    // window.location.search = "";
+  }
   componentDidMount() {
     this.abortGetParamsController = new window.AbortController();
     abortableFetch("http://"+this.props.app.state.serverHost+"/bundle/"+this.state.bundleid, {signal: this.abortGetParamsController.signal})
@@ -40,6 +49,7 @@ export class Bundle extends ReactQueryParams {
         } else {
           alert("server error: "+json.data.error);
           this.setState({params: null, tags: null});
+          this.clearQueryParams();
           this.setState({redirect: generatePath(this.props.app.state.serverHost)})
           // this.cancelLoadBundleSpinners();
         }
@@ -53,10 +63,13 @@ export class Bundle extends ReactQueryParams {
           // then we canceled the request
           console.log("received abort signal")
           // this.cancelLoadBundleSpinners();
+          this.setState({params: null, tags: null, nparams: 0});
+          this.clearQueryParams();
         } else {
           alert("server error, try again")
           // this.cancelLoadBundleSpinners();
-          this.setState({params: null, tags: null, nparams: 0})
+          this.setState({params: null, tags: null, nparams: 0});
+          this.clearQueryParams();
         }
 
       });
@@ -205,7 +218,7 @@ export class Bundle extends ReactQueryParams {
     return (
       <div className="App">
         {modalContent}
-        <Toolbar app={this.props.app} bundleid={this.state.bundleid}/>
+        <Toolbar app={this.props.app} bundle={this} bundleid={this.state.bundleid}/>
         <Statusbar app={this.props.app} bundleid={this.state.bundleid}/>
 
         <div className="d-none d-lg-block" style={{paddingTop: "50px", paddingBottom: "28px", height: "100%"}}>
