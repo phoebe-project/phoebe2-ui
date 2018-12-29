@@ -234,12 +234,13 @@ code {
 }
 
 .btn-phoebe-toolbar {
+  color: #D6D6D6;
   border-radius: 10px;
 }
 
 .btn-phoebe-toolbar:hover {
 /* .toolbar .btn :hover { */
-  color: white;
+  color: white !important;
   border-left: 1px solid white;
   border-right: 1px solid white;
 }

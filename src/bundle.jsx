@@ -205,7 +205,7 @@ export class Bundle extends ReactQueryParams {
     return (
       <div className="App">
         {modalContent}
-        <Toolbar app={this.props.app}/>
+        <Toolbar app={this.props.app} bundleid={this.state.bundleid}/>
         <Statusbar app={this.props.app} bundleid={this.state.bundleid}/>
 
         <div className="d-none d-lg-block" style={{paddingTop: "50px", paddingBottom: "28px", height: "100%"}}>

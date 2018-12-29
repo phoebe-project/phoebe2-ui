@@ -118,6 +118,11 @@ const launchPythonClient = (cmd) => {
 }
 global.launchPythonClient = launchPythonClient;
 
+const executeJSwithUserGesture = (code) => {
+  return mainWindow.webContents.executeJavaScript(code, true)
+}
+global.executeJSwithUserGesture = executeJSwithUserGesture;
+
 
 // handle spawning a separate process to interact with PHOEBE via a flask server
 let pyProc = null;

@@ -45,9 +45,9 @@ export class SplashBundle extends Component {
           </p>
 
           <div className="splash-scrollable" style={splashScrollableStyle}>
-            <NewBundleButton title="From File" app={this.props.app} splashBundle={this} logoSplash={this.logoSplash}>
-              <NewBundleButton type='load:open' title="Open Bundle File" style={{width: "calc(50% - 2px)", marginRight: "2px"}} app={this.props.app} splashBundle={this} logoSplash={this.logoSplash}/>
-              <NewBundleButton type='load:import' title="Import Legacy File" style={{width: "calc(50% - 2px)", marginLeft: "2px"}} app={this.props.app} splashBundle={this} logoSplash={this.logoSplash}/>
+            <NewBundleButton type='load:open' title="From File" app={this.props.app} openDialog={this.props.openDialog} splashBundle={this} logoSplash={this.logoSplash}>
+              {/* <NewBundleButton type='load:open' title="Open Bundle File" style={{width: "calc(50% - 2px)", marginRight: "2px"}} app={this.props.app} splashBundle={this} logoSplash={this.logoSplash}/> */}
+              {/* <NewBundleButton type='load:import' title="Import Legacy File" style={{width: "calc(50% - 2px)", marginLeft: "2px"}} app={this.props.app} splashBundle={this} logoSplash={this.logoSplash}/> */}
             </NewBundleButton>
 
             <NewBundleButton type='single' title="Default Single Star" app={this.props.app} splashBundle={this} logoSplash={this.logoSplash}/>
@@ -72,7 +72,7 @@ export class SplashBundle extends Component {
               </NewBundleButton>
             </NewBundleButton>
 
-            <NewBundleButton type='other' title="Custom Hierarchy" app={this.props.app} splashBundle={this} logoSplash={this.logoSplash}/>
+            {/* <NewBundleButton type='other' title="Custom Hierarchy" app={this.props.app} splashBundle={this} logoSplash={this.logoSplash}/> */}
           </div>
         </div>
 
@@ -92,6 +92,7 @@ class NewBundleButton extends Component {
       exposeChildren: false,
     };
     this.abortLoadBundleController = null;
+    this.fileInput = React.createRef();
 
   }
   exposeChildren = (event) => {
@@ -101,35 +102,63 @@ class NewBundleButton extends Component {
   }
   loadBundle = (event) => {
     console.log("NewBundleButton.loadBundle");
-    this.props.splashBundle.setState({bundleLoading: true});
-    this.setState({bundleLoading: true});
 
-    this.abortLoadBundleController = new window.AbortController();
-    abortableFetch("http://"+this.props.app.state.serverHost+"/new_bundle/"+this.props.type, {signal: this.abortLoadBundleController.signal})
-      .then(res => res.json())
-      .then(json => {
-        if (json.data.success) {
-          this.setState({redirectBundleid: json.data.bundleid})
-        } else {
-          alert("server error: "+json.data.error);
-          this.cancelLoadBundleSpinners();
-        }
-      }, err=> {
-        // then we canceled the request
-        console.log("received abort signal")
-        this.cancelLoadBundleSpinners();
-      })
-      .catch(err => {
-        if (err.name === 'AbortError') {
+    var doFetch = true
+    let fetchURL, fetchMethod, fetchBody
+
+    if (['load:open', 'load:import'].indexOf(this.props.type)!==-1) {
+      if (this.fileInput.current.files.length===0) {
+        // then coming from clicking on the button.  We need to open the dialog first,
+        // once its value is changed the else will be triggered.
+        this.fileInput.current.click();
+        doFetch = false
+      } else {
+        // then coming from the onChange of the input
+        fetchURL = "http://"+this.props.app.state.serverHost+"/open_bundle"
+        fetchMethod = 'POST'
+
+        var data = new FormData()
+        data.append('file', this.fileInput.current.files[0])
+        fetchBody = data
+      }
+    } else {
+      fetchURL = "http://"+this.props.app.state.serverHost+"/new_bundle/"+this.props.type
+      fetchMethod = 'GET'
+      fetchBody = null
+    }
+
+    if (doFetch) {
+      this.setState({bundleLoading: true});
+      this.props.splashBundle.setState({bundleLoading: true});
+
+      this.abortLoadBundleController = new window.AbortController();
+      abortableFetch(fetchURL, {method: fetchMethod, body: fetchBody, signal: this.abortLoadBundleController.signal})
+        .then(res => res.json())
+        .then(json => {
+          if (json.data.success) {
+            this.setState({redirectBundleid: json.data.bundleid})
+          } else {
+            alert("server error: "+json.data.error);
+            this.cancelLoadBundleSpinners();
+          }
+        }, err=> {
           // then we canceled the request
           console.log("received abort signal")
           this.cancelLoadBundleSpinners();
-        } else {
-          alert("server error, try again")
-          this.cancelLoadBundleSpinners();
-        }
+        })
+        .catch(err => {
+          if (err.name === 'AbortError') {
+            // then we canceled the request
+            console.log("received abort signal")
+            this.cancelLoadBundleSpinners();
+          } else {
+            alert("server error, try again")
+            this.cancelLoadBundleSpinners();
+          }
 
-      });
+        });
+    }
+
 
   }
   abortLoadBundle = (event) => {
@@ -139,6 +168,8 @@ class NewBundleButton extends Component {
     if (this.abortLoadBundleController) {
       console.log("NewBundleButton.abortLoadBundle calling abort on controller")
       this.abortLoadBundleController.abort();
+    } else {
+      this.cancelLoadBundleSpinners();
     }
   }
   cancelLoadBundleSpinners = () => {
@@ -186,12 +217,31 @@ class NewBundleButton extends Component {
       this.props.logoSplash.current.clearTemporary();
     }
 
+  }
+  componentDidMount() {
+    if (this.props.openDialog) {
+      // NOTE: most browsers will prevent this unless they detect its coming from a user-event.
+      // in most cases, since this did come from clicking a button in the Bundle component, this
+      // should fire fine, but reloading the page, even with this property set, will fail to fire
+      // the click event.
+      console.log("opening file dialog because of URL")
+      if (this.props.app.state.isElectron) {
+        console.log("calling electron executeJSwithUserGesture")
+        window.require('electron').remote.getGlobal('executeJSwithUserGesture')(`document.getElementById("fileinput-${this.props.type}").click()`);
 
-
+      } else {
+        this.fileInput.current.click();
+      }
+    }
   }
   render () {
     if (this.state.redirectBundleid) {
       return (<Redirect to={generatePath(this.props.app.state.serverHost, this.state.redirectBundleid)}/>)
+    }
+
+    var fileInput = null;
+    if (['load:open', 'load:import'].indexOf(this.props.type)!==-1) {
+      fileInput = <input id={"fileinput-"+this.props.type} type="file" ref={this.fileInput} style={{ display: 'none' }} onFocus={this.loadBundle} onChange={this.loadBundle}/>
     }
 
     var loadingSpan = null;
@@ -203,6 +253,7 @@ class NewBundleButton extends Component {
     if (this.state.exposeChildren) {
       return (
         <div onMouseLeave={this.onMouseLeave} className="splash-scrollable-btn-div" style={this.props.style}>
+          {fileInput}
           {this.props.children}
         </div>
       )
@@ -210,6 +261,7 @@ class NewBundleButton extends Component {
       return (
         <div className="splash-scrollable-btn-div" style={this.props.style}>
           <span className="btn btn-transparent" onClick={this.loadBundle} onMouseOver={this.onMouseEnter} onMouseLeave={this.onMouseLeave}>
+            {fileInput}
             {loadingSpan}
             {this.props.title}
             {this.state.hover ?
@@ -224,6 +276,7 @@ class NewBundleButton extends Component {
       return (
         <div className="splash-scrollable-btn-div" style={this.props.style}>
           <span className="btn btn-transparent" onClick={this.loadBundle} onMouseOver={this.onMouseEnter} onMouseOut={this.onMouseLeave}>
+            {fileInput}
             {loadingSpan}
             {this.props.title}
           </span>
