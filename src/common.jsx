@@ -63,7 +63,7 @@ export function popUpWindow(url, search) {
   if (isElectron()) {
     // set frame: false?
     if (isStaticFile()) {
-      url = window.location.origin + window.location.pathname + "#" + url + search
+      url = window.location.origin + window.location.pathname + search + "#" + url
     } else {
       url = window.location.origin + url + search;
     }
@@ -73,7 +73,7 @@ export function popUpWindow(url, search) {
     win.show();
   } else {
     if (isStaticFile()) {
-      url = window.location.origin + window.location.pathname + "#" + url +search
+      url = window.location.origin + window.location.pathname + search + "#" + url
     } else {
       url += search
     }

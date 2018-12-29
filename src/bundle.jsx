@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import {Redirect} from 'react-router-dom';
 
-import ReactQueryParams from 'react-query-params'; // https://github.com/jeff3dx/react-query-params
 // import isElectron from 'is-electron'; // https://github.com/cheton/is-electron
 import PanelGroup from 'react-panelgroup'; // https://www.npmjs.com/package/react-panelgroup
 
@@ -10,6 +9,10 @@ import {PSPanel} from './panel-ps';
 import {FigurePanel} from './panel-figures';
 import {Link, generatePath, abortableFetch, mapObject} from './common';
 import {Toolbar, Statusbar} from './ui';
+
+// NOTE: currently use a local version until PR is accepted, in which case we can lose the ./ and update the version requirements in package.json
+import ReactQueryParams from './react-query-params'; // https://github.com/jeff3dx/react-query-params
+
 
 export class Bundle extends ReactQueryParams {
   constructor(props) {
