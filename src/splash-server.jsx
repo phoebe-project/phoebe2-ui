@@ -52,7 +52,10 @@ export class SplashServer extends Component {
 
           <p style={{textAlign: "center", marginBottom: "0px", paddingLeft: "10px", paddingRight: "10px"}}>
             {bundleid ?
-              <b>Switch to Server</b>
+              this.props.app.state.serverStatus==='connected' ?
+                <b>Switch to Server</b>
+                :
+                <b>Connecting to Server...</b>
               :
               <b>Connect to Server</b>
             }
@@ -296,7 +299,7 @@ class ServerButton extends Component {
     }
 
     var style={}
-    if (this.state.status==='connecting' || this.state.removeConfirmed) {
+    if (this.state.status==='connecting' || this.state.removeConfirmed || this.props.app.state.serverStatus==='connecting') {
       style = {pointerEvents: "none"}
     }
 
