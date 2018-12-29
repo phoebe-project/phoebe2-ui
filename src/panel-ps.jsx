@@ -37,8 +37,17 @@ class Checkbox extends Component {
       title = this.props.uncheckedTitle
     }
 
+    var style = {color: "#2B71B1", cursor: "pointer"}
+
+    if (!this.props.pinnable && !this.props.checked) {
+      // then we only allow unpinning, not pinning.  So disable pointer events
+      // and make transparent.
+      style.pointerEvents = 'none'
+      style.color = 'transparent'
+    }
+
     return (
-      <span style={{color: "#2B71B1", cursor: "pointer"}} title={title} onMouseEnter={()=>{this.setState({hover: true})}} onMouseLeave={()=>{this.setState({hover: false})}} onClick={this.onClick}>
+      <span style={style} title={title} onMouseEnter={()=>{this.setState({hover: true})}} onMouseLeave={()=>{this.setState({hover: false})}} onClick={this.onClick}>
         <span className={classNames}/>
         {this.props.children}
       </span>
@@ -168,11 +177,9 @@ class Parameter extends Component {
             {this.props.value}
           </span>
 
-          {this.props.pinnable ?
-            <Checkbox checked={this.state.pinned} onClick={this.togglePinned} checkedTitle="unpin parameter" uncheckedTitle="pin parameter" />
-            :
-            null
-          }
+
+          <Checkbox checked={this.state.pinned} pinnable={this.props.pinnable} onClick={this.togglePinned} checkedTitle="unpin parameter" uncheckedTitle="pin parameter" />
+
           <span style={{marginLeft: "10px", fontWeight: "bold"}}>
             <Twig twig={this.props.twig}/>
           </span>
@@ -316,7 +323,7 @@ class ParameterDetailsItemPin extends Component {
         {isCurrentlyVisible ?
           <span style={{color: "#2B71B1", cursor: "pointer"}} className="fa-fw fas fa-sign-in-alt" onClick={this.expandParameter} title="go to parameter"/>
           :
-          <Checkbox checked={false} onClick={this.addToPinned} checkedTitle="unpin parameter" uncheckedTitle="pin parameter"/>
+          <Checkbox checked={false} pinnable={true} onClick={this.addToPinned} checkedTitle="unpin parameter" uncheckedTitle="pin parameter"/>
         }
         <span style={{marginLeft: "4px", color: "#2B71B1", cursor: "pointer"}} title="open parameter in external window" onClick={this.popParameter} className="fas fa-fw fa-external-link-alt"/>
 
