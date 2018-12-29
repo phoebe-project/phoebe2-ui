@@ -27,7 +27,7 @@ export class SplashBundle extends Component {
 
     return(
       <div className="App content-dark">
-        <Statusbar app={this.props.app} dark={true}/>
+        <Statusbar app={this.props.app} bundleid={this.props.match.params.bundleid} dark={true}/>
 
         <LogoSplash ref={this.logoSplash} transitionIn="transitionInNone" animationEffect={animationEffect}/>
 
@@ -44,7 +44,14 @@ export class SplashBundle extends Component {
             {/* <Link style={{float: "right"}} title="configure new bundle options" to={generatePath(this.props.app.state.serverHost, "settings", "bundles")}><span className="fas fa-fw fa-cog"/></Link> */}
           </p>
 
+
           <div className="splash-scrollable" style={splashScrollableStyle}>
+            {this.props.transfer ?
+              <NewBundleButton type='transfer' title={'transfer from '+this.props.match.params.oldserver} app={this.props.app} match={this.props.match} activeOnMount={true} splashBundle={this} logoSplash={this.logoSplash}/>
+              :
+              null
+            }
+
             <NewBundleButton type='load:open' title="From File" app={this.props.app} openDialog={this.props.openDialog} splashBundle={this} logoSplash={this.logoSplash}>
               {/* <NewBundleButton type='load:open' title="Open Bundle File" style={{width: "calc(50% - 2px)", marginRight: "2px"}} app={this.props.app} splashBundle={this} logoSplash={this.logoSplash}/> */}
               {/* <NewBundleButton type='load:import' title="Import Legacy File" style={{width: "calc(50% - 2px)", marginLeft: "2px"}} app={this.props.app} splashBundle={this} logoSplash={this.logoSplash}/> */}
@@ -74,6 +81,7 @@ export class SplashBundle extends Component {
 
             {/* <NewBundleButton type='other' title="Custom Hierarchy" app={this.props.app} splashBundle={this} logoSplash={this.logoSplash}/> */}
           </div>
+
         </div>
 
       </div>
@@ -121,6 +129,10 @@ class NewBundleButton extends Component {
         data.append('file', this.fileInput.current.files[0])
         fetchBody = data
       }
+    } else if (this.props.type === 'transfer') {
+      fetchURL = "http://"+this.props.match.params.server+"/transfer_bundle/"+this.props.match.params.oldserver+"/"+this.props.match.params.bundleid
+      fetchMethod = 'GET'
+      fetchBody = null
     } else {
       fetchURL = "http://"+this.props.app.state.serverHost+"/new_bundle/"+this.props.type
       fetchMethod = 'GET'
@@ -232,6 +244,10 @@ class NewBundleButton extends Component {
       } else {
         this.fileInput.current.click();
       }
+    }
+
+    if (this.props.activeOnMount) {
+      this.loadBundle();
     }
   }
   render () {

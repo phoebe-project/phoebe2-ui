@@ -13,7 +13,6 @@ import {Toolbar, Statusbar} from './ui';
 // NOTE: currently use a local version until PR is accepted, in which case we can lose the ./ and update the version requirements in package.json
 import ReactQueryParams from './react-query-params'; // https://github.com/jeff3dx/react-query-params
 
-
 export class Bundle extends ReactQueryParams {
   constructor(props) {
     super(props);

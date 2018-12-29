@@ -10,7 +10,7 @@ import {Router, isStaticFile} from './common'
 import {SplashBundle} from './splash-bundle';
 import {SplashServer} from './splash-server';
 // import {SettingsServers, SettingsBundles} from './settings';
-import {Bundle} from './bundle';
+import {Bundle, BundleTransfer} from './bundle';
 // import {PSPanel} from './panel-ps';
 import {NotFound} from './errors';
 
@@ -126,10 +126,11 @@ class App extends Component {
           {/* <Route exact path={public_url + '/settings/servers'} render={(props) => <Server {...props} serverNotRequired={true} app={this}><SettingsServers {...props} app={this}/></Server>}/> */}
           {/* <Route exact path={public_url + '/:server/settings/servers'} render={(props) => <Server {...props} serverNotRequired={true} app={this}><SettingsServers {...props} app={this}/></Server>}/> */}
           {/* <Route exact path={public_url + '/:server/settings/bundles'} render={(props) => <Server {...props} serverNotRequired={true} app={this}><SettingsBundles {...props} app={this}/></Server>}/> */}
+          <Route path={public_url + '/:server/open'} render={(props) => <Server {...props} app={this}><SplashBundle {...props} app={this} openDialog={true}/></Server>}/>
+          <Route path={public_url + '/:server/transfer/:oldserver/:bundleid'} render={(props) => <Server {...props} app={this}><SplashBundle {...props} app={this} transfer={true}/></Server>}/>
           <Route path={public_url + '/:server/:bundleid/servers'} render={(props) => <Server {...props} app={this}><SplashServer {...props} app={this} switchServer={true}/></Server>}/>
           <Route path={public_url + '/:server/:bundleid/ps'} render={(props) => <Server {...props} app={this}><Bundle {...props} app={this} PSPanelOnly={true}/></Server>}/>
           <Route path={public_url + '/:server/:bundleid/:modal'} render={(props) => <Server {...props} app={this}><Bundle {...props} app={this}/></Server>}/>
-          <Route path={public_url + '/:server/open'} render={(props) => <Server {...props} app={this}><SplashBundle {...props} app={this} openDialog={true}/></Server>}/>
           <Route path={public_url + '/:server/:bundleid'} render={(props) => <Server {...props} app={this}><Bundle {...props} app={this}/></Server>}/>
           <Route path={public_url + '/:server'} render={(props) => <Server {...props} app={this}><SplashBundle {...props} app={this}/></Server>}/>
           <Route path="*" component={NotFound} />

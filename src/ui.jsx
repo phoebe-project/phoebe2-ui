@@ -87,7 +87,7 @@ export class Toolbar extends Component {
         <div style={{float: "left", marginLeft: "0px"}}>
           <ToolbarButton iconClassNames="fas fa-file" title="new bundle" onClick={this.newBundle}/>
           <ToolbarButton iconClassNames="fas fa-folder-open" title="load/import bundle from file" onClick={this.openBundle}/>
-          <ToolbarButton iconClassNames="fas fa-save" title="save bundle" to={"http://" + this.props.app.state.serverHost + "/bundle_save/" + this.props.bundleid} download={this.props.bundleid+".bundle"}/>
+          <ToolbarButton iconClassNames="fas fa-save" title="save bundle" to={"http://" + this.props.app.state.serverHost + "/save_bundle/" + this.props.bundleid} download={this.props.bundleid+".bundle"}/>
           <ToolbarButton iconClassNames="fas fa-undo" title="undo" onClick={this.notImplementedAlert}/>
           <ToolbarButton iconClassNames="fas fa-redo" title="redo" onClick={this.notImplementedAlert}/>
         </div>

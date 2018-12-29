@@ -62,11 +62,11 @@ export class SplashServer extends Component {
 
           <div ref={this.splashScrollable} className="splash-scrollable">
             { this.props.app.state.isElectron ?
-              <ServerButton key={location} location={"localhost:"+window.require('electron').remote.getGlobal('pyPort')} autoconnect={autoconnect} switchServer={this.props.switchServer} isSpawned={true} app={this.props.app} splash={this} match={this.props.match}/>
+              <ServerButton key={location} location={"localhost:"+window.require('electron').remote.getGlobal('pyPort')} autoconnect={autoconnect} switchServer={bundleid != null} isSpawned={true} app={this.props.app} splash={this} match={this.props.match}/>
               :
               null
             }
-            {this.props.app.state.settingsServerHosts.map(location => <ServerButton key={location} location={location} autoconnect={autoconnect} switchServer={this.props.switchServer} app={this.props.app} splash={this} match={this.props.match}/>)}
+            {this.props.app.state.settingsServerHosts.map(location => <ServerButton key={location} location={location} autoconnect={autoconnect} switchServer={bundleid != null} app={this.props.app} splash={this} match={this.props.match}/>)}
             <ServerAddButton app={this.props.app}/>
 
           </div>
@@ -283,6 +283,7 @@ class ServerButton extends Component {
     }
 
     let locationText
+    var title = "connect to server at "+this.props.location+" running PHOEBE "+this.state.phoebeVersion
 
     if (this.props.isSpawned) {
       if (this.state.phoebeVersion || !this.props.app.state.serverStartingChildProcess) {
@@ -313,14 +314,19 @@ class ServerButton extends Component {
 
     var to = generatePath(this.props.location);
     if (this.props.match.params.bundleid) {
-      // TODO: will need to send messages to new/old server and copy the bundle over - possibly getting a new ID
-      to = generatePath(this.props.location, this.props.match.params.bundleid);
+      if (this.state.status==='connected') {
+        to = generatePath(this.props.location, this.props.match.params.bundleid)
+        title = "return to server at "+this.props.location+" running PHOEBE "+this.state.phoebeVersion
+      } else {
+        to = generatePath(this.props.location, "transfer", this.props.app.state.serverHost, this.props.match.params.bundleid)
+        title = "switch to server at "+this.props.location+" running PHOEBE "+this.state.phoebeVersion
+      }
     }
 
     return (
       // NOTE: we use onMouseOver instead of onMouseEnter here so that it is triggered when a server above is removed
       <div onMouseOver={this.hoverOn} onMouseLeave={this.hoverOff} className="splash-scrollable-btn-div" style={style}>
-        <Link className={btnClassName} to={to} title={"connect to server at "+this.props.location+" running PHOEBE "+this.state.phoebeVersion}>
+        <Link className={btnClassName} to={to} title={title}>
           <ServerStatusIcon phoebeVersion={this.state.phoebeVersion} status={this.state.status} autoconnect={this.props.autoconnect} serverButton={this}/>
           <ServerVersionSpan phoebeVersion={this.state.phoebeVersion} status={this.state.status} autoconnect={this.props.autoconnect}/>
           {locationSpan}
