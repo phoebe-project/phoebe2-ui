@@ -133,25 +133,30 @@ const selectPort = () => {
   return '5000';
 }
 
-const createPyProc = () => {
-  pyPort = selectPort();
-  global.appid = 'desktop-randomstring'
-  pyProc = child_process.spawn('phoebe-server', [pyPort, global.appid]);
-  if (pyProc != null) {
-    console.log('phoebe-server started on port: '+pyPort);
-    // allow pyPort to be accessible from within the React app
-    global.pyPort = pyPort;
+const launchChildProcessServer = () => {
+  if (!pyPort) {
+    pyPort = selectPort();
+    global.appid = 'desktop-randomstring'
+    pyProc = child_process.spawn('phoebe-server', [pyPort, global.appid]);
+    pyProc.on('error', () => {killChildProcessServer()});
   }
-}
 
-const exitPyProc = () => {
-  pyProc.kill();
-  console.log('phoebe-server killed on port: '+pyPort);
+  // allow pyPort to be accessible from within the React app
+  global.pyPort = pyPort; // if this is null, then phoebe-server not able to launch
+}
+global.launchChildProcessServer = launchChildProcessServer;
+
+const killChildProcessServer = () => {
+  if (pyProc) {
+    pyProc.kill();
+    console.log('phoebe-server killed on port: '+pyPort);
+  }
   pyProc = null;
   pyPort = null;
+  global.pyPort = pyPort;
 }
 
 
-app.on('ready', createPyProc);
+app.on('ready', launchChildProcessServer);
 
-app.on('will-quit', exitPyProc);
+app.on('will-quit', killChildProcessServer);

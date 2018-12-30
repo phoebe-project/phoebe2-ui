@@ -10,7 +10,7 @@ import {Router, isStaticFile} from './common'
 import {SplashBundle} from './splash-bundle';
 import {SplashServer} from './splash-server';
 // import {SettingsServers, SettingsBundles} from './settings';
-import {Bundle, BundleTransfer} from './bundle';
+import {Bundle} from './bundle';
 // import {PSPanel} from './panel-ps';
 import {NotFound} from './errors';
 
@@ -29,6 +29,7 @@ class App extends Component {
     super(props);
     this.state = {
       isElectron: null,
+      electronChildProcessPort: null,
       serverHost: null,
       serverStatus: "disconnected",
       serverPhoebeVersion: null,
@@ -49,11 +50,16 @@ class App extends Component {
     // square bracket forces the value of k to be used instead of setting "k"
     this.setState({[k]: v});
   }
+  getElectronChildProcessPort = () => {
+    this.setState({electronChildProcessPort: window.require('electron').remote.getGlobal('pyPort')})
+  }
   componentDidMount() {
-    this.setState({isElectron: isElectron()})
+    var stateisElectron = isElectron();
+    this.setState({isElectron: stateisElectron})
     let defaultServerHosts
-    if (isElectron()) {
+    if (stateisElectron) {
       defaultServerHosts = null;
+      this.getElectronChildProcessPort();
     } else {
       defaultServerHosts = "localhost"
     }

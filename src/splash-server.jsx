@@ -35,7 +35,11 @@ export class SplashServer extends Component {
 
     let autoconnect
     if (this.props.app.state.isElectron) {
-      autoconnect = this.props.app.state.settingsServerHosts.length === 0
+      if (this.props.app.state.electronChildProcessPort !== null) {
+        autoconnect = this.props.app.state.settingsServerHosts.length === 0
+      } else {
+        autoconnect = this.props.app.state.settingsServerHosts.length === 1
+      }
     } else {
       autoconnect = this.props.app.state.settingsServerHosts.length === 1
     }
@@ -65,10 +69,14 @@ export class SplashServer extends Component {
 
           <div ref={this.splashScrollable} className="splash-scrollable">
             { this.props.app.state.isElectron ?
-              <ServerButton key={location} location={"localhost:"+window.require('electron').remote.getGlobal('pyPort')} autoconnect={autoconnect} switchServer={bundleid != null} isSpawned={true} app={this.props.app} splash={this} match={this.props.match}/>
+              this.props.app.state.electronChildProcessPort !== null ?
+                <ServerButton key={"localhost:"+this.props.app.state.electronChildProcessPort} location={"localhost:"+this.props.app.state.electronChildProcessPort} autoconnect={autoconnect} switchServer={bundleid != null} isSpawned={true} app={this.props.app} splash={this} match={this.props.match}/>
+                :
+                <ServerInstallButton key={"server-not-installed"} app={this.props.app} splash={this} match={this.props.match}/>
               :
               null
             }
+
             {this.props.app.state.settingsServerHosts.map(location => <ServerButton key={location} location={location} autoconnect={autoconnect} switchServer={bundleid != null} app={this.props.app} splash={this} match={this.props.match}/>)}
             <ServerAddButton app={this.props.app}/>
 
@@ -345,6 +353,44 @@ class ServerButton extends Component {
       </div>
     )
 
+  }
+}
+
+class ServerInstallButton extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      openedInstallLink: false,
+    };
+  }
+  openInstallLink = (e) => {
+    window.require('electron').shell.openExternal("http://phoebe-project.org/install")
+    this.setState({openedInstallLink: true})
+  }
+  restartChildProcess = (e) => {
+    console.log("ServerInstallButton.restartChildProcess")
+    window.require('electron').remote.getGlobal('launchChildProcessServer')()
+    this.props.app.getElectronChildProcessPort();
+  }
+  render() {
+    let onClick, title, text
+    if (!this.state.openedInstallLink) {
+      onClick = this.openInstallLink
+      title = "Install phoebe-server locally or add an external server below"
+      text = "Install PHOEBE Server Locally"
+    } else {
+      onClick = this.restartChildProcess
+      title = "Relaunch phoebe-server locally"
+      text = "Relaunch PHOEBE Server Locally"
+    }
+
+    return (
+      <div className="splash-scrollable-btn-div">
+        <span className="btn btn-transparent" title={title} onClick={onClick}>
+          {text}
+        </span>
+      </div>
+    )
   }
 }
 
