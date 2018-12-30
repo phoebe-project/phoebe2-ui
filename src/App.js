@@ -6,7 +6,7 @@ import isElectron from 'is-electron'; // https://github.com/cheton/is-electron
 import SocketIO from 'socket.io-client'; // https://www.npmjs.com/package/socket.io-client
 
 import {history} from './history'
-import {Router, isStaticFile} from './common'
+import {Router, isStaticFile, randomstr} from './common'
 import {SplashBundle} from './splash-bundle';
 import {SplashServer} from './splash-server';
 // import {SettingsServers, SettingsBundles} from './settings';
@@ -28,6 +28,7 @@ class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      clientid: null,
       isElectron: null,
       electronChildProcessPort: null,
       serverHost: null,
@@ -56,13 +57,17 @@ class App extends Component {
   componentDidMount() {
     var stateisElectron = isElectron();
     this.setState({isElectron: stateisElectron})
-    let defaultServerHosts
+    let defaultServerHosts, clientid
     if (stateisElectron) {
       defaultServerHosts = null;
       this.getElectronChildProcessPort();
+      clientid = window.require('electron').remote.getGlobal('clientid');
     } else {
       defaultServerHosts = "localhost"
+      clientid = "web-"+randomstr(5);
     }
+    this.setState({clientid: clientid})
+
     var settingsServerHosts = this.getSettingFromStorage('settingsServerHosts') || defaultServerHosts
     if (settingsServerHosts) {
       this.setState({settingsServerHosts: settingsServerHosts.split(',')});
@@ -71,6 +76,9 @@ class App extends Component {
     if (settingsDismissedTips) {
       this.setState({settingsDismissedTips: settingsDismissedTips.split(',')});
     }
+
+    window.addEventListener("beforeunload", (event) => {this.serverDisconnect();});
+
   }
   getServerPhoebeVersion = (serverHost) => {
     fetch("http://"+serverHost+"/info")
@@ -102,11 +110,13 @@ class App extends Component {
 
     this.socket.on('connect', (data) => {
       this.setState({serverStatus: "connected", serverStartingChildProcess: false, serverAllowAutoconnect: false});
+      this.socket.emit('register client', {'clientid': this.state.clientid});
     });
 
     this.socket.on('reconnect', (data) => {
       this.getServerPhoebeVersion(serverHost);
       this.setState({serverStatus: "reconnecting", serverAllowAutoconnect: true});
+      this.socket.emit('register client', {'clientid': this.state.clientid});
     })
 
     this.socket.on('disconnect', (data) => {
@@ -114,8 +124,12 @@ class App extends Component {
     });
   }
   serverDisconnect = () => {
+    console.log("App.serverDisconnect");
+
     if (this.socket) {
-      console.log("App.serverDisconnect");
+      console.log("derestering client")
+      this.socket.emit('deregister client', {'clientid': this.state.clientid})
+      console.log("closing socket")
       this.socket.close();
       this.socket = null;
     }

@@ -137,6 +137,7 @@ export class Statusbar extends Component {
 
         {this.props.bundleid ?
           <div className="d-none d-lg-inline">
+            <span style={{marginLeft: "50px"}}>clientid: {this.props.app.state.clientid}</span>
             <span style={{marginLeft: "50px"}}>bundleid: {this.props.bundleid}</span>
             <span style={{marginLeft: "50px"}}>status: idle/waiting for confirmation/etc</span>
           </div>

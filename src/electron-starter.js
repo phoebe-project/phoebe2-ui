@@ -44,17 +44,22 @@ function createWindow() {
         e.preventDefault();
 
         if (global.pyPort) {
-          fetch("http://localhost:"+global.pyPort+"/info")
+          fetch("http://localhost:"+global.pyPort+"/clients")
             .then(res => res.json())
             .then(json => {
-              // TODO: only show this if there are clients connected to the server.  Will need to have all clients subscribe and then have the server return the clientids in this fetch.
-              var choice = electron.dialog.showMessageBox(
-                {
-                    type: 'question',
-                    buttons: ['Quit', 'Cancel'],
-                    title: 'Quit PHOEBE and Kill Server?',
-                    message: `Are you sure you want to quit?  Closing this window will kill the child-process server running PHOEBE ${json.data.phoebe_version}`
-                });
+              var choice = 0
+              var connectedClients = json.data.clients.filter(client => client !== global.clientid)
+              if (connectedClients.length > 0) {
+                // TODO: only show this if there are clients connected to the server.  Will need to have all clients subscribe and then have the server return the clientids in this fetch.
+                choice = electron.dialog.showMessageBox(
+                  {
+                      type: 'question',
+                      buttons: ['Quit', 'Cancel'],
+                      title: 'Quit PHOEBE and Kill Server?',
+                      message: `Are you sure you want to quit?  Closing this window will kill the child-process server which is connected to ${connectedClients.length} other client(s): ${connectedClients}.`
+                  });
+
+              }
 
               if (choice===0) {
                 mainWindow.showExitPrompt = false;
@@ -123,6 +128,17 @@ const executeJSwithUserGesture = (code) => {
 }
 global.executeJSwithUserGesture = executeJSwithUserGesture;
 
+function randomstr(N) {
+  var text = "";
+  var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+  for (var i = 0; i < N; i++)
+    text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+  return text;
+}
+
+global.clientid = 'desktop-'+randomstr(5)
 
 // handle spawning a separate process to interact with PHOEBE via a flask server
 let pyProc = null;
@@ -136,8 +152,7 @@ const selectPort = () => {
 const launchChildProcessServer = () => {
   if (!pyPort) {
     pyPort = selectPort();
-    global.appid = 'desktop-randomstring'
-    pyProc = child_process.spawn('phoebe-server', [pyPort, global.appid]);
+    pyProc = child_process.spawn('phoebe-server', [pyPort, global.clientid]);
     pyProc.on('error', () => {killChildProcessServer()});
   }
 
