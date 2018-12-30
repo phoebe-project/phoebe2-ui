@@ -35,6 +35,7 @@ class App extends Component {
       serverAllowAutoconnect: true,
       serverStartingChildProcess: isElectron(),
       settingsServerHosts: [],
+      settingsDismissedTips: []
     };
     this.router = React.createRef();
     this.socket = null;
@@ -59,6 +60,10 @@ class App extends Component {
     var settingsServerHosts = this.getSettingFromStorage('settingsServerHosts') || defaultServerHosts
     if (settingsServerHosts) {
       this.setState({settingsServerHosts: settingsServerHosts.split(',')});
+    }
+    var settingsDismissedTips = this.getSettingFromStorage('settingsDismissedTips') || null
+    if (settingsDismissedTips) {
+      this.setState({settingsDismissedTips: settingsDismissedTips.split(',')});
     }
   }
   getServerPhoebeVersion = (serverHost) => {

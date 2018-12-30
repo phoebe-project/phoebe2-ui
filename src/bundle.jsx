@@ -19,7 +19,6 @@ export class Bundle extends ReactQueryParams {
     this.state = {
       redirect: null,
       bundleid: props.match.params.bundleid,
-      showFigurePanel: false,
       params: null,
       paramsfilteredids: [],
       tags: {},
@@ -199,20 +198,11 @@ export class Bundle extends ReactQueryParams {
                      </Modal>
     }
 
-    let panelWidths
-    if (this.state.showFigurePanel) {
-      panelWidths = [
+    var panelWidths = [
                       {size: 490, minSize:300, resize: "dynamic"},
                       {minSize:440, resize: "stretch"},
                       {size: 250, minSize:250, resize: "dynamic"}
                      ]
-    } else {
-      panelWidths = [
-                      {size: 490, minSize:300, resize: "dynamic"},
-                      {minSize:440, resize: "stretch"},
-                      {size: 0, minSize:0, resize: "fixed"}
-                     ]
-    }
 
     return (
       <div className="App">
@@ -225,7 +215,7 @@ export class Bundle extends ReactQueryParams {
           <PanelGroup panelWidths={panelWidths}>
             <TagPanel app={this.props.app} bundleid={this.state.bundleid} bundle={this}/>
             <PSPanel app={this.props.app} bundleid={this.state.bundleid} bundle={this} showPopoutButton={true}/>
-            <FigurePanel app={this.props.app} bundleid={this.state.bundleid}/>
+            <FigurePanel app={this.props.app} bundleid={this.state.bundleid} bundle={this}/>
           </PanelGroup>
         </div>
         <div className="d-block d-lg-none" style={{paddingTop: "50px", paddingBottom: "28px", height: "100%"}}>
