@@ -31,19 +31,22 @@ export function randomstr(N) {
 }
 
 export function generatePath(serverHost, bundleid, modal, filter) {
-  var prefix = ""
+  var url = "/"
   // if (isStaticFile()) {prefix = "#"}
-  if (!serverHost) {
-    return prefix+"/"
-  } else if (!bundleid) {
-    return prefix+"/"+serverHost
-  } else if (!modal) {
-    return prefix+"/"+serverHost+"/"+bundleid
-  } else if (!filter) {
-    return prefix+"/"+serverHost+"/"+bundleid+"/"+modal
-  } else {
-    return prefix+"/"+serverHost+"/"+bundleid+"/"+modal+"/"+filter
+
+  if (serverHost) {
+    url += serverHost
   }
+  if (bundleid) {
+    url += "/"+bundleid
+  }
+  if (modal) {
+    url += "/"+modal
+  }
+  if (filter) {
+    url += "/"+filter
+  }
+  return url
 }
 
 function processLink(link) {

@@ -44,7 +44,7 @@ function createWindow() {
         e.preventDefault();
 
         if (global.pyPort) {
-          fetch("http://localhost:"+global.pyPort+"/clients")
+          fetch("http://localhost:"+global.pyPort+"/info")
             .then(res => res.json())
             .then(json => {
               var choice = 0

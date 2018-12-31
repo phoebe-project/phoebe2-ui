@@ -57,16 +57,13 @@ class App extends Component {
   componentDidMount() {
     var stateisElectron = isElectron();
     this.setState({isElectron: stateisElectron})
-    let defaultServerHosts, clientid
+    let defaultServerHosts;
     if (stateisElectron) {
       defaultServerHosts = null;
       this.getElectronChildProcessPort();
-      clientid = window.require('electron').remote.getGlobal('clientid');
     } else {
       defaultServerHosts = "localhost"
-      clientid = "web-"+randomstr(5);
     }
-    this.setState({clientid: clientid})
 
     var settingsServerHosts = this.getSettingFromStorage('settingsServerHosts') || defaultServerHosts
     if (settingsServerHosts) {
@@ -79,6 +76,9 @@ class App extends Component {
 
     window.addEventListener("beforeunload", (event) => {this.serverDisconnect();});
 
+  }
+  componentWillUnmount() {
+    this.serverDisconnect();
   }
   getServerPhoebeVersion = (serverHost) => {
     fetch("http://"+serverHost+"/info")
@@ -127,7 +127,7 @@ class App extends Component {
     console.log("App.serverDisconnect");
 
     if (this.socket) {
-      console.log("derestering client")
+      console.log("deregistering client")
       this.socket.emit('deregister client', {'clientid': this.state.clientid})
       console.log("closing socket")
       this.socket.close();
@@ -148,6 +148,7 @@ class App extends Component {
         <Switch>
           {/* NOTE: all Route components should be wrapped by a Server component to handle parsing the /:server (or lack there-of) and handing connecting/disconnecting to the websocket */}
           <Route exact path={public_url + '/'} render={(props) => <Server {...props} app={this}><SplashServer {...props} app={this}/></Server>}/>
+          {/* <Route exact path={public_url + '/:clientid'} render={(props) => <Server {...props} app={this}><SplashServer {...props} app={this}/></Server>}/> */}
           {/* <Route exact path={public_url + '/settings/servers'} render={(props) => <Server {...props} serverNotRequired={true} app={this}><SettingsServers {...props} app={this}/></Server>}/> */}
           {/* <Route exact path={public_url + '/:server/settings/servers'} render={(props) => <Server {...props} serverNotRequired={true} app={this}><SettingsServers {...props} app={this}/></Server>}/> */}
           {/* <Route exact path={public_url + '/:server/settings/bundles'} render={(props) => <Server {...props} serverNotRequired={true} app={this}><SettingsBundles {...props} app={this}/></Server>}/> */}
@@ -187,6 +188,7 @@ class Server extends Component {
         // will in turn set this.props.app.state.serverHost if successful
       } else if (!server) {
         console.log("disconnecting from server because of URL.  server="+server)
+        // alert("disconnecting from server because of URL")
         this.props.app.serverDisconnect();
         // will reset this.props.app.state.serverHost to null
       }
@@ -194,6 +196,15 @@ class Server extends Component {
   }
   componentDidMount() {
     this.componentDidUpdate()
+
+    let clientid
+    if (isElectron()) {
+      clientid = window.require('electron').remote.getGlobal('clientid');
+    } else {
+      clientid = "web-"+randomstr(5);
+    }
+    this.props.app.setState({clientid: clientid})
+
   }
   render() {
     if (this.props.app.state.serverStatus==='connected' || this.props.serverNotRequired) {

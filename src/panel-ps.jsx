@@ -313,6 +313,8 @@ class ParameterDetailsItemPin extends Component {
 
     var url = generatePath(this.props.app.state.serverHost, bundleid, 'ps');
     var win = popUpWindow(url, `?advanced=["onlyPinned"]&pinned=["${this.props.uniqueid}"]`);
+    // TODO: callback to remove from childrenWindows when manually closed?
+    this.props.bundle.childrenWindows.push(win);
 
   }
   render() {
@@ -348,6 +350,8 @@ export class PSPanel extends Component {
 
     var url = generatePath(this.props.app.state.serverHost, bundleid, 'ps');
     var win = popUpWindow(url, window.location.search);
+    // TODO: callback to remove from childrenWindows when manually closed?
+    this.props.bundle.childrenWindows.push(win);
   }
   orderByChanged = (e) => {
     var value = "Context"

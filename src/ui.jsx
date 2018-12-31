@@ -39,18 +39,38 @@ export class Toolbar extends Component {
   }
   newBundle = () => {
     // TODO: only ask for confirmation if this is the only client attached to this bundle AND there are no unsaved changed
-    var result = confirm('You may lose any unsaved changes by closing the bundle.  Continue?')
+    var text = ""
+    // TODO: if unsaved changes only
+    text += "You may lose any unsaved changed by closing the bundle.  "
+    if (this.props.bundle && this.props.bundle.childrenWindows.length) {
+      text += "All pop-out windows will be closed.  "
+    }
+    text += "Continue?"
+
+    var result = confirm(text)
     if (result) {
+      this.props.bundle.closePopUps();
       this.props.bundle.clearQueryParams();
+      this.props.bundle.deregisterBundle();
       this.setState({redirectTo: generatePath(this.props.app.state.serverHost)})
       // TODO: need to tell server that we're disconnecting from the bundle.
     }
   }
   openBundle = () => {
     // TODO: only ask for confirmation if this is the only client attached to this bundle AND there are no unsaved changed
-    var result = confirm('You may lose any unsaved changes by closing the bundle.  Continue?')
+    var text = ""
+    // TODO: if unsaved changes only
+    text += "You may lose any unsaved changed by closing the bundle.  "
+    if (this.props.bundle && this.props.bundle.childrenWindows.length) {
+      text += "All pop-out windows will be closed.  "
+    }
+    text += "Continue?"
+
+    var result = confirm(text)
     if (result) {
+      this.props.bundle.closePopUps();
       this.props.bundle.clearQueryParams();
+      this.props.bundle.deregisterBundle();
       this.setState({redirectTo: generatePath(this.props.app.state.serverHost, "open")})
       // TODO: need to tell server that we're disconnecting from the bundle.
     }
@@ -109,6 +129,18 @@ export class Toolbar extends Component {
 
 
 export class Statusbar extends Component {
+  changeServerWarning = (e) => {
+    if (this.props.bundle && this.props.bundle.childrenWindows.length) {
+      var result = confirm('All popout windows will be closed when changing servers.  Continue?')
+      if (result) {
+        this.props.bundle.closePopUps();
+      } else {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    }
+
+  }
   render() {
     var divStyle = {position: "absolute", left: 0, bottom: 0, width: "100%", height: "28px", fontWeight: "400", fontSize: "0.93m"}
     if (!this.props.dark) {
@@ -129,15 +161,16 @@ export class Statusbar extends Component {
 
     return (
       <div style={divStyle} className="statusbar">
-        <Link style={{fontWeight: "inherit", fontSize: "inherit"}} title="choose different server" to={serverPath}>
+        <Link style={{fontWeight: "inherit", fontSize: "inherit"}} title="choose different server" onClick={this.changeServerWarning} to={serverPath}>
           <span className="fa-md fas fa-fw fa-broadcast-tower" style={{margin: "4px"}}/>
           <span style={{margin: "4px", border: "1px dotted #a1a1a1", paddingLeft: "2px", paddingRight: "2px"}}>{this.props.app.state.serverPhoebeVersion}</span>
           <span style={{margin: "4px"}}>{this.props.app.state.serverHost}</span>
         </Link>
 
+        <span style={{marginLeft: "50px"}}>clientid: {this.props.app.state.clientid}</span>
+
         {this.props.bundleid ?
           <div className="d-none d-lg-inline">
-            <span style={{marginLeft: "50px"}}>clientid: {this.props.app.state.clientid}</span>
             <span style={{marginLeft: "50px"}}>bundleid: {this.props.bundleid}</span>
             <span style={{marginLeft: "50px"}}>status: idle/waiting for confirmation/etc</span>
           </div>

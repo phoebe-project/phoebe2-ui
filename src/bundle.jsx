@@ -27,6 +27,7 @@ export class Bundle extends ReactQueryParams {
       nAdvancedHiddenTotal: 0,
       nparams: 0,
     };
+    this.childrenWindows = [];
   }
   clearQueryParams = () => {
     var newQueryParams = {}
@@ -37,18 +38,30 @@ export class Bundle extends ReactQueryParams {
 
     // window.location.search = "";
   }
+  registerBundle = () => {
+    console.log("registerBundle")
+    this.props.app.socket.emit('register client', {'clientid': this.props.app.state.clientid, 'bundleid': this.state.bundleid});
+  }
+  deregisterBundle = () => {
+    console.log("deregisterBundle")
+    this.props.app.socket.emit('deregister client', {'clientid': this.props.app.state.clientid, 'bundleid': this.state.bundleid});
+  }
   componentDidMount() {
+    window.addEventListener("beforeunload", (event) => {this.closePopUps()});
+
     this.abortGetParamsController = new window.AbortController();
     abortableFetch("http://"+this.props.app.state.serverHost+"/bundle/"+this.state.bundleid, {signal: this.abortGetParamsController.signal})
       .then(res => res.json())
       .then(json => {
         if (json.data.success) {
+          this.registerBundle();
           this.setState({params: json.data.parameters, tags: json.data.tags, nparams: Object.keys(json.data.parameters).length})
         } else {
           alert("server error: "+json.data.error);
           this.setState({params: null, tags: null});
           this.clearQueryParams();
-          this.setState({redirect: generatePath(this.props.app.state.serverHost)})
+          this.deregisterBundle();
+          this.setState({redirect: generatePath(this.props.app.state.clientid, this.props.app.state.serverHost)})
           // this.cancelLoadBundleSpinners();
         }
       }, err=> {
@@ -71,6 +84,20 @@ export class Bundle extends ReactQueryParams {
         }
 
       });
+  }
+  componentWillUnmount() {
+    this.closePopUps();
+    this.deregisterBundle();
+  }
+  closePopUps = () => {
+    this.childrenWindows.forEach(win => {
+      try {
+        win.close();
+      } catch(error) {
+        console.log("failed to close window")
+      }
+    })
+    this.childrenWindows = [];
   }
   inAdvanced = (param, advanced) => {
     const advancedAll = ['not_visible', 'is_default', 'is_advanced', 'is_single', 'is_constraint'];
@@ -208,7 +235,7 @@ export class Bundle extends ReactQueryParams {
       <div className="App">
         {modalContent}
         <Toolbar app={this.props.app} bundle={this} bundleid={this.state.bundleid}/>
-        <Statusbar app={this.props.app} bundleid={this.state.bundleid}/>
+        <Statusbar app={this.props.app} bundle={this} bundleid={this.state.bundleid}/>
 
         <div className="d-none d-lg-block" style={{paddingTop: "50px", paddingBottom: "28px", height: "100%"}}>
           {/* need to support down to width of 990 for d-lg.  Tag starts at width needed for 3 columns */}

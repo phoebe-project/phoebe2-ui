@@ -338,7 +338,7 @@ class ServerButton extends Component {
       // NOTE: we use onMouseOver instead of onMouseEnter here so that it is triggered when a server above is removed
       <div onMouseOver={this.hoverOn} onMouseLeave={this.hoverOff} className="splash-scrollable-btn-div" style={style}>
         <Link className={btnClassName} to={to} title={title}>
-          <ServerStatusIcon phoebeVersion={this.state.phoebeVersion} status={this.state.status} autoconnect={this.props.autoconnect} serverButton={this}/>
+          <ServerStatusIcon app={this.props.app} phoebeVersion={this.state.phoebeVersion} status={this.state.status} autoconnect={this.props.autoconnect} serverButton={this}/>
           <ServerVersionSpan phoebeVersion={this.state.phoebeVersion} status={this.state.status} autoconnect={this.props.autoconnect}/>
           {locationSpan}
           {this.props.isSpawned || this.state.status ?
