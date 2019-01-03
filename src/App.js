@@ -31,6 +31,7 @@ class App extends Component {
       clientid: null,
       isElectron: null,
       electronChildProcessPort: null,
+      bundleTransferJson: null,
       serverHost: null,
       serverStatus: "disconnected",
       serverPhoebeVersion: null,
@@ -153,7 +154,7 @@ class App extends Component {
           {/* <Route exact path={public_url + '/:server/settings/servers'} render={(props) => <Server {...props} serverNotRequired={true} app={this}><SettingsServers {...props} app={this}/></Server>}/> */}
           {/* <Route exact path={public_url + '/:server/settings/bundles'} render={(props) => <Server {...props} serverNotRequired={true} app={this}><SettingsBundles {...props} app={this}/></Server>}/> */}
           <Route path={public_url + '/:server/open'} render={(props) => <Server {...props} app={this}><SplashBundle {...props} app={this} openDialog={true}/></Server>}/>
-          <Route path={public_url + '/:server/transfer/:oldserver/:bundleid'} render={(props) => <Server {...props} app={this}><SplashBundle {...props} app={this} transfer={true}/></Server>}/>
+          <Route path={public_url + '/:server/transfer/:bundleid'} render={(props) => <Server {...props} app={this}><SplashBundle {...props} app={this} transfer={true}/></Server>}/>
           <Route path={public_url + '/:server/:bundleid/servers'} render={(props) => <Server {...props} app={this}><SplashServer {...props} app={this} switchServer={true}/></Server>}/>
           <Route path={public_url + '/:server/:bundleid/ps'} render={(props) => <Server {...props} app={this}><Bundle {...props} app={this} PSPanelOnly={true}/></Server>}/>
           <Route path={public_url + '/:server/:bundleid/:modal'} render={(props) => <Server {...props} app={this}><Bundle {...props} app={this}/></Server>}/>

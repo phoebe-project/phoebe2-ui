@@ -47,7 +47,7 @@ export class SplashBundle extends Component {
 
           <div className="splash-scrollable" style={splashScrollableStyle}>
             {this.props.transfer ?
-              <NewBundleButton type='transfer' title={'transfer from '+this.props.match.params.oldserver} app={this.props.app} match={this.props.match} activeOnMount={true} splashBundle={this} logoSplash={this.logoSplash}/>
+              <NewBundleButton type='transfer' title={'transferring bundle'} app={this.props.app} match={this.props.match} activeOnMount={true} splashBundle={this} logoSplash={this.logoSplash}/>
               :
               null
             }
@@ -130,9 +130,10 @@ class NewBundleButton extends Component {
         fetchBody = data
       }
     } else if (this.props.type === 'transfer') {
-      fetchURL = "http://"+this.props.match.params.server+"/transfer_bundle/"+this.props.match.params.oldserver+"/"+this.props.match.params.bundleid
-      fetchMethod = 'GET'
-      fetchBody = null
+      fetchURL = "http://"+this.props.match.params.server+"/open_bundle"
+      fetchMethod = 'POST'
+      var data = {json: this.props.app.state.bundleTransferJson, bundleid: this.props.match.params.bundleid}
+      fetchBody = JSON.stringify(data)
     } else {
       fetchURL = "http://"+this.props.app.state.serverHost+"/new_bundle/"+this.props.type
       fetchMethod = 'GET'
@@ -154,8 +155,8 @@ class NewBundleButton extends Component {
             this.cancelLoadBundleSpinners();
           }
         }, err=> {
-          // then we canceled the request
-          console.log("received abort signal")
+          // then we canceled the request (hopefully)
+          console.log("received abort signal"+err)
           this.cancelLoadBundleSpinners();
         })
         .catch(err => {

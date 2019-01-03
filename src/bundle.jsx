@@ -49,6 +49,9 @@ export class Bundle extends ReactQueryParams {
   componentDidMount() {
     window.addEventListener("beforeunload", (event) => {this.closePopUps()});
 
+    // clear any temporary transfer bundle from the app
+    this.props.app.setState({bundleTransferJson: null})
+
     this.abortGetParamsController = new window.AbortController();
     abortableFetch("http://"+this.props.app.state.serverHost+"/bundle/"+this.state.bundleid, {signal: this.abortGetParamsController.signal})
       .then(res => res.json())
@@ -61,7 +64,7 @@ export class Bundle extends ReactQueryParams {
           this.setState({params: null, tags: null});
           this.clearQueryParams();
           this.deregisterBundle();
-          this.setState({redirect: generatePath(this.props.app.state.clientid, this.props.app.state.serverHost)})
+          this.setState({redirect: generatePath(this.props.app.state.serverHost)})
           // this.cancelLoadBundleSpinners();
         }
       }, err=> {

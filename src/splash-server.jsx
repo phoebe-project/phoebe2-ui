@@ -11,7 +11,7 @@ export class SplashServer extends Component {
   constructor(props) {
     super(props);
     this.splashScrollable = React.createRef();
-
+    this.abortSaveTransferController = null;
   }
   disableAllInput = () => {
     HTMLCollection.prototype[Symbol.iterator] = Array.prototype[Symbol.iterator];
@@ -30,6 +30,36 @@ export class SplashServer extends Component {
   //     this.disableAllInput();
   //   }
   // }
+  componentDidMount() {
+    if (this.props.match.params.bundleid && this.props.app.state.serverStatus=='connected') {
+      // then we're trying to switch servers, so we need to download the current bundle before switching
+      var saveURL = "http://" + this.props.app.state.serverHost + "/save_bundle/" + this.props.match.params.bundleid
+      console.log("saving bundle from "+saveURL)
+
+      this.abortSaveTransferController = new window.AbortController();
+      abortableFetch(saveURL, {signal: this.abortSaveTransferController.signal})
+        .then(res => res.text())
+        .then(json => {
+          this.props.app.setState({bundleTransferJson: json})
+        }, err=> {
+          // then we canceled the request
+          console.log("received abort signal")
+          this.props.app.setState({bundleTransferJson: null})
+        })
+        .catch(err => {
+          if (err.name === 'AbortError') {
+            // then we canceled the request
+            console.log("received abort signal")
+            this.props.app.setState({bundleTransferJson: null})
+          } else {
+            alert("server error, try again")
+            this.props.app.setState({bundleTransferJson: null})
+          }
+
+        });
+
+    }
+  }
   render() {
     var bundleid = this.props.match.params.bundleid
 
@@ -329,8 +359,11 @@ class ServerButton extends Component {
         to = generatePath(this.props.location, this.props.match.params.bundleid)
         title = "return to server at "+this.props.location+" running PHOEBE "+this.state.phoebeVersion
       } else {
-        to = generatePath(this.props.location, "transfer", this.props.app.state.serverHost, this.props.match.params.bundleid)
+        to = generatePath(this.props.location, "transfer", this.props.match.params.bundleid)
         title = "switch to server at "+this.props.location+" running PHOEBE "+this.state.phoebeVersion
+        if (!this.props.app.state.bundleTransferJson) {
+          style = {pointerEvents: "none"}
+        }
       }
     }
 
