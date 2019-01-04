@@ -37,7 +37,7 @@ class Checkbox extends Component {
       title = this.props.uncheckedTitle
     }
 
-    var style = {color: "#2B71B1", cursor: "pointer"}
+    var style = {...this.props.style, color: "#2B71B1", cursor: "pointer"}
 
     if (!this.props.pinnable && !this.props.checked) {
       // then we only allow unpinning, not pinning.  So disable pointer events
@@ -172,17 +172,22 @@ class Parameter extends Component {
 
     return (
       <div ref={this.ref} className='phoebe-parameter'>
-        <div className='phoebe-parameter-header' onClick={this.toggleExpanded}>
-          <span style={{float: "right"}}>
-            {this.props.value}
+        <div className='phoebe-parameter-header' style={{minWidth: "250px"}} onClick={this.toggleExpanded}>
+          <Checkbox style={{verticalAlign: "super"}} checked={this.state.pinned} pinnable={this.props.pinnable} onClick={this.togglePinned} checkedTitle="unpin parameter" uncheckedTitle="pin parameter" />
+
+          <span style={{display: "inline-block", marginLeft: "10px", fontWeight: "bold", width: "calc(100% - 210px)", overflowX: "hidden"}}>
+            <Twig twig={this.props.paramOverview.twig}/>
           </span>
 
 
-          <Checkbox checked={this.state.pinned} pinnable={this.props.pinnable} onClick={this.togglePinned} checkedTitle="unpin parameter" uncheckedTitle="pin parameter" />
-
-          <span style={{marginLeft: "10px", fontWeight: "bold"}}>
-            <Twig twig={this.props.twig}/>
+          <span style={{display: "inline-block", textAlign: "right", width: "110px", paddingLeft: "5px", whiteSpace: "nowrap", overflowX: "hidden"}}>
+            {this.props.paramOverview.valuestr}
           </span>
+
+          <span style={{display: "inline-block", textAlign: "left", width: "65px", paddingLeft: "5px", whiteSpace: "nowrap", overflowX: "hidden"}}>
+            {this.props.paramOverview.unitstr}
+          </span>
+
 
         </div>
 
@@ -428,7 +433,7 @@ class PSGroup extends Component {
     var parameters = []
     parameters = mapObject(this.props.paramsFiltered, (uniqueid, param) => {
       if (param[this.props.orderBy]===this.props.orderByTag) {
-        return (<Parameter key={uniqueid} app={this.props.app} bundle={this.props.bundle} PSPanel={this.props.PSPanel} paramOverview={param} uniqueid={uniqueid} pinnable={!this.props.PSPanelOnly} twig={param.twig} value={param.valuestr} description={param.description}/>)
+        return (<Parameter key={uniqueid} app={this.props.app} bundle={this.props.bundle} PSPanel={this.props.PSPanel} paramOverview={param} uniqueid={uniqueid} pinnable={!this.props.PSPanelOnly} description={param.description}/>)
       }
     })
 

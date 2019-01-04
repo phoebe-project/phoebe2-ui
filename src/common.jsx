@@ -80,7 +80,7 @@ export function popUpWindow(url, search) {
     } else {
       url = window.location.origin + url + search;
     }
-    win = new BrowserWindow({width: 600, height: 400, minWidth: 600, minHeight: 400});
+    win = new BrowserWindow({width: 600, height: 400, minWidth: 325, minHeight: 200});
     win.on('close', () => {win = null});
     win.loadURL(url);
     win.show();
