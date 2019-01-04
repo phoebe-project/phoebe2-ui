@@ -63,20 +63,64 @@ class Parameter extends Component {
       pinned: false,
       receivedDetails: false,
       details: {},
-      expanded: false
+      expandedDetails: false,
+      expandedValue: false,
+      expandedUnit: false
     };
     this.abortGetDetailsController = null;
     this.ref = React.createRef();
 
     this.expandFromClick = false;
   }
-  toggleExpanded = () => {
-    if (this.props.PSPanel.state.expandedParameter===this.props.uniqueid) {
-        this.props.PSPanel.setState({expandedParameter: null})
+  toggleExpandedDetails = () => {
+    if (this.props.PSPanel.state.activeParameter===this.props.uniqueid) {
+      if (this.props.PSPanel.state.activeParameterDetails) {
+        this.props.PSPanel.setState({activeParameter: null})
+        this.props.PSPanel.setState({activeParameterDetails: false})
+        this.props.PSPanel.setState({activeParameterValue: false})
+        this.props.PSPanel.setState({activeParameterUnit: false})
+      } else {
+        this.props.PSPanel.setState({activeParameterDetails: true})
+      }
     } else {
       // try to prevent the scroll action
       this.expandFromClick = true;
-      this.props.PSPanel.setState({expandedParameter: this.props.uniqueid})
+      this.props.PSPanel.setState({activeParameter: this.props.uniqueid})
+      this.props.PSPanel.setState({activeParameterDetails: true})
+      this.props.PSPanel.setState({activeParameterValue: false})
+      this.props.PSPanel.setState({activeParameterUnit: false})
+    }
+  }
+  toggleExpandedValue = (e) => {
+    e.stopPropagation();
+    if (this.props.PSPanel.state.activeParameter===this.props.uniqueid) {
+      // this.props.PSPanel.setState({activeParameter: null})
+      // this.props.PSPanel.setState({activeParameterDetails: false})
+      this.props.PSPanel.setState({activeParameterValue: !this.props.PSPanel.state.activeParameterValue})
+      this.props.PSPanel.setState({activeParameterUnit: false})
+    } else {
+      // try to prevent the scroll action
+      this.expandFromClick = true;
+      this.props.PSPanel.setState({activeParameter: this.props.uniqueid})
+      this.props.PSPanel.setState({activeParameterDetails: false})
+      this.props.PSPanel.setState({activeParameterValue: true})
+      this.props.PSPanel.setState({activeParameterUnit: false})
+    }
+  }
+  toggleExpandedUnit = (e) => {
+    e.stopPropagation();
+    if (this.props.PSPanel.state.activeParameter===this.props.uniqueid) {
+      // this.props.PSPanel.setState({activeParameter: null})
+      // this.props.PSPanel.setState({activeParameterDetails: false})
+      this.props.PSPanel.setState({activeParameterValue: false})
+      this.props.PSPanel.setState({activeParameterUnit: !this.props.PSPanel.state.activeParameterUnit})
+    } else {
+      // try to prevent the scroll action
+      this.expandFromClick = true;
+      this.props.PSPanel.setState({activeParameter: this.props.uniqueid})
+      this.props.PSPanel.setState({activeParameterDetails: false})
+      this.props.PSPanel.setState({activeParameterValue: false})
+      this.props.PSPanel.setState({activeParameterUnit: true})
     }
   }
   addToPinned = () => {
@@ -113,16 +157,27 @@ class Parameter extends Component {
       this.setState({pinned: ispinned})
     }
 
-    var expanded = this.props.PSPanel.state.expandedParameter===this.props.uniqueid || this.props.bundle.state.paramsfilteredids.length===1;
-    if (expanded !== this.state.expanded) {
-      this.setState({expanded: expanded})
-      if (expanded && !this.expandFromClick) {
+    var active = this.props.PSPanel.state.activeParameter===this.props.uniqueid || this.props.bundle.state.paramsfilteredids.length===1;
+    var expandedDetails = active && this.props.PSPanel.state.activeParameterDetails
+    if (expandedDetails !== this.state.expandedDetails) {
+      this.setState({expandedDetails: expandedDetails})
+      if (expandedDetails && !this.expandFromClick) {
         this.ref.current.scrollIntoView(true);
       }
       if (this.expandFromClick) {
         // reset so clicking on a link will use scroll behavior
         this.expandFromClick = false
       }
+    }
+
+    var expandedValue = active && this.props.PSPanel.state.activeParameterValue
+    if (expandedValue != this.state.expandedValue) {
+      this.setState({expandedValue: expandedValue})
+    }
+
+    var expandedUnit = active && this.props.PSPanel.state.activeParameterUnit
+    if (expandedUnit != this.state.expandedUnit) {
+      this.setState({expandedUnit: expandedUnit})
     }
 
 
@@ -141,7 +196,7 @@ class Parameter extends Component {
   //   return false;
   // }
   render() {
-    if (this.state.expanded && !this.state.receivedDetails) {
+    if (this.state.expandedDetails && !this.state.receivedDetails) {
       this.setState({receivedDetails: true})
 
       this.abortGetDetailsController = new window.AbortController();
@@ -170,28 +225,76 @@ class Parameter extends Component {
 
     }
 
+    let inlineValueContent, expandedValueContent, color
+    if (this.state.expandedValue) {
+      if (this.props.paramOverview.class==='FloatArrayParameter') {
+        expandedValueContent = <span>
+                                <span onClick={this.toggleExpandedValue} className="btn fa-fw fas fa-times"/>
+                                SET VALUE FloatArrayParameter
+                                <span onClick={this.toggleExpandedValue} className="btn fa-fw fas fa-check"/>
+                             </span>
+      } else if (this.props.paramOverview.class==='SelectParameter') {
+        expandedValueContent = <span>
+                                <span onClick={this.toggleExpandedValue} className="btn fa-fw fas fa-times"/>
+                                SET VALUE Selectparameter
+                                <span onClick={this.toggleExpandedValue} className="btn fa-fw fas fa-check"/>
+                             </span>
+      } else if (this.props.paramOverview.class==='ConstraintParameter') {
+        expandedValueContent = <span>
+                                <span onClick={this.toggleExpandedValue} className="btn fa-fw fas fa-times"/>
+                                SET VALUE ConstraintParameter
+                                <span onClick={this.toggleExpandedValue} className="btn fa-fw fas fa-check"/>
+                             </span>
+      } else {
+        inlineValueContent = <span>
+                                <span onClick={this.toggleExpandedValue} className="btn fa-fw fas fa-times"/>
+                                <span>SET VALUE</span>
+                                <span onClick={this.toggleExpandedValue} className="btn fa-fw fas fa-check"/>
+                             </span>
+      }
+    } else if (!this.state.expandedUnit) {
+      color = this.props.paramOverview.readonly ? "slategray" : "black"
+      inlineValueContent = <span onClick={this.props.paramOverview.readonly ? null : this.toggleExpandedValue} style={{display: "inline-block", color: color, textAlign: "right", width: "110px", paddingLeft: "5px", whiteSpace: "nowrap", overflowX: "hidden"}}>
+                              {this.props.paramOverview.valuestr}
+                           </span>
+    }
+
+    let inlineUnitContent
+    if (this.state.expandedUnit) {
+      inlineUnitContent = <span>
+                              <span onClick={this.toggleExpandedUnit} className="btn fa-fw fas fa-times"/>
+                              SET UNIT
+                              <span onClick={this.toggleExpandedUnit} className="btn fa-fw fas fa-check"/>
+                           </span>
+    } else if (!this.state.expandedValue) {
+      inlineUnitContent = <span onClick={this.toggleExpandedUnit} style={{display: "inline-block", textAlign: "left", width: "65px", paddingLeft: "5px", whiteSpace: "nowrap", overflowX: "hidden"}}>
+                            {this.props.paramOverview.unitstr}
+                          </span>
+    }
+
     return (
       <div ref={this.ref} className='phoebe-parameter'>
-        <div className='phoebe-parameter-header' style={{minWidth: "250px"}} onClick={this.toggleExpanded}>
+        <div className='phoebe-parameter-header' style={{minWidth: "250px"}} onClick={this.toggleExpandedDetails}>
           <Checkbox style={{verticalAlign: "super"}} checked={this.state.pinned} pinnable={this.props.pinnable} onClick={this.togglePinned} checkedTitle="unpin parameter" uncheckedTitle="pin parameter" />
 
           <span style={{display: "inline-block", marginLeft: "10px", fontWeight: "bold", width: "calc(100% - 210px)", overflowX: "hidden"}}>
             <Twig twig={this.props.paramOverview.twig}/>
           </span>
 
-
-          <span style={{display: "inline-block", textAlign: "right", width: "110px", paddingLeft: "5px", whiteSpace: "nowrap", overflowX: "hidden"}}>
-            {this.props.paramOverview.valuestr}
-          </span>
-
-          <span style={{display: "inline-block", textAlign: "left", width: "65px", paddingLeft: "5px", whiteSpace: "nowrap", overflowX: "hidden"}}>
-            {this.props.paramOverview.unitstr}
-          </span>
-
+          {inlineValueContent}
+          {inlineUnitContent}
 
         </div>
 
-        {this.state.expanded ?
+        {expandedValueContent ?
+          <div className='phoebe-parameter-content'>
+            {expandedValueContent}
+          </div>
+          :
+          null
+        }
+
+        {this.state.expandedDetails ?
           <div className='phoebe-parameter-content'>
             <ParameterDetailsItem title="Description">
               {this.state.details.description || null}
@@ -311,7 +414,10 @@ class ParameterDetailsItemPin extends Component {
     this.props.bundle.setQueryParams({pinned: newPinned})
   }
   expandParameter = () => {
-    this.props.PSPanel.setState({expandedParameter: this.props.uniqueid})
+    this.props.PSPanel.setState({activeParameterDetails: true})
+    this.props.PSPanel.setState({activeParameterValue: false})
+    this.props.PSPanel.setState({activeParameterUnit: false})
+    this.props.PSPanel.setState({activeParameter: this.props.uniqueid})
   }
   popParameter = () => {
     var bundleid = this.props.bundle.state.bundleid || this.props.bundle.match.params.bundleid
@@ -346,7 +452,10 @@ export class PSPanel extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      expandedParameter: null,
+      activeParameter: null,
+      activeParameterDetails: false,
+      activeParameterValue: false,
+      activeParameterUnit: false,
     };
     this.prevNParams = 0;
   }
