@@ -119,7 +119,7 @@ app.on('activate', function () {
 // global.electronStorage = electronStorage
 
 const launchPythonClient = (cmd) => {
-  return child_process.spawn('gnome-terminal', ['-e', 'python -i -c \''+cmd+'\'']);
+  return child_process.spawn('gnome-terminal', ['-e', 'python -i -c \"'+cmd+'\"']);
 }
 global.launchPythonClient = launchPythonClient;
 

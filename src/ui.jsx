@@ -82,10 +82,11 @@ export class Toolbar extends Component {
   }
   launchPythonClient = () => {
     console.log("Bundle.launchPythonClient")
+    var code = 'import phoebe; logger=phoebe.logger(\'info\'); b=phoebe.Bundle.from_server(\''+this.props.bundleid+'\', \''+this.props.app.state.serverHost+'\');'
     if (this.props.app.state.isElectron) {
-      window.require('electron').remote.getGlobal('launchPythonClient')('import phoebe');
+      window.require('electron').remote.getGlobal('launchPythonClient')(code+'print(\\"'+code+'\\")');
     } else {
-      alert("cannot launch from webapp... eventually this will raise a modal with a script you can copy and paste into a terminal")
+      prompt("Install the dedicated desktop application to automatically launch an interactive python console.  From the web app, you can load this bundle in a Python console by copy and pasting the following: ", code);
     }
   }
   render() {
