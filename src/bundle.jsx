@@ -41,6 +41,11 @@ export class Bundle extends ReactQueryParams {
   registerBundle = () => {
     console.log("registerBundle")
     this.props.app.socket.emit('register client', {'clientid': this.props.app.state.clientid, 'bundleid': this.state.bundleid});
+
+    this.props.app.socket.on(this.state.bundleid+':changes:react', (data) => {
+      console.log("received changes", data)
+    });
+
   }
   deregisterBundle = () => {
     console.log("deregisterBundle")
