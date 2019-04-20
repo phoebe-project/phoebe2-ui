@@ -44,6 +44,11 @@ export class Bundle extends ReactQueryParams {
 
     this.props.app.socket.on(this.state.bundleid+':changes:react', (data) => {
       console.log("received changes", data)
+      var params = this.state.params;
+      Object.keys(data.parameters).forEach( uniqueid => {
+        params[uniqueid] = data.parameters[uniqueid]
+      });
+      this.setState({params: params});
     });
 
   }
