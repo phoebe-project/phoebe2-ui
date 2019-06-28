@@ -33,7 +33,7 @@ npm install
 npm run dev
 ```
 
-will launch the webserver on http://localhost:3000 and open a the Electron app.  Both will update/refresh when updates are made to the code.
+will launch the webserver on http://localhost:3000 and open the Electron app.  Both will update/refresh when updates are made to the code.
 
 ## Deploying Web App
 

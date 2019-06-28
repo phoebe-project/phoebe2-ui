@@ -63,7 +63,7 @@ class App extends Component {
       defaultServerHosts = null;
       this.getElectronChildProcessPort();
     } else {
-      defaultServerHosts = "localhost"
+      defaultServerHosts = "server.phoebe-project.org"
     }
 
     var settingsServerHosts = this.getSettingFromStorage('settingsServerHosts') || defaultServerHosts
