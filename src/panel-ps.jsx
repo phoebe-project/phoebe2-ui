@@ -65,7 +65,9 @@ class Parameter extends Component {
       details: {},
       expandedDetails: false,
       expandedValue: false,
-      expandedUnit: false
+      expandedUnit: false,
+      userValue: null, // value the user is requesting to be changed
+      userUnit: null, // unit the user is requesting to be changed
     };
     this.abortGetDetailsController = null;
     this.ref = React.createRef();
@@ -107,6 +109,15 @@ class Parameter extends Component {
       this.props.PSPanel.setState({activeParameterUnit: false})
     }
   }
+  updateUserValue = (newValue) => {
+    this.setState({userValue: newValue})
+  }
+  submitSetValue = (e) => {
+    // console.log("request "+this.props.uniqueid+" to change to "+this.state.userValue)
+    this.props.app.socket.emit('set_value', {'bundleid': this.props.bundle.state.bundleid, 'uniqueid': this.props.uniqueid, 'value': this.state.userValue});
+    this.toggleExpandedValue(e)
+
+  }
   toggleExpandedUnit = (e) => {
     e.stopPropagation();
     if (this.props.PSPanel.state.activeParameter===this.props.uniqueid) {
@@ -122,6 +133,13 @@ class Parameter extends Component {
       this.props.PSPanel.setState({activeParameterValue: false})
       this.props.PSPanel.setState({activeParameterUnit: true})
     }
+  }
+  updateUserUnit = (newUnit) => {
+    this.setState({userUnit: newUnit})
+  }
+  submitSetUnit = (e) => {
+    this.props.app.socket.emit('set_default_unit', {'bundleid': this.props.bundle.state.bundleid, 'uniqueid': this.props.uniqueid, 'unit': this.state.userUnit});
+    this.toggleExpandedUnit(e)
   }
   addToPinned = () => {
     var pinned = this.props.bundle.queryParams.pinned || []
@@ -196,7 +214,7 @@ class Parameter extends Component {
   //   return false;
   // }
   render() {
-    if (this.state.expandedDetails && !this.state.receivedDetails) {
+    if ((this.state.expandedDetails || (this.state.expandedValue && ['ChoiceParameter', 'BoolParameter'].indexOf(this.props.paramOverview.class)!==-1) || this.state.expandedUnit) && !this.state.receivedDetails) {
       this.setState({receivedDetails: true})
 
       this.abortGetDetailsController = new window.AbortController();
@@ -204,6 +222,7 @@ class Parameter extends Component {
         .then(res => res.json())
         .then(json => {
           if (json.data.success) {
+            console.log("received parameter details")
             this.setState({details: json.data.parameter})
           } else {
             alert("server error: "+json.data.error);
@@ -228,28 +247,54 @@ class Parameter extends Component {
     let inlineValueContent, expandedValueContent, color
     if (this.state.expandedValue) {
       if (this.props.paramOverview.class==='FloatArrayParameter') {
-        expandedValueContent = <span>
+        expandedValueContent = <span style={{verticalAlign: "super"}}>
                                 <span onClick={this.toggleExpandedValue} className="btn fa-fw fas fa-times"/>
                                 SET VALUE FloatArrayParameter
                                 <span onClick={this.toggleExpandedValue} className="btn fa-fw fas fa-check"/>
                              </span>
       } else if (this.props.paramOverview.class==='SelectParameter') {
-        expandedValueContent = <span>
+        expandedValueContent = <span style={{verticalAlign: "super"}}>
                                 <span onClick={this.toggleExpandedValue} className="btn fa-fw fas fa-times"/>
                                 SET VALUE Selectparameter
                                 <span onClick={this.toggleExpandedValue} className="btn fa-fw fas fa-check"/>
                              </span>
       } else if (this.props.paramOverview.class==='ConstraintParameter') {
-        expandedValueContent = <span>
+        expandedValueContent = <span style={{verticalAlign: "super"}}>
                                 <span onClick={this.toggleExpandedValue} className="btn fa-fw fas fa-times"/>
                                 SET VALUE ConstraintParameter
                                 <span onClick={this.toggleExpandedValue} className="btn fa-fw fas fa-check"/>
                              </span>
-      } else {
-        inlineValueContent = <span>
+      } else if (['ChoiceParameter', 'BoolParameter'].indexOf(this.props.paramOverview.class)!==-1) {
+        inlineValueContent = <span style={{verticalAlign: "super"}}>
                                 <span onClick={this.toggleExpandedValue} className="btn fa-fw fas fa-times"/>
-                                <span>SET VALUE</span>
-                                <span onClick={this.toggleExpandedValue} className="btn fa-fw fas fa-check"/>
+                                <span><Input type='choice' origValue={this.props.paramOverview.valuestr} onChange={this.updateUserValue} choices={this.state.details.choices}/></span>
+                                <span onClick={this.submitSetValue} className="btn fa-fw fas fa-check"/>
+                             </span>
+      } else if (this.props.paramOverview.class==='IntParameter') {
+        inlineValueContent = <span style={{verticalAlign: "super"}}>
+                                <span onClick={this.toggleExpandedValue} className="btn fa-fw fas fa-times"/>
+                                <span><Input type='int' origValue={this.props.paramOverview.valuestr} onChange={this.updateUserValue}/></span>
+                                <span onClick={this.submitSetValue} className="btn fa-fw fas fa-check"/>
+                             </span>
+      } else if (this.props.paramOverview.class==='FloatParameter') {
+        if (this.props.paramOverview.unitstr) {
+          inlineValueContent = <span style={{verticalAlign: "super"}}>
+                                  <span onClick={this.toggleExpandedValue} className="btn fa-fw fas fa-times"/>
+                                  <span><Input type='floatunits' origValue={this.props.paramOverview.valuestr+" "+this.props.paramOverview.unitstr} onChange={this.updateUserValue}/></span>
+                                  <span onClick={this.submitSetValue} className="btn fa-fw fas fa-check"/>
+                               </span>
+        } else {
+          inlineValueContent = <span style={{verticalAlign: "super"}}>
+                                  <span onClick={this.toggleExpandedValue} className="btn fa-fw fas fa-times"/>
+                                  <span><Input type='float' origValue={this.props.paramOverview.valuestr} onChange={this.updateUserValue}/></span>
+                                  <span onClick={this.submitSetValue} className="btn fa-fw fas fa-check"/>
+                               </span>
+        }
+      } else {
+        inlineValueContent = <span style={{verticalAlign: "super"}}>
+                                <span onClick={this.toggleExpandedValue} className="btn fa-fw fas fa-times"/>
+                                <span><Input type='string' origValue={this.props.paramOverview.valuestr} onChange={this.updateUserValue}/></span>
+                                <span onClick={this.submitSetValue} className="btn fa-fw fas fa-check"/>
                              </span>
       }
     } else if (!this.state.expandedUnit) {
@@ -261,10 +306,10 @@ class Parameter extends Component {
 
     let inlineUnitContent
     if (this.state.expandedUnit) {
-      inlineUnitContent = <span>
+      inlineUnitContent = <span style={{verticalAlign: "super"}}>
                               <span onClick={this.toggleExpandedUnit} className="btn fa-fw fas fa-times"/>
-                              SET UNIT
-                              <span onClick={this.toggleExpandedUnit} className="btn fa-fw fas fa-check"/>
+                              <span><Input type='choice' origValue={this.props.paramOverview.unitstr} onChange={this.updateUserUnit} choices={this.state.details.unit_choices}/></span>
+                              <span onClick={this.submitSetUnit} className="btn fa-fw fas fa-check"/>
                            </span>
     } else if (!this.state.expandedValue) {
       inlineUnitContent = <span onClick={this.toggleExpandedUnit} style={{display: "inline-block", textAlign: "left", width: "65px", paddingLeft: "5px", whiteSpace: "nowrap", overflowX: "hidden"}}>
@@ -274,10 +319,10 @@ class Parameter extends Component {
 
     return (
       <div ref={this.ref} className='phoebe-parameter'>
-        <div className='phoebe-parameter-header' style={{minWidth: "250px"}} onClick={this.toggleExpandedDetails}>
+        <div className='phoebe-parameter-header' style={{minWidth: "250px"}}>
           <Checkbox style={{verticalAlign: "super"}} checked={this.state.pinned} pinnable={this.props.pinnable} onClick={this.togglePinned} checkedTitle="unpin parameter" uncheckedTitle="pin parameter" />
 
-          <span style={{display: "inline-block", marginLeft: "10px", fontWeight: "bold", width: "calc(100% - 210px)", overflowX: "hidden"}}>
+          <span style={{display: "inline-block", marginLeft: "10px", fontWeight: "bold", width: "calc(100% - 210px)", overflowX: "hidden"}} onClick={this.toggleExpandedDetails}>
             <Twig twig={this.props.paramOverview.twig}/>
           </span>
 
@@ -445,6 +490,56 @@ class ParameterDetailsItemPin extends Component {
 
       </div>
     )
+  }
+}
+
+class Input extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      value: this.props.origValue || ''
+    };
+    this.refinput = React.createRef();
+  }
+  onChange = (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    var value = e.target.value;
+    if (this.props.type == 'float') {
+      value = value.replace(/[^0-9.-]/g, '');
+    } else if (this.props.type == 'floatunits') {
+      // allow space and [a-z,A-Z] if units
+      value = value.replace(/[^0-9A-Za-z.-\s]/g, '');
+    } else if (this.props.type == 'int') {
+      value = value.replace(/[^0-9-]/g, '');
+    }
+
+
+    this.setState({value: value});
+    if (this.props.onChange) {
+      this.props.onChange(value);
+    }
+  }
+  componentDidMount() {
+    if (this.refinput.current) {
+      this.refinput.current.select();
+    }
+  }
+  render() {
+    if (this.props.type==='choice') {
+      var choices = this.props.choices || [];
+      return (
+        <React.Fragment>
+          <select style={{marginLeft: "10px", width: "115px", height: "26px"}} value={this.state.value} onChange={this.onChange}>
+            {choices.map(choice => <option value={choice}>{choice}</option>)}
+          </select>
+        </React.Fragment>
+      )
+    } else {
+      return (
+        <input ref={this.refinput} type="text" style={{marginLeft: "10px", width: "115px", height: "26px"}} name="value" pattern="[0-9]" title="value" value={this.state.value} onChange={this.onChange}/>
+      )
+    }
   }
 }
 
