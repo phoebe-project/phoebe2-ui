@@ -35,6 +35,7 @@ class App extends Component {
       serverHost: null,
       serverStatus: "disconnected",
       serverPhoebeVersion: null,
+      serverAvailableKinds: null,
       serverAllowAutoconnect: true,
       serverStartingChildProcess: isElectron(),
       settingsServerHosts: [],
@@ -85,11 +86,11 @@ class App extends Component {
     fetch("http://"+serverHost+"/info")
       .then(res => res.json())
       .then(json => {
-        this.setState({serverPhoebeVersion: json.data.phoebe_version})
+        this.setState({serverPhoebeVersion: json.data.phoebe_version, serverAvailableKinds: json.data.available_kinds})
       })
       .catch(err => {
         alert("server may no longer be available.  Cancel connetion to rescan.")
-        this.setState({phoebeVersion: null});
+        this.setState({serverPhoebeVersion: null, serverAvailableKinds: null});
       });
   }
   serverConnect = (server) => {

@@ -499,3 +499,16 @@ code {
 /* a .phoebe-top :hover { */
   /* color: #2B71B1 !important; */
 /* } */
+
+.Toastify__toast--info {
+  background: #2B71B1 !important;
+}
+.Toastify__toast--success {
+  background: #07bc0c;
+}
+.Toastify__toast--warning {
+  background: #f1c40f;
+}
+.Toastify__toast--error {
+  background: #e74c3c;
+}

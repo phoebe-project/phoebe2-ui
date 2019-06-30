@@ -1,6 +1,11 @@
 import React, { Component } from 'react';
 import {Redirect} from 'react-router-dom';
 
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+// minified version is also included
+// import 'react-toastify/dist/ReactToastify.min.css';
+
 // import isElectron from 'is-electron'; // https://github.com/cheton/is-electron
 import PanelGroup from 'react-panelgroup'; // https://www.npmjs.com/package/react-panelgroup
 
@@ -28,6 +33,7 @@ export class Bundle extends ReactQueryParams {
       nAdvancedHiddenEach: {},
       nAdvancedHiddenTotal: 0,
       nparams: 0,
+      pendingBundleMethod: null,
     };
     this.childrenWindows = [];
   }
@@ -44,13 +50,84 @@ export class Bundle extends ReactQueryParams {
     console.log("registerBundle")
     this.props.app.socket.emit('register client', {'clientid': this.props.app.state.clientid, 'bundleid': this.state.bundleid});
 
+    this.props.app.socket.on(this.state.bundleid+':errors:react', (data) => {
+      if (this.state.pendingBundleMethod) {
+        toast.update(this.state.pendingBundleMethod, {
+          render: "FAILED: "+data.error,
+          type: toast.TYPE.ERROR,
+          autoClose: 5000,
+          closeButton: true})
+
+        this.setState({pendingBundleMethod: null})
+
+      } else {
+        toast.error('ERROR: '+data.error, {
+          position: "bottom-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true})
+
+      }
+
+    })
+
     this.props.app.socket.on(this.state.bundleid+':changes:react', (data) => {
-      console.log("received changes", data)
+      // console.log("received changes", data)
       var params = this.state.params;
       Object.keys(data.parameters).forEach( uniqueid => {
         params[uniqueid] = data.parameters[uniqueid]
       });
       this.setState({params: params});
+
+      if (data.tags) {
+        this.setState({tags: data.tags});
+      }
+
+      if (data.add_filter) {
+
+        var filterstr = ''
+        for (const [key, value] of Object.entries(data.add_filter)) {
+          filterstr += key+ ' = '+value
+        }
+
+        var onClick = (e) => {this.clearQueryParams(); this.setQueryParams(data.add_filter)}
+
+        if (this.state.pendingBundleMethod) {
+          toast.update(this.state.pendingBundleMethod, {
+            render: 'Success!  Click to filter: '+filterstr+'.',
+            type: toast.TYPE.SUCCESS,
+            autoClose: 5000,
+            closeButton: true,
+            onClick: onClick })
+
+          this.setState({pendingBundleMethod: null})
+
+        } else {
+          toast.info('New parameters.  Click to filter: '+filterstr+'.', {
+            position: "bottom-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            onClick: onClick})
+
+        }
+      } else if (this.state.pendingBundleMethod) {
+        toast.update(this.state.pendingBundleMethod, {
+          render: 'Success!',
+          type: toast.TYPE.SUCCESS,
+          autoClose: 5000,
+          closeButton: true})
+
+        this.setState({pendingBundleMethod: null})
+
+
+      }
+
+
     });
 
   }
@@ -243,6 +320,19 @@ export class Bundle extends ReactQueryParams {
       <div className="App">
         <Toolbar app={this.props.app} bundle={this} bundleid={this.state.bundleid}/>
         <Statusbar app={this.props.app} bundle={this} bundleid={this.state.bundleid}/>
+
+        <ToastContainer
+          position="bottom-right"
+          autoClose={5000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick={false}
+          rtl={false}
+          pauseOnVisibilityChange={false}
+          pauseOnFocusLoss={true}
+          draggable
+          pauseOnHover
+        />
 
         <div className="d-none d-lg-block" style={{paddingTop: "50px", paddingBottom: "28px", height: "100%"}}>
           {/* need to support down to width of 990 for d-lg.  Tag starts at width needed for 3 columns */}
