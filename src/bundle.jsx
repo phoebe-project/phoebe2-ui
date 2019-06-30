@@ -104,6 +104,7 @@ export class Bundle extends ReactQueryParams {
             type: toast.TYPE.SUCCESS,
             autoClose: 10000,
             closeButton: true,
+            closeOnClick: true,
             onClick: onClick })
 
           this.setState({pendingBundleMethod: null})

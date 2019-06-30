@@ -19,6 +19,7 @@ class ActionContentAdd extends Component {
     super(props);
     this.state = {
       kind: null,
+      component: null,
     }
   }
 
@@ -29,33 +30,57 @@ class ActionContentAdd extends Component {
     this.setState({kind: e.target.value});
     this.props.onUpdatePacket({kind: e.target.value})
   }
+  onChangeComponent = (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+
+    this.setState({component: e.target.value});
+    this.props.onUpdatePacket({component: e.target.value})
+  }
   onChangeLabel = (e) => {
     this.props.onUpdatePacket({[this.props.action.split('_')[1]]: e.target.value})
   }
   render() {
     var addType = this.props.action.split('_')[1]
     var availableKinds = this.props.app.state.serverAvailableKinds[addType]
+    var availableComponents = this.props.bundle.state.tags['components'] || ['']
 
     if (this.state.kind===null) {
       // then defaults based on kind
       var kind = {'dataset': 'lc', 'compute': 'phoebe', 'component': 'star', 'figure': 'lc'}[addType] || availableKinds[0]
       this.setState({kind: kind})
       this.props.onUpdatePacket({kind: kind})
+    }
 
+    if (addType=='feature' && this.state.component===null) {
+      this.setState({component: availableComponents[0]})
+      this.props.onUpdatePacket({component: availableComponents[0]})
     }
 
     return (
       <div>
         <div className="form-group">
 
-          <label id="kind">kind</label>
-          <select id="kind" value={this.state.kind} onChange={this.onChangeKind}>
+          <label id="kind" style={{width: "50%", textAlign: "right", paddingRight: "10px"}}>kind</label>
+          <select id="kind" value={this.state.kind} onChange={this.onChangeKind} style={{width: "50%"}}>
             {availableKinds.map(choice => <option value={choice}>{choice}</option>)}
           </select>
+        </div>
 
+        {addType==='feature' ?
+          <div className="form-group">
+            <label id="component" style={{width: "50%", textAlign: "right", paddingRight: "10px"}}>component</label>
+            <select id="component" value={this.state.component} onChange={this.onChangeComponent} style={{width: "50%"}}>
+              {availableComponents.map(choice => <option value={choice}>{choice}</option>)}
+            </select>
+          </div>
+        :
+          null
+        }
 
-          <label id={addType}>{addType}</label>
-          <input type="text" id={addType} placeholder="automatically generated if empty" onChange={this.onChangeLabel}></input>
+        <div className="form-group">
+          <label id={addType} style={{width: "50%", textAlign: "right", paddingRight: "10px"}}>{addType}</label>
+          <input type="text" id={addType} placeholder="automatically generated if empty" onChange={this.onChangeLabel} style={{width: "50%"}}></input>
         </div>
 
       </div>
@@ -98,14 +123,15 @@ class ActionContentRename extends Component {
       <div>
         <div className="form-group">
 
-          <label id={"old_"+renameType}>old {renameType}</label>
-          <select id={"old_"+renameType} value={this.state.labelOld} onChange={this.onChangeLabelOld}>
+          <label id={"old_"+renameType} style={{width: "50%", textAlign: "right", paddingRight: "10px"}}>old {renameType}</label>
+          <select id={"old_"+renameType} value={this.state.labelOld} onChange={this.onChangeLabelOld} style={{width: "50%"}}>
             {availableLabels.map(choice => <option value={choice}>{choice}</option>)}
           </select>
+        </div>
 
-
-          <label id={"new_"+renameType}>new {renameType}</label>
-          <input type="text" id={"new_"+renameType} onChange={this.onChangeLabelNew}></input>
+        <div className="form-group">
+          <label id={"new_"+renameType} style={{width: "50%", textAlign: "right", paddingRight: "10px"}}>new {renameType}</label>
+          <input type="text" id={"new_"+renameType} onChange={this.onChangeLabelNew} style={{width: "50%"}}></input>
         </div>
 
       </div>
@@ -146,8 +172,8 @@ class ActionContentRemove extends Component {
       <div>
         <div className="form-group">
 
-          <label id={removeType}>{removeType}</label>
-          <select id={removeType} value={this.state.label} onChange={this.onChangeLabel}>
+          <label id={removeType} style={{width: "50%", textAlign: "right", paddingRight: "10px"}}>{removeType}</label>
+          <select id={removeType} value={this.state.label} onChange={this.onChangeLabel} style={{width: "50%"}}>
             {availableLabels.map(choice => <option value={choice}>{choice}</option>)}
           </select>
         </div>
@@ -173,26 +199,44 @@ class ActionContentRun extends Component {
 
     this.props.onUpdatePacket({[this.props.action.split('_')[1]]: e.target.value})
   }
+  getNewType = () => {
+    var runType = this.props.action.split('_')[1]
+    if (runType == 'compute') {
+      return 'model'
+    }
+    return null
+  }
+
+  onChangeLabelNew = (e) => {
+    this.props.onUpdatePacket({[this.getNewType()]: e.target.value})
+  }
 
   render() {
-    var removeType = this.props.action.split('_')[1]
-    var availableLabels = this.props.bundle.state.tags[removeType+'s'] || [];
+    var runType = this.props.action.split('_')[1]
+    var availableLabels = this.props.bundle.state.tags[runType+'s'] || [];
 
     if (this.state.label===null) {
       // then defaults based on kind
       this.setState({label: availableLabels[0]})
-      this.props.onUpdatePacket({[removeType]: availableLabels[0]})
+      this.props.onUpdatePacket({[runType]: availableLabels[0]})
     }
+
+    var newType = this.getNewType();
 
 
     return (
       <div>
         <div className="form-group">
-
-          <label id={removeType}>{removeType}</label>
-          <select id={removeType} value={this.state.label} onChange={this.onChangeLabel}>
+          <label id={runType} style={{width: "50%", textAlign: "right", paddingRight: "10px"}}>{runType}</label>
+          <select id={runType} value={this.state.label} onChange={this.onChangeLabel} style={{width: "50%"}}>
             {availableLabels.map(choice => <option value={choice}>{choice}</option>)}
           </select>
+        </div>
+
+        <div className="form-group">
+          <label id={newType} style={{width: "50%", textAlign: "right", paddingRight: "10px"}}>{newType}</label>
+          <input type="text" id={newType} placeholder="automatically generated if empty" onChange={this.onChangeLabelNew} style={{width: "50%"}}></input>
+
         </div>
 
       </div>
@@ -223,6 +267,9 @@ export class ActionPanel extends Component {
   }
   closePanel = () => {
     this.setState({redirect: generatePath(this.props.app.state.serverHost, this.props.bundle.state.bundleid, null, this.props.bundle.getSearchString())})
+  }
+  downloadRunAction = () => {
+    alert("not yet implemented")
   }
   submitAction = () => {
     if (['run', 'remove'].indexOf(this.props.action.split('_')[0]) != -1) {
@@ -277,6 +324,11 @@ export class ActionPanel extends Component {
 
         <div style={{float: "right", margin: "5px"}}>
           <span onClick={this.closePanel} className="btn btn-primary" style={{margin: "5px"}}><span className="fas fa-fw fa-times"></span> cancel</span>
+          { action === 'run' ?
+            <span onClick={this.downloadRunAction} className="btn btn-primary" style={{actionStyle}}><span className="fas fa-fw fa-download"></span> download script</span>
+            :
+            null
+          }
           <span onClick={this.submitAction} className="btn btn-primary" style={actionStyle}><span className={actionIcon}></span> {this.props.action}</span>
         </div>
       </Panel>
