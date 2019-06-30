@@ -13,7 +13,7 @@ import {TagPanel} from './panel-tags';
 import {PSPanel} from './panel-ps';
 import {ActionPanel} from './panel-action';
 import {FigurePanel} from './panel-figures';
-import {Link, generatePath, abortableFetch, mapObject} from './common';
+import {Link, generatePath, abortableFetch, mapObject, sameLists} from './common';
 import {Toolbar, Statusbar} from './ui';
 
 // NOTE: currently use a local version until PR is accepted, in which case we can lose the ./ and update the version requirements in package.json
@@ -75,11 +75,15 @@ export class Bundle extends ReactQueryParams {
 
     this.props.app.socket.on(this.state.bundleid+':changes:react', (data) => {
       // console.log("received changes", data)
-      var params = this.state.params;
-      Object.keys(data.parameters).forEach( uniqueid => {
-        params[uniqueid] = data.parameters[uniqueid]
-      });
-      this.setState({params: params});
+      if (data.parameters) {
+        var params = this.state.params;
+        Object.keys(data.parameters).forEach( uniqueid => {
+          console.log("updating "+data.parameters[uniqueid].uniquetwig)
+          params[uniqueid] = data.parameters[uniqueid]
+        });
+        this.setState({params: params});
+      }
+
 
       if (data.tags) {
         this.setState({tags: data.tags});
@@ -98,7 +102,7 @@ export class Bundle extends ReactQueryParams {
           toast.update(this.state.pendingBundleMethod, {
             render: 'Success!  Click to filter: '+filterstr+'.',
             type: toast.TYPE.SUCCESS,
-            autoClose: 5000,
+            autoClose: 10000,
             closeButton: true,
             onClick: onClick })
 
@@ -107,7 +111,7 @@ export class Bundle extends ReactQueryParams {
         } else {
           toast.info('New parameters.  Click to filter: '+filterstr+'.', {
             position: "bottom-right",
-            autoClose: 5000,
+            autoClose: 10000,
             hideProgressBar: false,
             closeOnClick: true,
             pauseOnHover: true,
@@ -271,7 +275,7 @@ export class Bundle extends ReactQueryParams {
       var nAdvancedHiddenEach = filteredInfo[1];
       var nAdvancedHiddenTotal = filteredInfo[2];
 
-      if (paramsfilteredids.length !== this.state.paramsfilteredids.length) {
+      if (paramsfilteredids.length !== this.state.paramsfilteredids.length || !sameLists(paramsfilteredids, this.state.paramsfilteredids)) {
         // since we're only allowing one tag to be added or removed, we can
         // hopefully rely that the length will change if the filter changes at all
         this.setState({paramsfilteredids: paramsfilteredids, nAdvancedHiddenEach: nAdvancedHiddenEach, nAdvancedHiddenTotal: nAdvancedHiddenTotal});
@@ -293,6 +297,7 @@ export class Bundle extends ReactQueryParams {
             }
           })
         });
+
 
         this.setState({tagsAvailable: tagsAvailable});
       }
@@ -323,7 +328,7 @@ export class Bundle extends ReactQueryParams {
 
         <ToastContainer
           position="bottom-right"
-          autoClose={5000}
+          autoClose={10000}
           hideProgressBar={false}
           newestOnTop={false}
           closeOnClick={false}
