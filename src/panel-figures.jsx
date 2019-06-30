@@ -9,7 +9,7 @@ export class FigurePanel extends Component {
 
   render() {
     return (
-      <Panel>
+      <Panel inactive={this.props.inactive}>
         <Tour app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid}/>
       </Panel>
     )

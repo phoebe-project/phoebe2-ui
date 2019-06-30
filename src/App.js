@@ -157,7 +157,7 @@ class App extends Component {
           <Route path={public_url + '/:server/transfer/:bundleid'} render={(props) => <Server {...props} app={this}><SplashBundle {...props} app={this} transfer={true}/></Server>}/>
           <Route path={public_url + '/:server/:bundleid/servers'} render={(props) => <Server {...props} app={this}><SplashServer {...props} app={this} switchServer={true}/></Server>}/>
           <Route path={public_url + '/:server/:bundleid/ps'} render={(props) => <Server {...props} app={this}><Bundle {...props} app={this} PSPanelOnly={true}/></Server>}/>
-          <Route path={public_url + '/:server/:bundleid/:modal'} render={(props) => <Server {...props} app={this}><Bundle {...props} app={this}/></Server>}/>
+          <Route path={public_url + '/:server/:bundleid/:action'} render={(props) => <Server {...props} app={this}><Bundle {...props} app={this}/></Server>}/>
           <Route path={public_url + '/:server/:bundleid'} render={(props) => <Server {...props} app={this}><Bundle {...props} app={this}/></Server>}/>
           <Route path={public_url + '/:server'} render={(props) => <Server {...props} app={this}><SplashBundle {...props} app={this}/></Server>}/>
           <Route path="*" component={NotFound} />

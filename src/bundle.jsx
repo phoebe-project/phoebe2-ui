@@ -6,11 +6,13 @@ import PanelGroup from 'react-panelgroup'; // https://www.npmjs.com/package/reac
 
 import {TagPanel} from './panel-tags';
 import {PSPanel} from './panel-ps';
+import {ActionPanel} from './panel-action';
 import {FigurePanel} from './panel-figures';
 import {Link, generatePath, abortableFetch, mapObject} from './common';
 import {Toolbar, Statusbar} from './ui';
 
 // NOTE: currently use a local version until PR is accepted, in which case we can lose the ./ and update the version requirements in package.json
+// local version now also includes a getSearchString() which we'd have to rewrite if using the dependency
 import ReactQueryParams from './react-query-params'; // https://github.com/jeff3dx/react-query-params
 
 export class Bundle extends ReactQueryParams {
@@ -229,14 +231,7 @@ export class Bundle extends ReactQueryParams {
       return (<PSPanel app={this.props.app} bundleid={this.state.bundleid} bundle={this} PSPanelOnly={this.props.PSPanelOnly}/>)
     }
 
-    var modal = this.props.match.params.modal
-    var modalContent = null;
-
-    if (modal) {
-      modalContent = <Modal {...this.props} title={modal}>
-                        MODAL CONTENT HERE
-                     </Modal>
-    }
+    var action = this.props.match.params.action
 
     var panelWidths = [
                       {size: 490, minSize:300, resize: "dynamic"},
@@ -246,16 +241,19 @@ export class Bundle extends ReactQueryParams {
 
     return (
       <div className="App">
-        {modalContent}
         <Toolbar app={this.props.app} bundle={this} bundleid={this.state.bundleid}/>
         <Statusbar app={this.props.app} bundle={this} bundleid={this.state.bundleid}/>
 
         <div className="d-none d-lg-block" style={{paddingTop: "50px", paddingBottom: "28px", height: "100%"}}>
           {/* need to support down to width of 990 for d-lg.  Tag starts at width needed for 3 columns */}
           <PanelGroup panelWidths={panelWidths}>
-            <TagPanel app={this.props.app} bundleid={this.state.bundleid} bundle={this}/>
-            <PSPanel app={this.props.app} bundleid={this.state.bundleid} bundle={this} showPopoutButton={true}/>
-            <FigurePanel app={this.props.app} bundleid={this.state.bundleid} bundle={this}/>
+            <TagPanel app={this.props.app} bundleid={this.state.bundleid} bundle={this} inactive={this.props.match.params.action}/>
+            {this.props.match.params.action ?
+              <ActionPanel app={this.props.app} bundleid={this.state.bundleid} bundle={this} action={this.props.match.params.action}/>
+              :
+              <PSPanel app={this.props.app} bundleid={this.state.bundleid} bundle={this} showPopoutButton={true}/>
+            }
+            <FigurePanel app={this.props.app} bundleid={this.state.bundleid} bundle={this} inactive={this.props.match.params.action}/>
           </PanelGroup>
         </div>
         <div className="d-block d-lg-none" style={{paddingTop: "50px", paddingBottom: "28px", height: "100%"}}>
@@ -263,43 +261,6 @@ export class Bundle extends ReactQueryParams {
         </div>
 
 
-      </div>
-    )
-  }
-}
-
-class Modal extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      redirect: null,
-    };
-  }
-  close = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    this.setState({redirect: generatePath(this.props.app.state.serverHost, this.props.match.params.bundleid)})
-  }
-  preventPropagationClose = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-  }
-  render() {
-    if (this.state.redirect) {
-      return (<Redirect to={this.state.redirect}/>)
-    }
-    return (
-      <div className="phoebe-modal-screen" onClick={this.close}>
-        <div className="phoebe-modal" onClick={this.preventPropagationClose}>
-          <div style={{float: "right", margin: "6px"}}>
-            <Link title="close modal" to={generatePath(this.props.app.state.serverHost, this.props.match.params.bundleid)}><span className="fa-lg fa-fw fas fa-times"/></Link>
-          </div>
-          <div style={{textAlign: "center", fontSize: "1.3em", fontWeight: "bold"}}>
-            {this.props.title}
-          </div>
-
-          <p>{this.props.children}</p>
-        </div>
       </div>
     )
   }

@@ -30,7 +30,7 @@ export function randomstr(N) {
   return text;
 }
 
-export function generatePath(serverHost, bundleid, modal, filter) {
+export function generatePath(serverHost, bundleid, action, search) {
   var url = "/"
   // if (isStaticFile()) {prefix = "#"}
 
@@ -40,11 +40,11 @@ export function generatePath(serverHost, bundleid, modal, filter) {
   if (bundleid) {
     url += "/"+bundleid
   }
-  if (modal) {
-    url += "/"+modal
+  if (action) {
+    url += "/"+action
   }
-  if (filter) {
-    url += "/"+filter
+  if (search) {
+    url += search
   }
   return url
 }

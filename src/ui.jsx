@@ -6,9 +6,16 @@ import {Link, generatePath} from './common';
 export class Panel extends Component {
   render() {
     return (
-      <div style={{padding: "10px", paddingTop: "20px", width: "100%", minHeight: "100%", overflowY: "auto", backgroundColor: this.props.backgroundColor}}>
-        {this.props.children}
-      </div>
+      <React.Fragment>
+        {this.props.inactive ?
+          <div style={{position: 'absolute', width: "100%", height: "100%", backgroundColor: "#808080b3"}}/>
+          :
+          null
+        }
+        <div style={{padding: "10px", paddingTop: "20px", width: "100%", minHeight: "100%", overflowY: "auto", backgroundColor: this.props.backgroundColor}}>
+          {this.props.children}
+        </div>
+      </React.Fragment>
     )
   }
 }

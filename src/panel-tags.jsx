@@ -21,7 +21,7 @@ class TagHeaderButton extends Component {
   followLink = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    this.setState({redirect: generatePath(this.props.app.state.serverHost, this.props.bundleid, this.props.to)});
+    this.setState({redirect: generatePath(this.props.app.state.serverHost, this.props.bundleid, this.props.to, this.props.bundle.getSearchString())});
   }
   render() {
     if (this.state.redirect) {
@@ -306,22 +306,22 @@ class TagGroup extends Component {
           {this.props.title}
           <div style={{float: "right"}}>
             {this.props.run ?
-              <TagHeaderButton app={this.props.app} bundleid={this.props.bundleid} to={`run_${group}`} iconClassNames="fas fa-fw fa-play"/>
+              <TagHeaderButton app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} to={`run_${group}`} iconClassNames="fas fa-fw fa-play"/>
               :
               <div style={{display: "inline-block", width: "34px"}}>&nbsp;</div>
             }
             {this.props.remove ?
-              <TagHeaderButton app={this.props.app} bundleid={this.props.bundleid} to={`remove_${group}`} iconClassNames="fas fa-fw fa-minus"/>
+              <TagHeaderButton app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} to={`remove_${group}`} iconClassNames="fas fa-fw fa-minus"/>
               :
               <div style={{display: "inline-block", width: "34px"}}>&nbsp;</div>
             }
             {this.props.rename ?
-              <TagHeaderButton app={this.props.app} bundleid={this.props.bundleid} to={`rename_${group}`} iconClassNames="fas fa-fw fa-pen"/>
+              <TagHeaderButton app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} to={`rename_${group}`} iconClassNames="fas fa-fw fa-pen"/>
               :
               <div style={{display: "inline-block", width: "34px"}}>&nbsp;</div>
             }
             {this.props.add ?
-              <TagHeaderButton app={this.props.app} bundleid={this.props.bundleid} to={`add_${group}`} iconClassNames="fas fa-fw fa-plus"/>
+              <TagHeaderButton app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} to={`add_${group}`} iconClassNames="fas fa-fw fa-plus"/>
               :
               <div style={{display: "inline-block", width: "34px"}}>&nbsp;</div>
             }
@@ -434,7 +434,7 @@ export class TagPanel extends Component {
     var tags = this.props.bundle.state.tags || {}
 
     return (
-      <Panel>
+      <Panel inactive={this.props.inactive}>
         <FilterBox bundle={this.props.bundle}/>
 
         <TagGroup title="Context" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} expanded={true} tags={tags.contexts || null}/>

@@ -181,7 +181,7 @@ export default class ReactQueryParams extends Component {
    * @param {object} params - Object of key:values to overlay on current query param values.
    * @param {boolean} addHistory - true = add browser history, default false.
    */
-  setQueryParams(params, addHistory = false) {
+  getSearchString(params) {
     const searchParams = this._resolveSearchParams();
 
     const nextQueryParams = { ...searchParams, ...params };
@@ -212,10 +212,15 @@ export default class ReactQueryParams extends Component {
         .map(key => `${key}=${nextQueryParams[key]}`)
         .join("&");
 
+    return search
+  }
+  setQueryParams(params, addHistory = false, pathname = null) {
+    const search = this.getSearchString(params);
+
     if (addHistory) {
-      this.history.push({ pathname: window.location.pathname, hash: window.location.hash, search });
+      this.history.push({ pathname: pathname || window.location.pathname, hash: window.location.hash, search });
     } else {
-      this.history.replace({ pathname: window.location.pathname, hash: window.location.hash, search });
+      this.history.replace({ pathname: pathname || window.location.pathname, hash: window.location.hash, search });
     }
 
     // Clear the cache
