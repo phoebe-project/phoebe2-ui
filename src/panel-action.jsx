@@ -63,7 +63,7 @@ class ActionContentAdd extends Component {
 
           <label id="kind" style={{width: "50%", textAlign: "right", paddingRight: "10px"}}>kind</label>
           <select id="kind" value={this.state.kind} onChange={this.onChangeKind} style={{width: "50%"}}>
-            {availableKinds.map(choice => <option value={choice}>{choice}</option>)}
+            {availableKinds.map(choice => <option value={choice} key={choice}>{choice}</option>)}
           </select>
         </div>
 
@@ -71,7 +71,7 @@ class ActionContentAdd extends Component {
           <div className="form-group">
             <label id="component" style={{width: "50%", textAlign: "right", paddingRight: "10px"}}>component</label>
             <select id="component" value={this.state.component} onChange={this.onChangeComponent} style={{width: "50%"}}>
-              {availableComponents.map(choice => <option value={choice}>{choice}</option>)}
+              {availableComponents.map(choice => <option value={choice} key={choice}>{choice}</option>)}
             </select>
           </div>
         :
@@ -125,7 +125,7 @@ class ActionContentRename extends Component {
 
           <label id={"old_"+renameType} style={{width: "50%", textAlign: "right", paddingRight: "10px"}}>old {renameType}</label>
           <select id={"old_"+renameType} value={this.state.labelOld} onChange={this.onChangeLabelOld} style={{width: "50%"}}>
-            {availableLabels.map(choice => <option value={choice}>{choice}</option>)}
+            {availableLabels.map(choice => <option value={choice} key={choice}>{choice}</option>)}
           </select>
         </div>
 
@@ -174,7 +174,7 @@ class ActionContentRemove extends Component {
 
           <label id={removeType} style={{width: "50%", textAlign: "right", paddingRight: "10px"}}>{removeType}</label>
           <select id={removeType} value={this.state.label} onChange={this.onChangeLabel} style={{width: "50%"}}>
-            {availableLabels.map(choice => <option value={choice}>{choice}</option>)}
+            {availableLabels.map(choice => <option value={choice} key={choice}>{choice}</option>)}
           </select>
         </div>
 
@@ -229,7 +229,7 @@ class ActionContentRun extends Component {
         <div className="form-group">
           <label id={runType} style={{width: "50%", textAlign: "right", paddingRight: "10px"}}>{runType}</label>
           <select id={runType} value={this.state.label} onChange={this.onChangeLabel} style={{width: "50%"}}>
-            {availableLabels.map(choice => <option value={choice}>{choice}</option>)}
+            {availableLabels.map(choice => <option value={choice} key={choice}>{choice}</option>)}
           </select>
         </div>
 
