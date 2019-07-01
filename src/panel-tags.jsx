@@ -305,17 +305,17 @@ class TagGroup extends Component {
         <div className='phoebe-tag-header' onClick={this.toggleExpanded}>
           {this.props.title}
           <div style={{float: "right"}}>
-            {this.props.run ?
+            {this.props.run && tags.length ?
               <TagHeaderButton app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} to={`run_${group}`} iconClassNames="fas fa-fw fa-play"/>
               :
               <div style={{display: "inline-block", width: "34px"}}>&nbsp;</div>
             }
-            {this.props.remove ?
+            {this.props.remove && tags.length ?
               <TagHeaderButton app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} to={`remove_${group}`} iconClassNames="fas fa-fw fa-minus"/>
               :
               <div style={{display: "inline-block", width: "34px"}}>&nbsp;</div>
             }
-            {this.props.rename ?
+            {this.props.rename && tags.length ?
               <TagHeaderButton app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} to={`rename_${group}`} iconClassNames="fas fa-fw fa-pen"/>
               :
               <div style={{display: "inline-block", width: "34px"}}>&nbsp;</div>
