@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 // import {Redirect} from 'react-router-dom';
 
 import FlipMove from 'react-flip-move'; // https://github.com/joshwcomeau/react-flip-move
+import Select from 'react-select'; // https://react-select.com/home
 
 import {Link, Twig, generatePath, abortableFetch, mapObject, filterObjectByKeys, popUpWindow} from './common';
 import {LogoSpinner} from './logo';
@@ -299,7 +300,7 @@ class Parameter extends Component {
       }
     } else if (!this.state.expandedUnit) {
       color = this.props.paramOverview.readonly ? "slategray" : "black"
-      inlineValueContent = <span onClick={this.props.paramOverview.readonly ? null : this.toggleExpandedValue} style={{display: "inline-block", color: color, textAlign: "right", width: "110px", paddingLeft: "5px", whiteSpace: "nowrap", overflowX: "hidden"}}>
+      inlineValueContent = <span onClick={this.props.paramOverview.readonly ? null : this.toggleExpandedValue} style={{display: "inline-block", color: color, textAlign: "right", width: "180px", paddingLeft: "5px", whiteSpace: "nowrap", overflowX: "hidden"}}>
                               {this.props.paramOverview.valuestr}
                            </span>
     }
@@ -322,7 +323,7 @@ class Parameter extends Component {
         <div className='phoebe-parameter-header' style={{minWidth: "250px"}}>
           <Checkbox style={{verticalAlign: "super"}} checked={this.state.pinned} pinnable={this.props.pinnable} onClick={this.togglePinned} checkedTitle="unpin parameter" uncheckedTitle="pin parameter" />
 
-          <span style={{display: "inline-block", marginLeft: "10px", fontWeight: "bold", width: "calc(100% - 210px)", overflowX: "hidden"}} onClick={this.toggleExpandedDetails}>
+          <span style={{display: "inline-block", marginLeft: "10px", fontWeight: "bold", width: "calc(100% - 280px)", overflowX: "hidden"}} onClick={this.toggleExpandedDetails}>
             <Twig twig={this.props.paramOverview.twig}/>
           </span>
 
@@ -502,16 +503,18 @@ class Input extends Component {
     this.refinput = React.createRef();
   }
   onChange = (e) => {
-    e.stopPropagation();
-    e.preventDefault();
-    var value = e.target.value;
+    var value = null;
     if (this.props.type == 'float') {
-      value = value.replace(/[^0-9.-]/g, '');
+      value = e.target.value.replace(/[^0-9.-]/g, '');
     } else if (this.props.type == 'floatunits') {
       // allow space and [a-z,A-Z] if units
-      value = value.replace(/[^0-9A-Za-z.-\s]/g, '');
+      value = e.target.value.replace(/[^0-9A-Za-z.-\s]/g, '');
     } else if (this.props.type == 'int') {
-      value = value.replace(/[^0-9-]/g, '');
+      value = e.target.value.replace(/[^0-9-]/g, '');
+    } else if (this.props.type == 'choice') {
+      value = e.value
+    } else {
+      value = e.target.value
     }
 
 
@@ -528,16 +531,17 @@ class Input extends Component {
   render() {
     if (this.props.type==='choice') {
       var choices = this.props.choices || [];
+      var choicesList = choices.map((choice) => ({value: choice, label: choice}))
+      var value = {value: this.state.value, label: this.state.value}
+
       return (
-        <React.Fragment>
-          <select style={{marginLeft: "10px", width: "115px", height: "26px"}} value={this.state.value} onChange={this.onChange}>
-            {choices.map(choice => <option value={choice}>{choice}</option>)}
-          </select>
-        </React.Fragment>
+        <span style={{marginLeft: "10px", width: "185px", height: "26px", display: "inline-block", verticalAlign: "sub", lineHeight: "1.0"}}>
+          <Select options={choicesList} value={value} onChange={this.onChange} defaultMenuIsOpen={true} className="phoebe-parameter-select" classNamePrefix="phoebe-parameter-select"/>
+        </span>
       )
     } else {
       return (
-        <input ref={this.refinput} type="text" style={{marginLeft: "10px", width: "115px", height: "26px"}} name="value" pattern="[0-9]" title="value" value={this.state.value} onChange={this.onChange}/>
+        <input ref={this.refinput} type="text" style={{marginLeft: "10px", width: "185px", height: "26px", borderRadius: "4px", border: "1px solid lightgray"}} name="value" pattern="[0-9]" title="value" value={this.state.value} onChange={this.onChange}/>
       )
     }
   }
@@ -565,7 +569,7 @@ export class PSPanel extends Component {
   orderByChanged = (e) => {
     var value = "Context"
     if (e) {
-      value = e.nativeEvent.srcElement.value
+      value = e.value
     }
     this.props.bundle.setQueryParams({orderBy: value})
   }
@@ -581,8 +585,19 @@ export class PSPanel extends Component {
     this.prevNParams = this.props.bundle.state.paramsfilteredids.length
 
     var orderBy = this.props.bundle.queryParams.orderBy || 'context'
+    var orderByDefault = {value: orderBy, label: orderBy}
     var orderByTags = tags[orderBy+'s'] || []
     orderByTags = orderByTags.concat([null]);
+
+    var orderByChoices = [{value: "context", label: "context"},
+                          {value: "kind", label: "kind"},
+                          {value: "component", label: "component"},
+                          {value: "feature", label: "feature"},
+                          {value: "dataset", label: "dataset"},
+                          {value: "figure", label: "figure"},
+                          {value: "compute", label: "compute"},
+                          {value: "model", label: "model"},
+                          {value: "qualifier", label: "qualifier"}]
 
     return (
       <Panel backgroundColor="#e4e4e4">
@@ -596,18 +611,9 @@ export class PSPanel extends Component {
 
         <div style={{paddingTop: "10px", paddingLeft: "10px"}}>
           Order by:
-          <select onChange={this.orderByChanged} defaultValue={orderBy}>
-              <option value="context">Context</option>
-              <option value="kind">Kind</option>
-              {/* <option value="constraint">Constraint</option> */}
-              <option value="component">Component</option>
-              <option value="feature">Feature</option>
-              <option value="dataset">Dataset</option>
-              <option value="figure">Figure</option>
-              <option value="compute">Compute</option>
-              <option value="model">Model</option>
-              <option value="qualifier">Qualifier</option>
-          </select>
+          <span style={{width: "250px", lineHeight: "1.0", display: "inline-block", paddingLeft: "10px", verticalAlign: "sub"}}>
+            <Select options={orderByChoices} defaultValue={orderByDefault} onChange={this.orderByChanged} className="phoebe-parameter-select" classNamePrefix="phoebe-parameter-select"/>
+          </span>
         </div>
 
         <div style={{paddingTop: "10px"}}>

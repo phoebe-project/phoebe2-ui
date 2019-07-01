@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import {Redirect} from 'react-router-dom';
 
 import {toast} from 'react-toastify';
+import Select from 'react-select'; // https://react-select.com/home
 
 
 // import FlipMove from 'react-flip-move'; // https://github.com/joshwcomeau/react-flip-move
@@ -24,18 +25,12 @@ class ActionContentAdd extends Component {
   }
 
   onChangeKind = (e) => {
-    e.stopPropagation();
-    e.preventDefault();
-
-    this.setState({kind: e.target.value});
-    this.props.onUpdatePacket({kind: e.target.value})
+    this.setState({kind: e.value});
+    this.props.onUpdatePacket({kind: e.value})
   }
   onChangeComponent = (e) => {
-    e.stopPropagation();
-    e.preventDefault();
-
-    this.setState({component: e.target.value});
-    this.props.onUpdatePacket({component: e.target.value})
+    this.setState({component: e.value});
+    this.props.onUpdatePacket({component: e.value})
   }
   onChangeLabel = (e) => {
     this.props.onUpdatePacket({[this.props.action.split('_')[1]]: e.target.value})
@@ -43,7 +38,11 @@ class ActionContentAdd extends Component {
   render() {
     var addType = this.props.action.split('_')[1]
     var availableKinds = this.props.app.state.serverAvailableKinds[addType]
+    var availableKindsList = availableKinds.map((choice) => ({value: choice, label: choice}))
+
     var availableComponents = this.props.bundle.state.tags['components'] || ['']
+    var availableComponentsList = availableComponents.map((choice) => ({value: choice, label: choice}))
+
 
     if (this.state.kind===null) {
       // then defaults based on kind
@@ -62,17 +61,17 @@ class ActionContentAdd extends Component {
         <div className="form-group">
 
           <label id="kind" style={{width: "50%", textAlign: "right", paddingRight: "10px"}}>kind</label>
-          <select id="kind" value={this.state.kind} onChange={this.onChangeKind} style={{width: "50%"}}>
-            {availableKinds.map(choice => <option value={choice} key={choice}>{choice}</option>)}
-          </select>
+          <span style={{width: "50%", lineHeight: "1.0", display: "inline-block", verticalAlign: "sub"}}>
+            <Select options={availableKindsList}  value={{value: this.state.kind, label: this.state.kind}} onChange={this.onChangeKind} className="phoebe-parameter-select" classNamePrefix="phoebe-parameter-select"/>
+          </span>
         </div>
 
         {addType==='feature' ?
           <div className="form-group">
             <label id="component" style={{width: "50%", textAlign: "right", paddingRight: "10px"}}>component</label>
-            <select id="component" value={this.state.component} onChange={this.onChangeComponent} style={{width: "50%"}}>
-              {availableComponents.map(choice => <option value={choice} key={choice}>{choice}</option>)}
-            </select>
+            <span style={{width: "50%", lineHeight: "1.0", display: "inline-block", verticalAlign: "sub"}}>
+              <Select options={availableComponentsList} value={{value: this.state.component, label: this.state.component}} onChange={this.onChangeComponent} className="phoebe-parameter-select" classNamePrefix="phoebe-parameter-select"/>
+            </span>
           </div>
         :
           null
@@ -97,12 +96,9 @@ class ActionContentRename extends Component {
   }
 
   onChangeLabelOld = (e) => {
-    e.stopPropagation();
-    e.preventDefault();
+    this.setState({labelOld: e.value});
 
-    this.setState({labelOld: e.target.value});
-
-    this.props.onUpdatePacket({['old_'+this.props.action.split('_')[1]]: e.target.value})
+    this.props.onUpdatePacket({['old_'+this.props.action.split('_')[1]]: e.value})
   }
 
   onChangeLabelNew = (e) => {
@@ -111,6 +107,7 @@ class ActionContentRename extends Component {
   render() {
     var renameType = this.props.action.split('_')[1]
     var availableLabels = this.props.bundle.state.tags[renameType+'s'] || [];
+    var availableLabelsList = availableLabels.map((choice) => ({value: choice, label: choice}))
 
     if (this.state.labelOld===null) {
       // then defaults based on kind
@@ -124,9 +121,9 @@ class ActionContentRename extends Component {
         <div className="form-group">
 
           <label id={"old_"+renameType} style={{width: "50%", textAlign: "right", paddingRight: "10px"}}>old {renameType}</label>
-          <select id={"old_"+renameType} value={this.state.labelOld} onChange={this.onChangeLabelOld} style={{width: "50%"}}>
-            {availableLabels.map(choice => <option value={choice} key={choice}>{choice}</option>)}
-          </select>
+          <span style={{width: "50%", lineHeight: "1.0", display: "inline-block", verticalAlign: "sub"}}>
+            <Select options={availableLabelsList} value={{value: this.state.labelOld, label: this.state.labelOld}} onChange={this.onChangeLabelOld} className="phoebe-parameter-select" classNamePrefix="phoebe-parameter-select"/>
+          </span>
         </div>
 
         <div className="form-group">
@@ -149,17 +146,15 @@ class ActionContentRemove extends Component {
   }
 
   onChangeLabel = (e) => {
-    e.stopPropagation();
-    e.preventDefault();
+    this.setState({label: e.value});
 
-    this.setState({label: e.target.value});
-
-    this.props.onUpdatePacket({[this.props.action.split('_')[1]]: e.target.value})
+    this.props.onUpdatePacket({[this.props.action.split('_')[1]]: e.value})
   }
 
   render() {
     var removeType = this.props.action.split('_')[1]
     var availableLabels = this.props.bundle.state.tags[removeType+'s'] || [];
+    var availableLabelsList = availableLabels.map((choice) => ({value: choice, label: choice}))
 
     if (this.state.label===null) {
       // then defaults based on kind
@@ -173,9 +168,9 @@ class ActionContentRemove extends Component {
         <div className="form-group">
 
           <label id={removeType} style={{width: "50%", textAlign: "right", paddingRight: "10px"}}>{removeType}</label>
-          <select id={removeType} value={this.state.label} onChange={this.onChangeLabel} style={{width: "50%"}}>
-            {availableLabels.map(choice => <option value={choice} key={choice}>{choice}</option>)}
-          </select>
+          <span style={{width: "50%", lineHeight: "1.0", display: "inline-block", verticalAlign: "sub"}}>
+            <Select options={availableLabelsList} value={{value: this.state.label, label: this.state.label}} onChange={this.onChangeLabel} className="phoebe-parameter-select" classNamePrefix="phoebe-parameter-select"/>
+          </span>
         </div>
 
       </div>
@@ -192,12 +187,9 @@ class ActionContentRun extends Component {
   }
 
   onChangeLabel = (e) => {
-    e.stopPropagation();
-    e.preventDefault();
+    this.setState({label: e.value});
 
-    this.setState({label: e.target.value});
-
-    this.props.onUpdatePacket({[this.props.action.split('_')[1]]: e.target.value})
+    this.props.onUpdatePacket({[this.props.action.split('_')[1]]: e.value})
   }
   getNewType = () => {
     var runType = this.props.action.split('_')[1]
@@ -214,6 +206,7 @@ class ActionContentRun extends Component {
   render() {
     var runType = this.props.action.split('_')[1]
     var availableLabels = this.props.bundle.state.tags[runType+'s'] || [];
+    var availableLabelsList = availableLabels.map((choice) => ({value: choice, label: choice}))
 
     if (this.state.label===null) {
       // then defaults based on kind
@@ -228,9 +221,10 @@ class ActionContentRun extends Component {
       <div>
         <div className="form-group">
           <label id={runType} style={{width: "50%", textAlign: "right", paddingRight: "10px"}}>{runType}</label>
-          <select id={runType} value={this.state.label} onChange={this.onChangeLabel} style={{width: "50%"}}>
-            {availableLabels.map(choice => <option value={choice} key={choice}>{choice}</option>)}
-          </select>
+          <span style={{width: "50%", lineHeight: "1.0", display: "inline-block", verticalAlign: "sub"}}>
+            <Select options={availableLabelsList} value={{value: this.state.label, label: this.state.label}} onChange={this.onChangeLabel} className="phoebe-parameter-select" classNamePrefix="phoebe-parameter-select"/>
+          </span>
+
         </div>
 
         <div className="form-group">
