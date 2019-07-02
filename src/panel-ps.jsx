@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 // import {Redirect} from 'react-router-dom';
+import 'babel-polyfill';
 
 import FlipMove from 'react-flip-move'; // https://github.com/joshwcomeau/react-flip-move
 import Select from 'react-select'; // https://react-select.com/home

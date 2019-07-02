@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import {Link as RouterLink, Router as RouterRouter, HashRouter as RouterHashRouter} from 'react-router-dom';
+import 'babel-polyfill';
 
 import isElectron from 'is-electron'; // https://github.com/cheton/is-electron
 

@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import {Redirect} from 'react-router-dom';
+import 'babel-polyfill';
 
 import {toast} from 'react-toastify';
 import Select from 'react-select'; // https://react-select.com/home
