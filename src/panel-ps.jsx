@@ -258,58 +258,62 @@ class Parameter extends Component {
     if (this.state.expandedValue) {
       if (this.props.paramOverview.class==='FloatArrayParameter') {
         expandedValueContent = <span style={{verticalAlign: "super"}}>
-                                <span onClick={this.toggleExpandedValue} className="btn fa-fw fas fa-times"/>
-                                SET VALUE FloatArrayParameter
-                                <span onClick={this.toggleExpandedValue} className="btn fa-fw fas fa-check"/>
+                                <InputFloatArray parameter={this}/>
                              </span>
       } else if (this.props.paramOverview.class==='SelectParameter') {
         expandedValueContent = <span style={{verticalAlign: "super"}}>
-                                <span onClick={this.toggleExpandedValue} className="btn fa-fw fas fa-times"/>
+                                <span onClick={this.toggleExpandedValue} className="btn fa-fw fas fa-times" title="cancel changes"/>
                                 <span><Input type='select' origValue={this.state.details.value} onChange={this.updateUserValue} choices={this.state.details.choices}/></span>
-                                <span onClick={this.submitSetValue} className="btn fa-fw fas fa-check"/>
+                                <span onClick={this.submitSetValue} style={{marginLeft: "-10px"}} className="btn fa-fw fas fa-check" title="apply changes"/>
                              </span>
       } else if (this.props.paramOverview.class==='ConstraintParameter') {
         expandedValueContent = <span style={{verticalAlign: "super"}}>
-                                <span onClick={this.toggleExpandedValue} className="btn fa-fw fas fa-times"/>
+                                <span onClick={this.toggleExpandedValue} className="btn fa-fw fas fa-times" title="cancel changes"/>
                                 SET VALUE ConstraintParameter
-                                <span onClick={this.toggleExpandedValue} className="btn fa-fw fas fa-check"/>
+                                <span onClick={this.toggleExpandedValue} style={{marginLeft: "-10px"}} className="btn fa-fw fas fa-check" title="apply changes"/>
+                             </span>
+      } else if (this.props.paramOverview.class==='HierarchyParameter') {
+        expandedValueContent = <span style={{verticalAlign: "super"}}>
+                                <span onClick={this.toggleExpandedValue} className="btn fa-fw fas fa-times" title="cancel changes"/>
+                                SET VALUE HierarchyParameter
+                                <span onClick={this.toggleExpandedValue} style={{marginLeft: "-10px"}} className="btn fa-fw fas fa-check" title="apply changes"/>
                              </span>
       } else if (['ChoiceParameter', 'BoolParameter'].indexOf(this.props.paramOverview.class)!==-1) {
         inlineValueContent = <span style={{verticalAlign: "super"}}>
-                                <span onClick={this.toggleExpandedValue} className="btn fa-fw fas fa-times"/>
+                                <span onClick={this.toggleExpandedValue} className="btn fa-fw fas fa-times" title="cancel changes"/>
                                 <span><Input type='choice' origValue={this.props.paramOverview.valuestr} onChange={this.updateUserValue} choices={this.state.details.choices}/></span>
-                                <span onClick={this.submitSetValue} className="btn fa-fw fas fa-check"/>
+                                <span onClick={this.submitSetValue} style={{marginLeft: "-10px"}} className="btn fa-fw fas fa-check" title="apply changes"/>
                              </span>
       } else if (this.props.paramOverview.class==='IntParameter') {
         inlineValueContent = <span style={{verticalAlign: "super"}}>
-                                <span onClick={this.toggleExpandedValue} className="btn fa-fw fas fa-times"/>
+                                <span onClick={this.toggleExpandedValue} className="btn fa-fw fas fa-times" title="cancel changes"/>
                                 <span><Input type='int' origValue={this.props.paramOverview.valuestr} onChange={this.updateUserValue}/></span>
-                                <span onClick={this.submitSetValue} className="btn fa-fw fas fa-check"/>
+                                <span onClick={this.submitSetValue} style={{marginLeft: "-10px"}} className="btn fa-fw fas fa-check" title="apply changes"/>
                              </span>
       } else if (this.props.paramOverview.class==='FloatParameter') {
         if (this.props.paramOverview.unitstr) {
           inlineValueContent = <span style={{verticalAlign: "super"}}>
-                                  <span onClick={this.toggleExpandedValue} className="btn fa-fw fas fa-times"/>
+                                  <span onClick={this.toggleExpandedValue} className="btn fa-fw fas fa-times" title="cancel changes"/>
                                   <span><Input type='floatunits' origValue={this.props.paramOverview.valuestr+" "+this.props.paramOverview.unitstr} onChange={this.updateUserValue}/></span>
-                                  <span onClick={this.submitSetValue} className="btn fa-fw fas fa-check"/>
+                                  <span onClick={this.submitSetValue} style={{marginLeft: "-10px"}} className="btn fa-fw fas fa-check" title="apply changes"/>
                                </span>
         } else {
           inlineValueContent = <span style={{verticalAlign: "super"}}>
-                                  <span onClick={this.toggleExpandedValue} className="btn fa-fw fas fa-times"/>
+                                  <span onClick={this.toggleExpandedValue} className="btn fa-fw fas fa-times" title="cancel changes"/>
                                   <span><Input type='float' origValue={this.props.paramOverview.valuestr} onChange={this.updateUserValue}/></span>
-                                  <span onClick={this.submitSetValue} className="btn fa-fw fas fa-check"/>
+                                  <span onClick={this.submitSetValue} style={{marginLeft: "-10px"}} className="btn fa-fw fas fa-check" title="apply changes"/>
                                </span>
         }
       } else {
         inlineValueContent = <span style={{verticalAlign: "super"}}>
-                                <span onClick={this.toggleExpandedValue} className="btn fa-fw fas fa-times"/>
+                                <span onClick={this.toggleExpandedValue} className="btn fa-fw fas fa-times" title="cancel changes"/>
                                 <span><Input type='string' origValue={this.props.paramOverview.valuestr} onChange={this.updateUserValue}/></span>
-                                <span onClick={this.submitSetValue} className="btn fa-fw fas fa-check"/>
+                                <span onClick={this.submitSetValue} style={{marginLeft: "-10px"}} className="btn fa-fw fas fa-check" title="apply changes"/>
                              </span>
       }
     } else if (!this.state.expandedUnit) {
       color = this.props.paramOverview.readonly ? "slategray" : "black"
-      inlineValueContent = <span onClick={this.props.paramOverview.readonly ? null : this.toggleExpandedValue} style={{display: "inline-block", color: color, textAlign: "right", width: "180px", paddingLeft: "5px", whiteSpace: "nowrap", overflowX: "hidden"}}>
+      inlineValueContent = <span onClick={this.props.paramOverview.readonly ? null : this.toggleExpandedValue} title={"value="+this.props.paramOverview.valuestr} style={{display: "inline-block", color: color, textAlign: "right", width: "180px", paddingLeft: "5px", whiteSpace: "nowrap", overflowX: "hidden"}}>
                               {this.props.paramOverview.valuestr}
                            </span>
     }
@@ -317,12 +321,12 @@ class Parameter extends Component {
     let inlineUnitContent
     if (this.state.expandedUnit) {
       inlineUnitContent = <span style={{verticalAlign: "super"}}>
-                              <span onClick={this.toggleExpandedUnit} className="btn fa-fw fas fa-times"/>
+                              <span onClick={this.toggleExpandedUnit} className="btn fa-fw fas fa-times" title="cancel changes"/>
                               <span><Input type='choice' origValue={this.props.paramOverview.unitstr} onChange={this.updateUserUnit} choices={this.state.details.unit_choices}/></span>
-                              <span onClick={this.submitSetUnit} className="btn fa-fw fas fa-check"/>
+                              <span onClick={this.submitSetUnit} style={{marginLeft: "-10px"}} className="btn fa-fw fas fa-check" title="apply changes"/>
                            </span>
     } else if (!this.state.expandedValue) {
-      inlineUnitContent = <span onClick={this.toggleExpandedUnit} style={{display: "inline-block", textAlign: "left", width: "65px", paddingLeft: "5px", whiteSpace: "nowrap", overflowX: "hidden"}}>
+      inlineUnitContent = <span onClick={this.toggleExpandedUnit} title={"unit="+this.props.paramOverview.unitstr} style={{display: "inline-block", textAlign: "left", width: "65px", paddingLeft: "5px", whiteSpace: "nowrap", overflowX: "hidden"}}>
                             {this.props.paramOverview.unitstr}
                           </span>
     }
@@ -507,7 +511,7 @@ class Input extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      value: this.props.origValue
+      value: this.props.origValue || null
     };
     this.refinput = React.createRef();
   }
@@ -520,6 +524,8 @@ class Input extends Component {
       value = e.target.value.replace(/[^0-9A-Za-z.-\s]/g, '');
     } else if (this.props.type == 'int') {
       value = e.target.value.replace(/[^0-9-]/g, '');
+    } else if (this.props.type == 'array') {
+      value = e.target.value.replace(/[^0-9-\.\,]/g, '');
     } else if (this.props.type == 'choice') {
       value = e.value
     } else if (this.props.type == 'select') {
@@ -539,13 +545,14 @@ class Input extends Component {
     }
   }
   componentDidMount() {
-    if (this.refinput.current) {
+    const focusOnMount = !(this.props.disableFocusOnMount || false);
+    if (this.refinput.current && focusOnMount) {
       this.refinput.current.select();
     }
   }
   render() {
     if (this.props.type==='choice' || this.props.type==='select') {
-      var width = "185px"
+      var width = this.props.width || "185px"
       var choices = this.props.choices || [];
       var choicesList = choices.map((choice) => ({value: choice, label: choice}))
 
@@ -579,15 +586,104 @@ class Input extends Component {
       }
 
       return (
-        <span style={{marginLeft: "10px", width: width, height: "26px", display: "inline-block", verticalAlign: "sub", lineHeight: "1.0"}}>
-          <Select options={choicesList} defaultValue={defaultValueList} value={valueList} onChange={this.onChange} defaultMenuIsOpen={true} isMulti={isMulti} isClearable={isMulti} closeMenuOnSelect={!isMulti} components={animatedComponents} className={className} classNamePrefix={className}/>
+        <span style={{marginLeft: "10px", marginRight: "10px", width: width, height: "26px", display: "inline-block", verticalAlign: "sub", lineHeight: "1.0"}}>
+          <Select options={choicesList} defaultValue={defaultValueList} value={valueList} onChange={this.onChange} defaultMenuIsOpen={!(this.props.disableFocusOnMount || false)} isMulti={isMulti} isClearable={isMulti} closeMenuOnSelect={!isMulti} components={animatedComponents} className={className} classNamePrefix={className}/>
+        </span>
+      )
+    } else if (this.props.type == 'array') {
+      return (
+        <span>
+          <input ref={this.refinput} type="text" style={{marginLeft: "10px", marginRight: "10px", width: "calc(100% - 80px)", height: "26px", borderRadius: "4px", border: "1px solid lightgray"}} name="value" title="value" value={this.state.value || this.props.origValue} onChange={this.onChange}/>
         </span>
       )
     } else {
       return (
-        <input ref={this.refinput} type="text" style={{marginLeft: "10px", width: "185px", height: "26px", borderRadius: "4px", border: "1px solid lightgray"}} name="value" pattern="[0-9]" title="value" value={this.state.value} onChange={this.onChange}/>
+        <input ref={this.refinput} type="text" style={{marginLeft: "10px", marginRight: "10px", width: this.props.width || "185px", height: "26px", borderRadius: "4px", border: "1px solid lightgray"}} name="value" title="value" value={this.state.value} onChange={this.onChange}/>
       )
     }
+  }
+}
+
+class InputFloatArray extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      inputType: null
+    };
+    this.refinput = React.createRef();
+  }
+  render() {
+    var btnStyle = {width: "calc(25% - 4px)", margin: "2px", textAlign: "center", lineHeight: "1em"}
+
+    if (this.state.inputType == null && this.props.parameter.state.details && this.props.parameter.state.details.value!==undefined) {
+      if (this.props.parameter.state.details.value.nparray || '' === 'linspace') {
+        this.setState({inputType: 'linspace'})
+      } else if (this.props.parameter.state.details.value.nparray || '' == 'arange') {
+        this.setState({inputType: 'arange'})
+      } else {
+        this.setState({inputType: 'array'})
+      }
+    }
+
+    const disabledInputStyle = {marginLeft: "10px", marginRight: "10px", width: "calc(100% - 80px)", height: "26px", borderRadius: "4px", border: "1px solid lightgray"};
+
+    var input = null
+    var belowInput = null
+    const spanLabelStyle = {padding: "2px", width: "calc('20% - 10px')"}
+    if (this.state.inputType === 'linspace') {
+      input = <span><input type="text" disabled style={disabledInputStyle}/></span>
+      belowInput = <span>
+                <span style={spanLabelStyle}>
+                  <span style={{width: "60px", textAlign: "right"}}>start</span>
+                  <Input type='float' origValue=''/>
+                </span>
+                <span style={spanLabelStyle}>
+                  stop
+                  <Input type='float' origValue='' disableFocusOnMount={true}/>
+                </span>
+                <span style={spanLabelStyle}>
+                  num
+                  <Input type='int' origValue='' disableFocusOnMount={true}/>
+                </span>
+                <span style={spanLabelStyle}>
+                  endpoint
+                  <Input type='choice' choices={['True', 'False']} origValue='True' disableFocusOnMount={true}/>
+                </span>
+              </span>
+    } else if (this.state.inputType === 'arange') {
+      input = <span><input type="text" disabled style={disabledInputStyle}/></span>
+      belowInput = <span>
+                <Input type='float' origValue=''/>
+                <span style={spanLabelStyle}>stop</span>
+                <Input type='float' origValue='' disableFocusOnMount={true}/>
+                <span style={spanLabelStyle}>step</span>
+                <Input type='float' origValue='' disableFocusOnMount={true}/>
+                <span style={spanLabelStyle}>endpoint</span>
+                <Input type='choice' choices={['True', 'False']} origValue='True' disableFocusOnMount={true}/>
+              </span>
+    } else if (this.state.inputType === 'file') {
+      input = <span><input type="text" disabled style={disabledInputStyle}/></span>
+      belowInput = <span>file input support coming soon</span>
+    } else if (this.state.inputType === 'array') {
+      input = <Input type='array' origValue={this.props.parameter.state.details.value} onChange={this.props.parameter.updateUserValue}/>
+    }
+
+    return (
+      <React.Fragment>
+        <span onClick={this.props.parameter.toggleExpandedValue} className="btn fa-fw fas fa-times" title="cancel changes"/>
+        <span>{input}</span>
+        <span onClick={this.props.parameter.submitSetValue} style={{marginLeft: "-10px"}} className="btn fa-fw fas fa-check" title="apply changes"/>
+        <span>{belowInput}</span>
+        <div>
+          <span className={this.state.inputType=='array' ? 'btn btn-primary btn-primary-active' : 'btn btn-primary'} style={btnStyle} onClick={()=>{this.setState({inputType: 'array'})}}>array</span>
+          <span className='btn btn-primary' style={btnStyle} onClick={()=>{alert("not yet implemented")}}>linspace</span>
+          <span className='btn btn-primary' style={btnStyle} onClick={()=>{alert("not yet implemented")}}>arange</span>
+          <span className='btn btn-primary' style={btnStyle} onClick={()=>{alert("not yet implemented")}}>file import</span>
+        </div>
+
+      </React.Fragment>
+
+    )
   }
 }
 

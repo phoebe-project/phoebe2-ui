@@ -271,6 +271,12 @@ code {
    border: 1px solid #2B71B1;
  }
 
+ .btn-primary-active {
+   background-color: #2B71B1;
+   color: white;
+   border: 1px solid #2B71B1;
+ }
+
  .btn-transparent, .btn-transparent:focus, .btn-transparent-disabled {
    background-color: transparent;
    color: #D6D6D6 !important;
