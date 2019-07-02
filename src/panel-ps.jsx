@@ -4,6 +4,8 @@ import 'babel-polyfill';
 
 import FlipMove from 'react-flip-move'; // https://github.com/joshwcomeau/react-flip-move
 import Select from 'react-select'; // https://react-select.com/home
+import makeAnimated from 'react-select/animated';
+const animatedComponents = makeAnimated();
 
 import {Link, Twig, generatePath, abortableFetch, mapObject, filterObjectByKeys, popUpWindow} from './common';
 import {LogoSpinner} from './logo';
@@ -216,7 +218,12 @@ class Parameter extends Component {
   //   return false;
   // }
   render() {
-    if ((this.state.expandedDetails || (this.state.expandedValue && ['ChoiceParameter', 'BoolParameter'].indexOf(this.props.paramOverview.class)!==-1) || this.state.expandedUnit) && !this.state.receivedDetails) {
+    if (['SelectParameter', 'FloatArrayParameter'].indexOf(this.props.paramOverview.class)!==-1 && !this.state.expandedValue && !this.state.expandedUnit &&!this.state.expandedDetails && this.state.receivedDetails) {
+      // reset so that we force a new refresh next time - this is only needed for parameters where we rely on state.details.value vs props.valuestr
+      this.setState({receivedDetails: false, details: {}})
+    }
+
+    if ((this.state.expandedDetails || (this.state.expandedValue && ['ChoiceParameter', 'SelectParameter', 'FloatArrayParameter', 'BoolParameter'].indexOf(this.props.paramOverview.class)!==-1) || this.state.expandedUnit) && !this.state.receivedDetails) {
       this.setState({receivedDetails: true})
 
       this.abortGetDetailsController = new window.AbortController();
@@ -246,6 +253,7 @@ class Parameter extends Component {
 
     }
 
+
     let inlineValueContent, expandedValueContent, color
     if (this.state.expandedValue) {
       if (this.props.paramOverview.class==='FloatArrayParameter') {
@@ -257,8 +265,8 @@ class Parameter extends Component {
       } else if (this.props.paramOverview.class==='SelectParameter') {
         expandedValueContent = <span style={{verticalAlign: "super"}}>
                                 <span onClick={this.toggleExpandedValue} className="btn fa-fw fas fa-times"/>
-                                SET VALUE Selectparameter
-                                <span onClick={this.toggleExpandedValue} className="btn fa-fw fas fa-check"/>
+                                <span><Input type='select' origValue={this.state.details.value} onChange={this.updateUserValue} choices={this.state.details.choices}/></span>
+                                <span onClick={this.submitSetValue} className="btn fa-fw fas fa-check"/>
                              </span>
       } else if (this.props.paramOverview.class==='ConstraintParameter') {
         expandedValueContent = <span style={{verticalAlign: "super"}}>
@@ -334,7 +342,7 @@ class Parameter extends Component {
         </div>
 
         {expandedValueContent ?
-          <div className='phoebe-parameter-content'>
+          <div className='phoebe-parameter-content' style={{minHeight: "100px"}}>
             {expandedValueContent}
           </div>
           :
@@ -499,7 +507,7 @@ class Input extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      value: this.props.origValue || ''
+      value: this.props.origValue
     };
     this.refinput = React.createRef();
   }
@@ -514,6 +522,12 @@ class Input extends Component {
       value = e.target.value.replace(/[^0-9-]/g, '');
     } else if (this.props.type == 'choice') {
       value = e.value
+    } else if (this.props.type == 'select') {
+      if (e) {
+        value = e.map((item) => item.value)
+      } else {
+        value = []
+      }
     } else {
       value = e.target.value
     }
@@ -530,14 +544,43 @@ class Input extends Component {
     }
   }
   render() {
-    if (this.props.type==='choice') {
+    if (this.props.type==='choice' || this.props.type==='select') {
+      var width = "185px"
       var choices = this.props.choices || [];
       var choicesList = choices.map((choice) => ({value: choice, label: choice}))
-      var value = {value: this.state.value, label: this.state.value}
+
+      if (this.props.type==='choice') {
+        var className = 'phoebe-parameter-choice'
+        var defaultValueList = {value: this.props.origValue, label: this.props.origValue}
+        var valueList = {value: this.state.value, label: this.state.value} || null
+        var isMulti = false
+      } else if (this.props.type==='select') {
+        width = "calc(100% - 80px)"
+        var className = 'phoebe-parameter-select'
+        if (this.props.origValue) {
+          var defaultValueList = this.props.origValue.map((choice) => ({value: choice, label: choice}))
+        } else {
+          var defaultValueList = null
+        }
+
+        var value = this.state.value
+        if (value) {
+          var valueList = value.map((choice) => ({value: choice, label: choice}))
+        } else {
+          var valueList = defaultValueList
+        }
+
+        var isMulti = true
+      }
+
+      if (this.props.origValue) {
+      } else {
+        var defaultValueList = null
+      }
 
       return (
-        <span style={{marginLeft: "10px", width: "185px", height: "26px", display: "inline-block", verticalAlign: "sub", lineHeight: "1.0"}}>
-          <Select options={choicesList} value={value} onChange={this.onChange} defaultMenuIsOpen={true} className="phoebe-parameter-select" classNamePrefix="phoebe-parameter-select"/>
+        <span style={{marginLeft: "10px", width: width, height: "26px", display: "inline-block", verticalAlign: "sub", lineHeight: "1.0"}}>
+          <Select options={choicesList} defaultValue={defaultValueList} value={valueList} onChange={this.onChange} defaultMenuIsOpen={true} isMulti={isMulti} isClearable={isMulti} closeMenuOnSelect={!isMulti} components={animatedComponents} className={className} classNamePrefix={className}/>
         </span>
       )
     } else {
@@ -613,7 +656,7 @@ export class PSPanel extends Component {
         <div style={{paddingTop: "10px", paddingLeft: "10px"}}>
           Order by:
           <span style={{width: "250px", lineHeight: "1.0", display: "inline-block", paddingLeft: "10px", verticalAlign: "sub"}}>
-            <Select options={orderByChoices} defaultValue={orderByDefault} onChange={this.orderByChanged} className="phoebe-parameter-select" classNamePrefix="phoebe-parameter-select"/>
+            <Select options={orderByChoices} defaultValue={orderByDefault} onChange={this.orderByChanged} className="phoebe-parameter-choice" classNamePrefix="phoebe-parameter-choice"/>
           </span>
         </div>
 

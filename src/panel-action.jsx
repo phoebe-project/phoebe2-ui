@@ -63,7 +63,7 @@ class ActionContentAdd extends Component {
 
           <label id="kind" style={{width: "50%", textAlign: "right", paddingRight: "10px"}}>kind</label>
           <span style={{width: "50%", lineHeight: "1.0", display: "inline-block", verticalAlign: "sub"}}>
-            <Select options={availableKindsList}  value={{value: this.state.kind, label: this.state.kind}} onChange={this.onChangeKind} className="phoebe-parameter-select" classNamePrefix="phoebe-parameter-select"/>
+            <Select options={availableKindsList}  value={{value: this.state.kind, label: this.state.kind}} onChange={this.onChangeKind} className="phoebe-parameter-choice" classNamePrefix="phoebe-parameter-choice"/>
           </span>
         </div>
 
@@ -71,7 +71,7 @@ class ActionContentAdd extends Component {
           <div className="form-group">
             <label id="component" style={{width: "50%", textAlign: "right", paddingRight: "10px"}}>component</label>
             <span style={{width: "50%", lineHeight: "1.0", display: "inline-block", verticalAlign: "sub"}}>
-              <Select options={availableComponentsList} value={{value: this.state.component, label: this.state.component}} onChange={this.onChangeComponent} className="phoebe-parameter-select" classNamePrefix="phoebe-parameter-select"/>
+              <Select options={availableComponentsList} value={{value: this.state.component, label: this.state.component}} onChange={this.onChangeComponent} className="phoebe-parameter-choice" classNamePrefix="phoebe-parameter-choice"/>
             </span>
           </div>
         :
@@ -123,7 +123,7 @@ class ActionContentRename extends Component {
 
           <label id={"old_"+renameType} style={{width: "50%", textAlign: "right", paddingRight: "10px"}}>old {renameType}</label>
           <span style={{width: "50%", lineHeight: "1.0", display: "inline-block", verticalAlign: "sub"}}>
-            <Select options={availableLabelsList} value={{value: this.state.labelOld, label: this.state.labelOld}} onChange={this.onChangeLabelOld} className="phoebe-parameter-select" classNamePrefix="phoebe-parameter-select"/>
+            <Select options={availableLabelsList} value={{value: this.state.labelOld, label: this.state.labelOld}} onChange={this.onChangeLabelOld} className="phoebe-parameter-choice" classNamePrefix="phoebe-parameter-choice"/>
           </span>
         </div>
 
@@ -170,7 +170,7 @@ class ActionContentRemove extends Component {
 
           <label id={removeType} style={{width: "50%", textAlign: "right", paddingRight: "10px"}}>{removeType}</label>
           <span style={{width: "50%", lineHeight: "1.0", display: "inline-block", verticalAlign: "sub"}}>
-            <Select options={availableLabelsList} value={{value: this.state.label, label: this.state.label}} onChange={this.onChangeLabel} className="phoebe-parameter-select" classNamePrefix="phoebe-parameter-select"/>
+            <Select options={availableLabelsList} value={{value: this.state.label, label: this.state.label}} onChange={this.onChangeLabel} className="phoebe-parameter-choice" classNamePrefix="phoebe-parameter-choice"/>
           </span>
         </div>
 
@@ -223,7 +223,7 @@ class ActionContentRun extends Component {
         <div className="form-group">
           <label id={runType} style={{width: "50%", textAlign: "right", paddingRight: "10px"}}>{runType}</label>
           <span style={{width: "50%", lineHeight: "1.0", display: "inline-block", verticalAlign: "sub"}}>
-            <Select options={availableLabelsList} value={{value: this.state.label, label: this.state.label}} onChange={this.onChangeLabel} className="phoebe-parameter-select" classNamePrefix="phoebe-parameter-select"/>
+            <Select options={availableLabelsList} value={{value: this.state.label, label: this.state.label}} onChange={this.onChangeLabel} className="phoebe-parameter-choice" classNamePrefix="phoebe-parameter-choice"/>
           </span>
 
         </div>
