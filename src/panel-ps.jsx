@@ -118,7 +118,14 @@ class Parameter extends Component {
   }
   submitSetValue = (e) => {
     // console.log("request "+this.props.uniqueid+" to change to "+this.state.userValue)
-    this.props.app.socket.emit('set_value', {'bundleid': this.props.bundle.state.bundleid, 'uniqueid': this.props.uniqueid, 'value': this.state.userValue});
+    if (this.props.paramOverview.class==='ConstraintParameter') {
+      console.log('ConstraintParameter submit value'+this.state.userValue)
+      if (this.state.userValue) {
+        this.props.app.socket.emit('bundle_method', {'method': 'flip_constraint', 'bundleid': this.props.bundle.state.bundleid, 'uniqueid': this.props.uniqueid, 'solve_for': this.state.userValue})
+      }
+    } else {
+      this.props.app.socket.emit('set_value', {'bundleid': this.props.bundle.state.bundleid, 'uniqueid': this.props.uniqueid, 'value': this.state.userValue});
+    }
     this.toggleExpandedValue(e)
 
   }
@@ -218,12 +225,12 @@ class Parameter extends Component {
   //   return false;
   // }
   render() {
-    if (['SelectParameter', 'FloatArrayParameter'].indexOf(this.props.paramOverview.class)!==-1 && !this.state.expandedValue && !this.state.expandedUnit &&!this.state.expandedDetails && this.state.receivedDetails) {
+    if (['SelectParameter', 'FloatArrayParameter', 'ConstraintParameter'].indexOf(this.props.paramOverview.class)!==-1 && !this.state.expandedValue && !this.state.expandedUnit &&!this.state.expandedDetails && this.state.receivedDetails) {
       // reset so that we force a new refresh next time - this is only needed for parameters where we rely on state.details.value vs props.valuestr
       this.setState({receivedDetails: false, details: {}})
     }
 
-    if ((this.state.expandedDetails || (this.state.expandedValue && ['ChoiceParameter', 'SelectParameter', 'FloatArrayParameter', 'BoolParameter'].indexOf(this.props.paramOverview.class)!==-1) || this.state.expandedUnit) && !this.state.receivedDetails) {
+    if ((this.state.expandedDetails || (this.state.expandedValue && ['ChoiceParameter', 'SelectParameter', 'FloatArrayParameter', 'BoolParameter', 'ConstraintParameter'].indexOf(this.props.paramOverview.class)!==-1) || this.state.expandedUnit) && !this.state.receivedDetails) {
       this.setState({receivedDetails: true})
 
       this.abortGetDetailsController = new window.AbortController();
@@ -269,8 +276,8 @@ class Parameter extends Component {
       } else if (this.props.paramOverview.class==='ConstraintParameter') {
         expandedValueContent = <span style={{verticalAlign: "super"}}>
                                 <span onClick={this.toggleExpandedValue} className="btn fa-fw fas fa-times" title="cancel changes"/>
-                                SET VALUE ConstraintParameter
-                                <span onClick={this.toggleExpandedValue} style={{marginLeft: "-10px"}} className="btn fa-fw fas fa-check" title="apply changes"/>
+                                  <InputConstraint parameter={this} onChange={this.updateUserValue}/>
+                                <span onClick={this.submitSetValue} style={{marginLeft: "-10px"}} className="btn fa-fw fas fa-check" title="apply changes"/>
                              </span>
       } else if (this.props.paramOverview.class==='HierarchyParameter') {
         expandedValueContent = <span style={{verticalAlign: "super"}}>
@@ -683,6 +690,46 @@ class InputFloatArray extends Component {
 
       </React.Fragment>
 
+    )
+  }
+}
+
+class InputConstraint extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      solve_for: null
+    }
+  }
+  onChange = (twig) => {
+    if (this.state.value === twig) {
+      twig = null;
+    }
+
+    this.setState({solve_for: twig})
+
+    if (this.props.onChange) {
+      this.props.onChange(twig)
+    }
+  }
+  renderPart = (part) => {
+    if (part.indexOf("{") === -1) {
+      return <span>{part}</span>
+    } else {
+      var twig = part.replace(/[{}]/g, '')
+      return <span className={this.state.solve_for==twig ? 'btn btn-tag btn-tag-selected' : 'btn btn-tag btn-tag-unselected'} style={{width: 'fit-content', maxWidth: 'fit-content'}} title={'solve for '+twig} onClick={() => this.onChange(twig)}>{twig}</span>
+    }
+  }
+  render() {
+    var parts = [];
+    if (this.props.parameter.state.details && this.props.parameter.state.details.value!==undefined) {
+      parts = this.props.parameter.state.details.value.split(/(\{[a-z0-9_@]*\})/g)
+    }
+
+    return (
+      <span style={{width: 'calc(100% - 80px)', display: 'inline-block', marginLeft: '10px', marginRight: '10px'}}>
+        {parts.map((part) => this.renderPart(part))}
+      </span>
     )
   }
 }
