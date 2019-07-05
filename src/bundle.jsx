@@ -28,6 +28,7 @@ export class Bundle extends ReactQueryParams {
       redirect: null,
       bundleid: props.match.params.bundleid,
       params: null,
+      failedConstraints: [],
       paramsfilteredids: [],
       tags: {},
       tagsAvailable: {},
@@ -62,7 +63,12 @@ export class Bundle extends ReactQueryParams {
         this.setState({pendingBundleMethod: null})
 
       } else {
-        toast.error('ERROR: '+data.error, {
+        var level = data.level || 'ERROR'
+        var toastLevel = toast.error
+        if (level.toUpperCase() === 'WARNING') {
+          toastLevel = toast.warning
+        }
+        toastLevel(level.toUpperCase()+': '+data.error, {
           position: "bottom-right",
           autoClose: 5000,
           hideProgressBar: false,
@@ -72,6 +78,10 @@ export class Bundle extends ReactQueryParams {
 
       }
 
+    })
+
+    this.props.app.socket.on(this.state.bundleid+':failed_constraints:react', (data) => {
+      this.setState({failedConstraints: data.failed_constraints || []})
     })
 
     this.props.app.socket.on(this.state.bundleid+':changes:react', (data) => {
@@ -153,7 +163,7 @@ export class Bundle extends ReactQueryParams {
       .then(json => {
         if (json.data.success) {
           this.registerBundle();
-          this.setState({params: json.data.parameters, tags: json.data.tags, nparams: Object.keys(json.data.parameters).length})
+          this.setState({params: json.data.parameters, tags: json.data.tags, failedConstraints: json.data.failed_constraints, nparams: Object.keys(json.data.parameters).length})
         } else {
           alert("server error: "+json.data.error);
           this.setState({params: null, tags: null});

@@ -320,7 +320,14 @@ class Parameter extends Component {
       }
     } else if (!this.state.expandedUnit) {
       color = this.props.paramOverview.readonly ? "slategray" : "black"
-      inlineValueContent = <span onClick={this.props.paramOverview.readonly ? null : this.toggleExpandedValue} title={"value="+this.props.paramOverview.valuestr} style={{display: "inline-block", color: color, textAlign: "right", width: "180px", paddingLeft: "5px", whiteSpace: "nowrap", overflowX: "hidden"}}>
+      var title = "value="+this.props.paramOverview.valuestr
+      if (this.props.bundle.state.failedConstraints.indexOf(this.props.uniqueid)!==-1) {
+        // then this parameter's value is out-of-date because of a failed
+        // constraint that needs to be addressed
+        color = 'red'
+        title += ' (not updated due to failed constraint)'
+      }
+      inlineValueContent = <span onClick={this.props.paramOverview.readonly ? null : this.toggleExpandedValue} title={title} style={{display: "inline-block", color: color, textAlign: "right", width: "180px", paddingLeft: "5px", whiteSpace: "nowrap", overflowX: "hidden"}}>
                               {this.props.paramOverview.valuestr}
                            </span>
     }
