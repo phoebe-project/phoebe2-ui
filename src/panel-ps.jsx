@@ -713,7 +713,9 @@ class InputConstraint extends Component {
     }
   }
   renderPart = (part) => {
-    if (part.indexOf("{") === -1) {
+    if (part===null) {
+      return null
+    } else if (part.indexOf("{") === -1) {
       return <span>{part}</span>
     } else {
       var twig = part.replace(/[{}]/g, '')
@@ -726,8 +728,17 @@ class InputConstraint extends Component {
       parts = this.props.parameter.state.details.value.split(/(\{[a-z0-9_@]*\})/g)
     }
 
+    var constrains = null
+    if (this.props.parameter.state.details && this.props.parameter.state.details.constrains!==undefined) {
+      constrains = Object.values(this.props.parameter.state.details.constrains)[0]
+      if (this.state.solve_for === null) {
+        this.setState({solve_for: constrains})
+      }
+    }
+
     return (
       <span style={{width: 'calc(100% - 80px)', display: 'inline-block', marginLeft: '10px', marginRight: '10px'}}>
+        {constrains ? <span>{this.renderPart('{'+constrains+'}')} <b>=</b> </span> : <span>loading...</span>}
         {parts.map((part) => this.renderPart(part))}
       </span>
     )
