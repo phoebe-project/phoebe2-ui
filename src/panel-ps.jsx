@@ -373,20 +373,25 @@ class Parameter extends Component {
               {this.state.details.description || null}
             </ParameterDetailsItem>
 
-            <ParameterDetailsItem title="Tags">
-                <span style={{display: "inline-block"}}>
-                  {this.props.paramOverview.context && <div><Tag bundle={this.props.bundle} group="context" includeGroup={true} currentGroupFilter={null} tag={this.props.paramOverview.context}/></div>}
-                  {this.props.paramOverview.kind && <div><Tag bundle={this.props.bundle} group="kind" includeGroup={true} currentGroupFilter={null} tag={this.props.paramOverview.kind}/></div>}
-                  {/* {this.props.paramOverview.constraint && <div><Tag bundle={this.props.bundle} group="constraint" includeGroup={true} currentGroupFilter={null} tag={this.props.paramOverview.constraint}/></div>} */}
-                  {this.props.paramOverview.component && <div><Tag bundle={this.props.bundle} group="component" includeGroup={true} currentGroupFilter={null} tag={this.props.paramOverview.component}/></div>}
-                  {this.props.paramOverview.feature && <div><Tag bundle={this.props.bundle} group="feature" includeGroup={true} currentGroupFilter={null} tag={this.props.paramOverview.feature}/></div>}
-                  {this.props.paramOverview.dataset && <div><Tag bundle={this.props.bundle} group="dataset" includeGroup={true} currentGroupFilter={null} tag={this.props.paramOverview.dataset}/></div>}
-                  {this.props.paramOverview.figure && <div><Tag bundle={this.props.bundle} group="figure" includeGroup={true} currentGroupFilter={null} tag={this.props.paramOverview.figure}/></div>}
-                  {this.props.paramOverview.compute && <div><Tag bundle={this.props.bundle} group="compute" includeGroup={true} currentGroupFilter={null} tag={this.props.paramOverview.compute}/></div>}
-                  {this.props.paramOverview.model && <div><Tag bundle={this.props.bundle} group="model" includeGroup={true} currentGroupFilter={null} tag={this.props.paramOverview.model}/></div>}
-                  {this.props.paramOverview.qualifier && <div><Tag bundle={this.props.bundle} group="qualifier" includeGroup={true} currentGroupFilter={null} tag={this.props.paramOverview.qualifier}/></div>}
-                </span>
-            </ParameterDetailsItem>
+            {this.props.disableFiltering ?
+              null
+              :
+              <ParameterDetailsItem title="Tags">
+                  <span style={{display: "inline-block"}}>
+                    {this.props.paramOverview.context && <div><Tag bundle={this.props.bundle} group="context" includeGroup={true} currentGroupFilter={null} tag={this.props.paramOverview.context}/></div>}
+                    {this.props.paramOverview.kind && <div><Tag bundle={this.props.bundle} group="kind" includeGroup={true} currentGroupFilter={null} tag={this.props.paramOverview.kind}/></div>}
+                    {/* {this.props.paramOverview.constraint && <div><Tag bundle={this.props.bundle} group="constraint" includeGroup={true} currentGroupFilter={null} tag={this.props.paramOverview.constraint}/></div>} */}
+                    {this.props.paramOverview.component && <div><Tag bundle={this.props.bundle} group="component" includeGroup={true} currentGroupFilter={null} tag={this.props.paramOverview.component}/></div>}
+                    {this.props.paramOverview.feature && <div><Tag bundle={this.props.bundle} group="feature" includeGroup={true} currentGroupFilter={null} tag={this.props.paramOverview.feature}/></div>}
+                    {this.props.paramOverview.dataset && <div><Tag bundle={this.props.bundle} group="dataset" includeGroup={true} currentGroupFilter={null} tag={this.props.paramOverview.dataset}/></div>}
+                    {this.props.paramOverview.figure && <div><Tag bundle={this.props.bundle} group="figure" includeGroup={true} currentGroupFilter={null} tag={this.props.paramOverview.figure}/></div>}
+                    {this.props.paramOverview.compute && <div><Tag bundle={this.props.bundle} group="compute" includeGroup={true} currentGroupFilter={null} tag={this.props.paramOverview.compute}/></div>}
+                    {this.props.paramOverview.model && <div><Tag bundle={this.props.bundle} group="model" includeGroup={true} currentGroupFilter={null} tag={this.props.paramOverview.model}/></div>}
+                    {this.props.paramOverview.qualifier && <div><Tag bundle={this.props.bundle} group="qualifier" includeGroup={true} currentGroupFilter={null} tag={this.props.paramOverview.qualifier}/></div>}
+                  </span>
+              </ParameterDetailsItem>
+            }
+
 
             {this.state.details.limits && (this.state.details.limits[0]!==null || this.state.details.limits[1]!==null) ?
               <ParameterDetailsItem title="Limits">
@@ -415,7 +420,7 @@ class Parameter extends Component {
               <ParameterDetailsItem title="Constraint">
                 <div style={{display: "inline-block"}}>
                   {mapObject(this.state.details.constraint, (uniqueid, twig) => {
-                    return <ParameterDetailsItemPin key={uniqueid} app={this.props.app} bundle={this.props.bundle} PSPanel={this.props.PSPanel} uniqueid={uniqueid} twig={twig}/>
+                    return <ParameterDetailsItemPin key={uniqueid} app={this.props.app} bundle={this.props.bundle} PSPanel={this.props.PSPanel} uniqueid={uniqueid} twig={twig} disableFiltering={this.props.disableFiltering}/>
                   })}
                 </div>
               </ParameterDetailsItem>
@@ -427,7 +432,7 @@ class Parameter extends Component {
               <ParameterDetailsItem title="Constrains">
                 <div style={{display: "inline-block"}}>
                   {mapObject(this.state.details.constrains, (uniqueid, twig) => {
-                    return <ParameterDetailsItemPin key={uniqueid} app={this.props.app} bundle={this.props.bundle} PSPanel={this.props.PSPanel} uniqueid={uniqueid} twig={twig}/>
+                    return <ParameterDetailsItemPin key={uniqueid} app={this.props.app} bundle={this.props.bundle} PSPanel={this.props.PSPanel} uniqueid={uniqueid} twig={twig} disableFiltering={this.props.disableFiltering}/>
                   })}
                 </div>
               </ParameterDetailsItem>
@@ -439,7 +444,7 @@ class Parameter extends Component {
               <ParameterDetailsItem title="Related to">
                 <div style={{display: "inline-block"}}>
                   {mapObject(this.state.details.related_to, (uniqueid, twig) => {
-                    return <ParameterDetailsItemPin key={uniqueid} app={this.props.app} bundle={this.props.bundle} PSPanel={this.props.PSPanel} uniqueid={uniqueid} twig={twig}/>
+                    return <ParameterDetailsItemPin key={uniqueid} app={this.props.app} bundle={this.props.bundle} PSPanel={this.props.PSPanel} uniqueid={uniqueid} twig={twig} disableFiltering={this.props.disableFiltering}/>
                   })}
                 </div>
               </ParameterDetailsItem>
@@ -509,7 +514,11 @@ class ParameterDetailsItemPin extends Component {
         {isCurrentlyVisible ?
           <span style={{color: "#2B71B1", cursor: "pointer"}} className="fa-fw fas fa-sign-in-alt" onClick={this.expandParameter} title="go to parameter"/>
           :
-          <Checkbox checked={false} pinnable={true} onClick={this.addToPinned} checkedTitle="unpin parameter" uncheckedTitle="pin parameter"/>
+          this.props.disableFiltering ?
+            <span style={{minWidth: "20px", display: "inline-block"}}></span>
+            :
+            <Checkbox checked={false} pinnable={true} onClick={this.addToPinned} checkedTitle="unpin parameter" uncheckedTitle="pin parameter"/>
+
         }
         <span style={{marginLeft: "4px", color: "#2B71B1", cursor: "pointer"}} title="open parameter in external window" onClick={this.popParameter} className="fas fa-fw fa-external-link-alt"/>
 
@@ -790,6 +799,9 @@ export class PSPanel extends Component {
     this.prevNParams = this.props.bundle.state.paramsfilteredids.length
 
     var orderBy = this.props.bundle.queryParams.orderBy || 'context'
+    if (this.props.disableFiltering) {
+      orderBy = 'context'
+    }
     var orderByDefault = {value: orderBy, label: orderBy}
     var orderByTags = tags[orderBy+'s'] || []
     orderByTags = orderByTags.concat([null]);
@@ -805,7 +817,7 @@ export class PSPanel extends Component {
                           {value: "qualifier", label: "qualifier"}]
 
     return (
-      <Panel backgroundColor="#e4e4e4">
+      <Panel backgroundColor="#e4e4e4" minHeight={this.props.minHeight}>
         {this.props.showPopoutButton ?
           <div style={{float: "right", marginTop: "6px", paddingRight: "10px"}}>
             <span className="btn btn-blue" onClick={this.popPS} style={{height: "34px", width: "34px"}} title="popout into external window"><span className="fas fa-fw fa-external-link-alt"/></span>
@@ -814,19 +826,24 @@ export class PSPanel extends Component {
           null
         }
 
-        <div style={{paddingTop: "10px", paddingLeft: "10px"}}>
-          Order by:
-          <span style={{width: "250px", lineHeight: "1.0", display: "inline-block", paddingLeft: "10px", verticalAlign: "sub"}}>
-            <Select options={orderByChoices} defaultValue={orderByDefault} onChange={this.orderByChanged} className="phoebe-parameter-choice" classNamePrefix="phoebe-parameter-choice"/>
-          </span>
-        </div>
+        {this.props.disableFiltering ?
+          null
+          :
+          <div style={{paddingTop: "10px", paddingLeft: "10px"}}>
+            Order by:
+            <span style={{width: "250px", lineHeight: "1.0", display: "inline-block", paddingLeft: "10px", verticalAlign: "sub"}}>
+              <Select options={orderByChoices} defaultValue={orderByDefault} onChange={this.orderByChanged} className="phoebe-parameter-choice" classNamePrefix="phoebe-parameter-choice"/>
+            </span>
+          </div>
+        }
+
 
         <div style={{paddingTop: "10px"}}>
           {this.props.bundle.state.paramsfilteredids.length || Object.keys(this.props.bundle.queryParams).length ?
 
             orderByTags.map(orderByTag => {
 
-              return <PSGroup app={this.props.app} bundle={this.props.bundle} PSPanel={this} orderBy={orderBy} orderByTag={orderByTag} paramsFiltered={paramsFiltered} enablePSAnimation={enablePSAnimation} PSPanelOnly={this.props.PSPanelOnly}/>
+              return <PSGroup app={this.props.app} bundle={this.props.bundle} PSPanel={this} orderBy={orderBy} orderByTag={orderByTag} paramsFiltered={paramsFiltered} enablePSAnimation={enablePSAnimation} PSPanelOnly={this.props.PSPanelOnly} disableFiltering={this.props.disableFiltering || false}/>
 
 
 
@@ -838,6 +855,8 @@ export class PSPanel extends Component {
           }
         </div>
 
+        {this.props.children}
+
       </Panel>
     )
   }
@@ -848,7 +867,7 @@ class PSGroup extends Component {
     var parameters = []
     parameters = mapObject(this.props.paramsFiltered, (uniqueid, param) => {
       if (param[this.props.orderBy]===this.props.orderByTag) {
-        return (<Parameter key={uniqueid} app={this.props.app} bundle={this.props.bundle} PSPanel={this.props.PSPanel} paramOverview={param} uniqueid={uniqueid} pinnable={!this.props.PSPanelOnly} description={param.description}/>)
+        return (<Parameter key={uniqueid} app={this.props.app} bundle={this.props.bundle} PSPanel={this.props.PSPanel} paramOverview={param} uniqueid={uniqueid} pinnable={!this.props.PSPanelOnly} disableFiltering={this.props.disableFiltering} description={param.description}/>)
       }
     })
 

@@ -57,7 +57,7 @@ export class Bundle extends ReactQueryParams {
         toast.update(this.state.pendingBundleMethod, {
           render: "FAILED: "+data.error,
           type: toast.TYPE.ERROR,
-          autoClose: 5000,
+          autoClose: false,
           closeButton: true})
 
         this.setState({pendingBundleMethod: null})
@@ -89,7 +89,7 @@ export class Bundle extends ReactQueryParams {
       if (data.parameters) {
         var params = this.state.params;
         Object.keys(data.parameters).forEach( uniqueid => {
-          console.log("updating "+data.parameters[uniqueid].uniquetwig)
+          // console.log("updating "+data.parameters[uniqueid].uniquetwig)
           params[uniqueid] = data.parameters[uniqueid]
         });
         this.setState({params: params});
@@ -111,14 +111,14 @@ export class Bundle extends ReactQueryParams {
 
         if (this.state.pendingBundleMethod) {
           toast.update(this.state.pendingBundleMethod, {
-            render: 'Success!  Click to filter: '+filterstr+'.',
+            render: 'Success!',
             type: toast.TYPE.SUCCESS,
-            autoClose: 10000,
+            autoClose: 1000,
             closeButton: true,
-            closeOnClick: true,
-            onClick: onClick })
+            closeOnClick: true})
 
-          this.setState({pendingBundleMethod: null})
+          // we'll let the waiting panel-action clear the pendingBundleMethod once it updates the view
+          this.setQueryParams({tmp: '"'+Object.keys(data.add_filter)[0]+':'+Object.values(data.add_filter)[0]+'"'})
 
         } else {
           toast.info('New parameters.  Click to filter: '+filterstr+'.', {
@@ -135,8 +135,9 @@ export class Bundle extends ReactQueryParams {
         toast.update(this.state.pendingBundleMethod, {
           render: 'Success!',
           type: toast.TYPE.SUCCESS,
-          autoClose: 5000,
-          closeButton: true})
+          autoClose: 1000,
+          closeButton: true,
+          closeOnClick: true})
 
         this.setState({pendingBundleMethod: null})
 
@@ -218,7 +219,7 @@ export class Bundle extends ReactQueryParams {
     return inAdvanced
   }
   filter = (params, filter, ignoreGroups=[]) => {
-    var ignoreGroupsFilter = ignoreGroups.concat(["pinned", "advanced", "orderBy"])
+    var ignoreGroupsFilter = ignoreGroups.concat(["pinned", "advanced", "orderBy", "tmp"])
 
     var nAdvancedHiddenEach = {};
     var nAdvancedHiddenTotal = 0;
@@ -227,6 +228,32 @@ export class Bundle extends ReactQueryParams {
     var includeThisParam = true;
 
     var advanced = filter.advanced || []
+
+    if (filter.tmp!==undefined && filter.tmp.length) {
+      // then this is a temporary filter (i.e. for the results from add_*)
+      const tmpFilterTag = filter.tmp.split(':')[0].replace('%22', '')
+      const tmpFilterValue = filter.tmp.split(':')[1].replace('%22', '')
+      mapObject(params, (uniqueid, param) => {
+        // determine initial visibility based on advanced filter
+        includeThisParam = true;
+        inAdvancedAll = param.advanced_filter;
+        inAdvancedAll.forEach(advancedItem => {
+          // we'll respect all of the advanced options except for 'is_constraint' (so that compute_phases/times constraint is shown)
+          if (advanced.indexOf(advancedItem) === -1 && ['is_constraint'].indexOf(advancedItem) === -1) {
+            includeThisParam = false;
+          }
+        })
+
+        if (param[tmpFilterTag] !== tmpFilterValue) {
+          includeThisParam = false
+        }
+
+        if (includeThisParam) {
+          paramsfilteredids.push(uniqueid)
+        }
+      })
+      return [paramsfilteredids, null, null]
+    }
 
     if (ignoreGroups.indexOf("advanced")!==-1 || advanced.indexOf("onlyPinned")===-1) {
       mapObject(params, (uniqueid, param) => {

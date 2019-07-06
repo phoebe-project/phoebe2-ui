@@ -5,6 +5,8 @@ import 'babel-polyfill';
 import {toast} from 'react-toastify';
 import Select from 'react-select'; // https://react-select.com/home
 
+import {PSPanel} from './panel-ps';
+import {LogoSpinner} from './logo';
 
 // import FlipMove from 'react-flip-move'; // https://github.com/joshwcomeau/react-flip-move
 
@@ -14,6 +16,14 @@ import {Panel} from './ui';
 import {Tag} from './panel-tags';
 
 // import isElectron from 'is-electron'; // https://github.com/cheton/is-electron
+
+class ActionContentNewParameters extends Component {
+  render() {
+    return (
+      <PSPanel app={this.props.app} bundleid={this.props.bundle.state.bundleid} bundle={this.props.bundle} PSPanelOnly={true} disableFiltering={true} showPopoutButton={false}/>
+    )
+  }
+}
 
 
 class ActionContentAdd extends Component {
@@ -245,6 +255,7 @@ export class ActionPanel extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      waiting: false,
       redirect: null,
       actionActive: this.props.bundle.state.pendingBundleMethod === null,
       packet: {},
@@ -261,6 +272,7 @@ export class ActionPanel extends Component {
     this.setState({packet: packet})
   }
   closePanel = () => {
+    this.props.bundle.setQueryParams({tmp: []})
     this.setState({redirect: generatePath(this.props.app.state.serverHost, this.props.bundle.state.bundleid, null, this.props.bundle.getSearchString())})
   }
   downloadRunAction = () => {
@@ -274,11 +286,17 @@ export class ActionPanel extends Component {
 
     console.log("submitAction "+this.state.packet);
     var toastID = toast.info(this.props.action+" submitted... waiting for response", { autoClose: false, closeButton: false });
+
     this.props.bundle.setState({pendingBundleMethod: toastID});
-
-
     this.props.app.socket.emit('bundle_method', this.state.packet);
-    this.closePanel();
+
+    if (this.props.action.split('_')[0] === 'add' || this.props.action.split('_')[0] === 'run') {
+      // then we go to another screen once we receive tmpFilter
+      this.setState({waiting: true});
+    } else {
+      this.closePanel();
+    }
+
   }
   render() {
     if (this.state.redirect) {
@@ -288,9 +306,28 @@ export class ActionPanel extends Component {
     var action = this.props.action.split("_")[0];
     var actionIcon = "fas fa-fw "
     var actionContent = null
-    if (action == 'add') {
+
+    var tmpFilter = this.props.bundle.queryParams.tmp !== undefined && this.props.bundle.queryParams.tmp.length;
+
+    if (this.state.waiting) {
+      if (tmpFilter) {
+        // then we need to stop waiting
+        this.setState({waiting: false})
+        this.props.bundle.setState({pendingBundleMethod: null})
+      } else if (!this.props.bundle.state.pendingBundleMethod) {
+        // then we should have received an error message, let's stop waiting
+        this.closePanel();
+      } else {
+        actionContent =  <LogoSpinner pltStyle={{backgroundColor: "rgb(43, 113, 177)"}}/>
+      }
+    } else if (action == 'add') {
       actionIcon += 'fa-plus'
-      actionContent = <ActionContentAdd app={this.props.app} bundle={this.props.bundle} action={this.props.action} onUpdatePacket={this.onUpdatePacket}/>
+      if (tmpFilter) {
+        actionContent = <ActionContentNewParameters app={this.props.app} bundle={this.props.bundle}/>
+      } else {
+        actionContent = <ActionContentAdd app={this.props.app} bundle={this.props.bundle} action={this.props.action} onUpdatePacket={this.onUpdatePacket}/>
+      }
+
     } else if (action == 'rename') {
       actionIcon += 'fa-pen'
       actionContent = <ActionContentRename app={this.props.app} bundle={this.props.bundle} action={this.props.action} onUpdatePacket={this.onUpdatePacket}/>
@@ -299,7 +336,11 @@ export class ActionPanel extends Component {
       actionContent = <ActionContentRemove app={this.props.app} bundle={this.props.bundle} action={this.props.action} onUpdatePacket={this.onUpdatePacket}/>
     } else if (action == 'run') {
       actionIcon += 'fa-play'
-      actionContent = <ActionContentRun app={this.props.app} bundle={this.props.bundle} action={this.props.action} onUpdatePacket={this.onUpdatePacket}/>
+      if (tmpFilter) {
+        actionContent = <ActionContentNewParameters app={this.props.app} bundle={this.props.bundle}/>
+      } else {
+        actionContent = <ActionContentRun app={this.props.app} bundle={this.props.bundle} action={this.props.action} onUpdatePacket={this.onUpdatePacket}/>
+      }
     }
 
     var actionStyle = {margin: '5px'}
@@ -309,23 +350,40 @@ export class ActionPanel extends Component {
       actionStyle.borderColor = 'gray'
     }
 
-
+    var buttons = null
+    if (!this.state.waiting) {
+      if (tmpFilter) {
+        buttons = <div style={{float: "right"}}>
+                    <span onClick={() => alert("not yet implemented")} className="btn btn-primary" style={{margin: "5px"}} title="remove any added parameters and cancel"><span className="fas fa-fw fa-minus"></span> remove</span>
+                    <span onClick={this.closePanel} className="btn btn-primary" style={{margin: "5px"}} title="accept changes and return to filtered parameters"><span className="fas fa-fw fa-chevron-right"></span> continue</span>
+                </div>
+      } else {
+        buttons = <div style={{float: "right"}}>
+                    <span onClick={this.closePanel} className="btn btn-primary" style={{margin: "5px"}} title={"cancel "+this.props.action+" and return to filtered parameters"}><span className="fas fa-fw fa-times"></span> cancel</span>
+                    { action === 'run' ?
+                      <span onClick={this.downloadRunAction} className="btn btn-primary" style={{actionStyle}} title="download script to run on external machine"><span className="fas fa-fw fa-download"></span> download script</span>
+                      :
+                      null
+                    }
+                    <span onClick={this.submitAction} className="btn btn-primary" style={actionStyle} title={this.props.action}><span className={actionIcon}></span> {this.props.action}</span>
+                </div>
+      }
+    }
 
     return (
       <Panel backgroundColor="#e4e4e4">
-        <h2>{this.props.action}</h2>
+        <span>
+          <h2 style={{display: "inline"}}>{this.props.action}</h2>
+          {buttons}
+        </span>
 
-        {actionContent}
-
-        <div style={{float: "right", margin: "5px"}}>
-          <span onClick={this.closePanel} className="btn btn-primary" style={{margin: "5px"}}><span className="fas fa-fw fa-times"></span> cancel</span>
-          { action === 'run' ?
-            <span onClick={this.downloadRunAction} className="btn btn-primary" style={{actionStyle}}><span className="fas fa-fw fa-download"></span> download script</span>
-            :
-            null
-          }
-          <span onClick={this.submitAction} className="btn btn-primary" style={actionStyle}><span className={actionIcon}></span> {this.props.action}</span>
+        <div style={{marginTop: "40px", minHeight: "calc(100% - 150px)"}}>
+            {actionContent}
         </div>
+
+        {buttons}
+
+
       </Panel>
     )
   }

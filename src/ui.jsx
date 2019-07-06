@@ -12,7 +12,7 @@ export class Panel extends Component {
           :
           null
         }
-        <div style={{padding: "10px", paddingTop: "20px", width: "100%", minHeight: "100%", overflowY: "auto", backgroundColor: this.props.backgroundColor}}>
+        <div style={{padding: "10px", paddingTop: "20px", width: "100%", minHeight: this.props.minHeight || "100%", overflowY: "auto", backgroundColor: this.props.backgroundColor}}>
           {this.props.children}
         </div>
       </React.Fragment>
