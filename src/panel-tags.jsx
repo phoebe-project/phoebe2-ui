@@ -48,7 +48,7 @@ class TagClearFilterButton extends Component{
     } else {
       // var currentthis.props.currentGroupFilter
       Object.keys(this.props.bundle.queryParams).forEach(group => {
-        if (["pinned", "orderBy", "advanced"].indexOf(group) === -1) {
+        if (["pinned", "orderBy", "advanced", "hideChecks"].indexOf(group) === -1) {
           this.props.bundle.setQueryParams({[group]: []})
         }
       })
