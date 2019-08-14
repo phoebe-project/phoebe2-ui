@@ -79,7 +79,7 @@ class Parameter extends Component {
     this.expandFromClick = false;
   }
   toggleExpandedDetails = () => {
-    if (this.props.PSPanel.state.activeParameter===this.props.uniqueid) {
+    if (this.props.PSPanel.state.activeParameter===this.props.uniqueidkey) {
       if (this.props.PSPanel.state.activeParameterDetails) {
         this.props.PSPanel.setState({activeParameter: null})
         this.props.PSPanel.setState({activeParameterDetails: false})
@@ -91,7 +91,7 @@ class Parameter extends Component {
     } else {
       // try to prevent the scroll action
       this.expandFromClick = true;
-      this.props.PSPanel.setState({activeParameter: this.props.uniqueid})
+      this.props.PSPanel.setState({activeParameter: this.props.uniqueidkey})
       this.props.PSPanel.setState({activeParameterDetails: true})
       this.props.PSPanel.setState({activeParameterValue: false})
       this.props.PSPanel.setState({activeParameterUnit: false})
@@ -99,7 +99,7 @@ class Parameter extends Component {
   }
   toggleExpandedValue = (e) => {
     e.stopPropagation();
-    if (this.props.PSPanel.state.activeParameter===this.props.uniqueid) {
+    if (this.props.PSPanel.state.activeParameter===this.props.uniqueidkey) {
       // this.props.PSPanel.setState({activeParameter: null})
       // this.props.PSPanel.setState({activeParameterDetails: false})
       this.props.PSPanel.setState({activeParameterValue: !this.props.PSPanel.state.activeParameterValue})
@@ -107,7 +107,7 @@ class Parameter extends Component {
     } else {
       // try to prevent the scroll action
       this.expandFromClick = true;
-      this.props.PSPanel.setState({activeParameter: this.props.uniqueid})
+      this.props.PSPanel.setState({activeParameter: this.props.uniqueidkey})
       this.props.PSPanel.setState({activeParameterDetails: false})
       this.props.PSPanel.setState({activeParameterValue: true})
       this.props.PSPanel.setState({activeParameterUnit: false})
@@ -131,7 +131,7 @@ class Parameter extends Component {
   }
   toggleExpandedUnit = (e) => {
     e.stopPropagation();
-    if (this.props.PSPanel.state.activeParameter===this.props.uniqueid) {
+    if (this.props.PSPanel.state.activeParameter===this.props.uniqueidkey) {
       // this.props.PSPanel.setState({activeParameter: null})
       // this.props.PSPanel.setState({activeParameterDetails: false})
       this.props.PSPanel.setState({activeParameterValue: false})
@@ -139,7 +139,7 @@ class Parameter extends Component {
     } else {
       // try to prevent the scroll action
       this.expandFromClick = true;
-      this.props.PSPanel.setState({activeParameter: this.props.uniqueid})
+      this.props.PSPanel.setState({activeParameter: this.props.uniqueidkey})
       this.props.PSPanel.setState({activeParameterDetails: false})
       this.props.PSPanel.setState({activeParameterValue: false})
       this.props.PSPanel.setState({activeParameterUnit: true})
@@ -186,7 +186,7 @@ class Parameter extends Component {
       this.setState({pinned: ispinned})
     }
 
-    var active = this.props.PSPanel.state.activeParameter===this.props.uniqueid || this.props.bundle.state.paramsfilteredids.length===1;
+    var active = this.props.PSPanel.state.activeParameter===this.props.uniqueidkey || this.props.bundle.state.paramsfilteredids.length===1;
     var expandedDetails = active && this.props.PSPanel.state.activeParameterDetails
     if (expandedDetails !== this.state.expandedDetails) {
       this.setState({expandedDetails: expandedDetails})
@@ -495,7 +495,7 @@ class ParameterDetailsItemPin extends Component {
     this.props.PSPanel.setState({activeParameterDetails: true})
     this.props.PSPanel.setState({activeParameterValue: false})
     this.props.PSPanel.setState({activeParameterUnit: false})
-    this.props.PSPanel.setState({activeParameter: this.props.uniqueid})
+    this.props.PSPanel.setState({activeParameter: this.props.uniqueidkey})
   }
   popParameter = () => {
     var bundleid = this.props.bundle.state.bundleid || this.props.bundle.match.params.bundleid
@@ -761,6 +761,33 @@ class InputConstraint extends Component {
   }
 }
 
+class ChecksReportItem extends Component {
+  render() {
+
+    var style = {padding: "10px", marginBottom: "5px", borderLeft: "4px solid"}
+
+    if (this.props.report.level == 'ERROR') {
+      style.borderColor = '#ff000040';
+    } else if (this.props.report.level == 'WARNING') {
+      style.borderColor = '#efff0099';
+    }
+
+
+    return (
+      <div style={style}>
+        <b>{this.props.report.level}</b>: {this.props.report.message}
+
+        {Object.keys(this.props.report.parameters).map(twig => {
+          let uniqueid = this.props.report.parameters[twig]
+          let param = this.props.bundle.state.params[uniqueid]
+          return <Parameter key={uniqueid} uniqueid={uniqueid} uniqueidkey={"checks:"+this.props.reportKey+":"+uniqueid} app={this.props.app} bundle={this.props.bundle} PSPanel={this.props.PSPanel} paramOverview={param} pinnable={true} disableFiltering={false} disableScrollTo={true} description={param.description}/>
+        })}
+
+      </div>
+    )
+  }
+}
+
 export class PSPanel extends Component {
   constructor(props) {
     super(props);
@@ -818,6 +845,25 @@ export class PSPanel extends Component {
 
     return (
       <Panel backgroundColor="#e4e4e4" minHeight={this.props.minHeight}>
+
+        {this.props.showChecks ?
+          <div className="phoebe-parameter" style={{padding: "10px"}}>
+            {this.props.bundle.state.checksReport.length == 0 ?
+              <span style={{borderLeft: "4px solid #04d804b8", padding: "10px", marginBottom: "5px"}}><b>PASSING</b>: no errors or warnings to show</span>
+              :
+              null
+            }
+
+            {this.props.bundle.state.checksReport.map((report,i) => {
+              return <ChecksReportItem report={report} reportKey={i} bundle={this.props.bundle} PSPanel={this} app={this.props.app}/>
+            })}
+          </div>
+          :
+          null
+        }
+
+
+
         {this.props.showPopoutButton ?
           <div style={{float: "right", marginTop: "6px", paddingRight: "10px"}}>
             <span className="btn btn-blue" onClick={this.popPS} style={{height: "34px", width: "34px"}} title="popout into external window"><span className="fas fa-fw fa-external-link-alt"/></span>
@@ -867,7 +913,7 @@ class PSGroup extends Component {
     var parameters = []
     parameters = mapObject(this.props.paramsFiltered, (uniqueid, param) => {
       if (param[this.props.orderBy]===this.props.orderByTag) {
-        return (<Parameter key={uniqueid} app={this.props.app} bundle={this.props.bundle} PSPanel={this.props.PSPanel} paramOverview={param} uniqueid={uniqueid} pinnable={!this.props.PSPanelOnly} disableFiltering={this.props.disableFiltering} description={param.description}/>)
+        return (<Parameter key={uniqueid} uniqueid={uniqueid} uniqueidkey={'PS:'+uniqueid} app={this.props.app} bundle={this.props.bundle} PSPanel={this.props.PSPanel} paramOverview={param} pinnable={!this.props.PSPanelOnly} disableFiltering={this.props.disableFiltering} description={param.description}/>)
       }
     })
 

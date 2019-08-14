@@ -29,6 +29,8 @@ export class Bundle extends ReactQueryParams {
       bundleid: props.match.params.bundleid,
       params: null,
       failedConstraints: [],
+      checksReport: [],
+      checksStatus: "UNKNOWN",
       paramsfilteredids: [],
       tags: {},
       tagsAvailable: {},
@@ -78,6 +80,10 @@ export class Bundle extends ReactQueryParams {
 
       }
 
+    })
+
+    this.props.app.socket.on(this.state.bundleid+':checks:react', (data) => {
+      this.setState({checksReport: data.checks_report || [], checksStatus: data.checks_status || "UNKNOWN"})
     })
 
     this.props.app.socket.on(this.state.bundleid+':failed_constraints:react', (data) => {
@@ -164,7 +170,7 @@ export class Bundle extends ReactQueryParams {
       .then(json => {
         if (json.data.success) {
           this.registerBundle();
-          this.setState({params: json.data.parameters, tags: json.data.tags, failedConstraints: json.data.failed_constraints, nparams: Object.keys(json.data.parameters).length})
+          this.setState({params: json.data.parameters, tags: json.data.tags, failedConstraints: json.data.failed_constraints, checksStatus: json.data.checks_status || "UNKNOWN", checksReport: json.data.checks_report || [], nparams: Object.keys(json.data.parameters).length})
         } else {
           alert("server error: "+json.data.error);
           this.setState({params: null, tags: null});
@@ -219,7 +225,7 @@ export class Bundle extends ReactQueryParams {
     return inAdvanced
   }
   filter = (params, filter, ignoreGroups=[]) => {
-    var ignoreGroupsFilter = ignoreGroups.concat(["pinned", "advanced", "orderBy", "tmp"])
+    var ignoreGroupsFilter = ignoreGroups.concat(["pinned", "advanced", "orderBy", "tmp", "checks"])
 
     var nAdvancedHiddenEach = {};
     var nAdvancedHiddenTotal = 0;
@@ -385,7 +391,7 @@ export class Bundle extends ReactQueryParams {
             {this.props.match.params.action ?
               <ActionPanel app={this.props.app} bundleid={this.state.bundleid} bundle={this} action={this.props.match.params.action}/>
               :
-              <PSPanel app={this.props.app} bundleid={this.state.bundleid} bundle={this} showPopoutButton={true}/>
+              <PSPanel app={this.props.app} bundleid={this.state.bundleid} bundle={this} showPopoutButton={true} showChecks={!this.queryParams.hideChecks}/>
             }
             <FigurePanel app={this.props.app} bundleid={this.state.bundleid} bundle={this} inactive={this.props.match.params.action}/>
           </PanelGroup>

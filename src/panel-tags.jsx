@@ -429,6 +429,69 @@ class FilterBox extends Component {
   }
 }
 
+class ChecksBox extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      expanded: false,
+    };
+  }
+  toggleExpanded = () => {
+    this.setState({expanded: !this.state.expanded})
+  }
+  // toggleCheckbox = (item, checked) => {
+  //   var currentChecks = this.props.bundle.queryParams.checks || []
+  //   let newChecks
+  //   if (checked) {
+  //     newChecks = currentChecks.concat(item)
+  //   } else {
+  //     newChecks = currentChecks.filter(v => v !== item)
+  //   }
+  //   this.props.bundle.setQueryParams({checks: newChecks})
+  // }
+  // toggleErrors = (e) => {
+  //   this.toggleCheckbox("errors", e.currentTarget.checked)
+  // }
+  // toggleWarnings = (e) => {
+  //   this.toggleCheckbox("warnings", e.currentTarget.checked)
+  // }
+  // toggleConstraints = (e) => {
+  //   this.toggleCheckbox("constraints", e.currentTarget.checked)
+  // }
+  toggleViewMessages = (e) => {
+    var currentChecks = this.props.bundle.queryParams.hideChecks || false
+    this.props.bundle.setQueryParams({hideChecks: !currentChecks})
+  }
+  render() {
+    var status = this.props.bundle.state.checksStatus
+
+    var hidingChecks = this.props.bundle.queryParams.hideChecks || false
+
+    var viewingChecksToggleTitle = 'hide messages'
+    if (hidingChecks) {
+      viewingChecksToggleTitle = 'view messages'
+    }
+
+
+    var style = {padding: "10px"}
+
+    if (status == 'FAIL') {
+      style.backgroundColor = '#ff000040';
+    } else if (status == 'WARNING') {
+      style.backgroundColor = '#efff0099';
+    }
+
+    return (
+      <div className="phoebe-parameter" style={style}>
+        Checks Status: {status}
+        {/* <span style={{float: "right", color: "#2B71B1", cursor: "pointer"}} onClick={this.toggleExpanded}>{this.state.expanded ? "hide options" : "show options"}</span> */}
+        <span style={{float: "right", width: "50%", maxWidth: "300px", minWidth: "100px"}} className="btn btn-tag btn-tag-clear" onClick={this.toggleViewMessages}>{viewingChecksToggleTitle}</span>
+
+      </div>
+    )
+  }
+}
+
 export class TagPanel extends Component {
   render() {
     var tags = this.props.bundle.state.tags || {}
@@ -436,6 +499,7 @@ export class TagPanel extends Component {
     return (
       <Panel inactive={this.props.inactive}>
         <FilterBox bundle={this.props.bundle}/>
+        <ChecksBox bundle={this.props.bundle}/>
 
         <TagGroup title="Context" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} expanded={true} tags={tags.contexts || null}/>
         <TagGroup title="Kind" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.kinds || null}></TagGroup>
