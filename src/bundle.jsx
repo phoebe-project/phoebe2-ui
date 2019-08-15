@@ -38,6 +38,7 @@ export class Bundle extends ReactQueryParams {
       nAdvancedHiddenTotal: 0,
       nparams: 0,
       pendingBundleMethod: null,
+      pollingJobs: {}, // uniqueid: interval
     };
     this.childrenWindows = [];
   }
@@ -150,6 +151,9 @@ export class Bundle extends ReactQueryParams {
 
       }
 
+      // TODO: do we ever need to be worried about the state not being updated yet?
+      this.updatePollingJobs(this.state.params)
+
 
     });
 
@@ -171,6 +175,7 @@ export class Bundle extends ReactQueryParams {
         if (json.data.success) {
           this.registerBundle();
           this.setState({params: json.data.parameters, tags: json.data.tags, failedConstraints: json.data.failed_constraints, checksStatus: json.data.checks_status || "UNKNOWN", checksReport: json.data.checks_report || [], nparams: Object.keys(json.data.parameters).length})
+          this.updatePollingJobs(json.data.parameters);
         } else {
           alert("server error: "+json.data.error);
           this.setState({params: null, tags: null});
@@ -223,6 +228,36 @@ export class Bundle extends ReactQueryParams {
       }
     }
     return inAdvanced
+  }
+  pollJob = (uniqueid) => {
+    console.log("polling for "+uniqueid)
+
+    var packet = {bundleid: this.state.bundleid, method: 'attach_job', uniqueid: uniqueid}
+    this.props.app.socket.emit('bundle_method', packet);
+  }
+  updatePollingJobs = (params) => {
+    var pollingJobs = [];
+    mapObject(params, (uniqueid, param) => {
+      if (Object.keys(this.state.pollingJobs).indexOf(uniqueid) === -1) {
+        if (param.qualifier === 'detached_job' && param.value !== 'loaded') {
+          // then we need to poll for updates to this parameter
+          var interval = setInterval(() => this.pollJob(uniqueid), 1000);
+          pollingJobs[uniqueid] = interval
+        }
+      } else {
+        if (param.qualifier === 'detached_job' && param.valuestr !== 'loaded') {
+          // then we leave the current interval in place
+          pollingJobs[uniqueid] = this.state.pollingJobs[uniqueid]
+        } else {
+          // then we clear the existing interval
+          console.log("clearing polling for "+uniqueid)
+          clearInterval(this.state.pollingJobs[uniqueid])
+          // and don't add an entry to the new state
+        }
+      }
+    })
+
+    this.setState({pollingJobs: pollingJobs})
   }
   filter = (params, filter, ignoreGroups=[]) => {
     var ignoreGroupsFilter = ignoreGroups.concat(["pinned", "advanced", "orderBy", "tmp", "checks"])

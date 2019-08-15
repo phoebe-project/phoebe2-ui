@@ -279,7 +279,7 @@ export class ActionPanel extends Component {
     alert("not yet implemented")
   }
   submitAction = () => {
-    if (['run', 'remove'].indexOf(this.props.action.split('_')[0]) != -1) {
+    if (['remove'].indexOf(this.props.action.split('_')[0]) != -1) {
       alert("not yet impelemented")
       return
     }
