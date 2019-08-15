@@ -764,12 +764,12 @@ class InputConstraint extends Component {
 class ChecksReportItem extends Component {
   render() {
 
-    var style = {padding: "10px", marginBottom: "5px", borderLeft: "4px solid"}
+    var style = {padding: "10px", marginBottom: "5px"}
 
     if (this.props.report.level == 'ERROR') {
-      style.borderColor = '#ff000040';
+      style.borderLeft = '4px solid rgba(255,0,0,0.6)';
     } else if (this.props.report.level == 'WARNING') {
-      style.borderColor = '#efff0099';
+      style.borderLeft = '4px solid rgba(255,255,0,1.0)';
     }
 
 
@@ -849,14 +849,16 @@ export class PSPanel extends Component {
         {this.props.showChecks ?
           <div className="phoebe-parameter" style={{padding: "10px"}}>
             {this.props.bundle.state.checksReport.length == 0 ?
-              <span style={{borderLeft: "4px solid #04d804b8", padding: "10px", marginBottom: "5px"}}><b>PASSING</b>: no errors or warnings to show</span>
+              <span style={{borderLeft: "4px solid rgba(0,255,0,0.6)", padding: "10px", marginBottom: "5px"}}><b>PASSING</b>: no errors or warnings to show</span>
               :
               null
             }
 
-            {this.props.bundle.state.checksReport.map((report,i) => {
-              return <ChecksReportItem report={report} reportKey={i} bundle={this.props.bundle} PSPanel={this} app={this.props.app}/>
-            })}
+            <FlipMove appearAnimation={false} enterAnimation="fade" leaveAnimation="fade" maintainContainerHeight={true}>
+              {this.props.bundle.state.checksReport.map((report,i) => {
+                return <ChecksReportItem report={report} reportKey={i} bundle={this.props.bundle} PSPanel={this} app={this.props.app}/>
+              })}
+            </FlipMove>
           </div>
           :
           null

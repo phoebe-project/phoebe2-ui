@@ -476,9 +476,9 @@ class ChecksBox extends Component {
     var style = {padding: "10px"}
 
     if (status == 'FAIL') {
-      style.backgroundColor = '#ff000040';
+      style.backgroundColor = 'rgba(255,0,0,0.2)';
     } else if (status == 'WARNING') {
-      style.backgroundColor = '#efff0099';
+      style.backgroundColor = 'rgba(255,255,0,0.2)';
     }
 
     return (
