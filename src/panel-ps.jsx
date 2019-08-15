@@ -846,7 +846,7 @@ export class PSPanel extends Component {
     return (
       <Panel backgroundColor="#e4e4e4" minHeight={this.props.minHeight}>
 
-        {this.props.showChecks ?
+        {this.props.showChecks && this.props.bundle.state.checksStatus !== 'UNKNOWN' ?
           <div className="phoebe-parameter" style={{padding: "10px"}}>
             {this.props.bundle.state.checksReport.length == 0 ?
               <span style={{borderLeft: "4px solid rgba(0,255,0,0.6)", padding: "10px", marginBottom: "5px"}}><b>PASSING</b>: no errors or warnings to show</span>
