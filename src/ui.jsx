@@ -8,7 +8,7 @@ export class Panel extends Component {
     return (
       <React.Fragment>
         {this.props.inactive ?
-          <div style={{position: 'absolute', width: "100%", height: "100%", backgroundColor: "#808080b3"}}/>
+          <div style={{position: 'absolute', width: "100%", height: "100%", backgroundColor: "rgba(128,128,128,0.6)"}}/>
           :
           null
         }
