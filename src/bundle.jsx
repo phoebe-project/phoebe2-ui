@@ -160,6 +160,11 @@ export class Bundle extends ReactQueryParams {
   }
   deregisterBundle = () => {
     console.log("deregisterBundle")
+    // terminate any polling for jobs
+    mapObject(this.state.pollingJobs, (jobid, interval) => {
+      clearInterval(interval)
+    })
+    this.setState({pollingJobs: {}})
     this.props.app.socket.emit('deregister client', {'clientid': this.props.app.state.clientid, 'bundleid': this.state.bundleid});
   }
   componentDidMount() {
@@ -239,8 +244,9 @@ export class Bundle extends ReactQueryParams {
     var pollingJobs = [];
     mapObject(params, (uniqueid, param) => {
       if (Object.keys(this.state.pollingJobs).indexOf(uniqueid) === -1) {
-        if (param.qualifier === 'detached_job' && param.value !== 'loaded') {
+        if (param.qualifier === 'detached_job' && param.valuestr !== 'loaded') {
           // then we need to poll for updates to this parameter
+          // console.log("adding polling interval for detached_job "+uniqueid+" with status "+param.valuestr)
           var interval = setInterval(() => this.pollJob(uniqueid), 1000);
           pollingJobs[uniqueid] = interval
         }
