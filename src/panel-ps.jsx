@@ -265,7 +265,7 @@ class Parameter extends Component {
     if (this.state.expandedValue) {
       if (this.props.paramOverview.class==='FloatArrayParameter') {
         expandedValueContent = <span style={{verticalAlign: "super"}}>
-                                <InputFloatArray parameter={this}/>
+                                <InputFloatArray app={this.props.app} parameter={this}/>
                              </span>
       } else if (this.props.paramOverview.class==='SelectParameter') {
         expandedValueContent = <span style={{verticalAlign: "super"}}>
@@ -534,6 +534,7 @@ class Input extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      origValue: this.props.origValue || null,
       value: this.props.origValue || null
     };
     this.refinput = React.createRef();
@@ -574,6 +575,13 @@ class Input extends Component {
     }
   }
   render() {
+    if (this.props.origValue !== this.state.origValue) {
+      // we do this so that a change in origValue from the props will force
+      // and update
+      this.setState({origValue: this.props.origValue, value: this.props.origValue})
+    }
+
+
     if (this.props.type==='choice' || this.props.type==='select') {
       var width = this.props.width || "185px"
       var choices = this.props.choices || [];
@@ -616,12 +624,12 @@ class Input extends Component {
     } else if (this.props.type == 'array') {
       return (
         <span>
-          <input ref={this.refinput} type="text" style={{marginLeft: "10px", marginRight: "10px", width: "calc(100% - 80px)", height: "26px", borderRadius: "4px", border: "1px solid lightgray"}} name="value" title="value" value={this.state.value || this.props.origValue} onChange={this.onChange}/>
+          <input ref={this.refinput} id={this.props.id} type="text" style={{marginLeft: "10px", marginRight: "10px", width: "calc(100% - 80px)", height: "26px", borderRadius: "4px", border: "1px solid lightgray"}} name="value" title="value" value={this.state.value || this.props.origValue} onChange={this.onChange}/>
         </span>
       )
     } else {
       return (
-        <input ref={this.refinput} type="text" style={{marginLeft: "10px", marginRight: "10px", width: this.props.width || "185px", height: "26px", borderRadius: "4px", border: "1px solid lightgray"}} name="value" title="value" value={this.state.value} onChange={this.onChange}/>
+        <input ref={this.refinput} id={this.props.id} type="text" style={{marginLeft: "10px", marginRight: "10px", width: this.props.width || "185px", height: "26px", borderRadius: "4px", border: "1px solid lightgray"}} name="value" title="value" value={this.state.value || this.props.origValue} onChange={this.onChange}/>
       )
     }
   }
@@ -631,64 +639,167 @@ class InputFloatArray extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      inputType: null
+      valueType: null,
+      inputType: null,
+      args: {},
+      userArgs: {},
+      argsLoaded: false,
     };
     this.refinput = React.createRef();
+  }
+  updateArgs = (value) => {
+
+
+    if (!this.props.parameter || !this.props.parameter.state.details || this.props.parameter.state.details.value === undefined) {
+      console.log("deferring converting nparray")
+      return
+    }
+
+    if (!value) {
+      value = this.props.parameter.state.details.value
+    }
+
+    this.abortGetArgsForType = new window.AbortController();
+
+    console.log("requesting conversion of nparray: "+JSON.stringify(value))
+    abortableFetch("http://"+this.props.app.state.serverHost+"/nparray/"+JSON.stringify(value), {signal: this.abortGetArgsForType.signal})
+      .then(res => res.json())
+      .then(json => {
+        console.log(json)
+        if (json.data.success) {
+          var args = json.data.response
+          // api won't return the original array (just to be cheaper)
+          args[this.state.valueType] = this.props.parameter.state.details.value
+
+          this.setState({args: args, argsLoaded: true})
+
+          if (!this.state.userArgs[this.state.inputType]) {
+            var userArgs = this.state.userArgs
+            userArgs[this.state.inputType] = args[this.state.inputType]
+            this.setState({userArgs: userArgs})
+          }
+
+        } else {
+          console.log("server error (ignoring for now): "+json.data.error);
+          this.setState({userArgs: {}})
+        }
+      }, err=> {
+        // then we canceled the request
+        console.log("received abort signal")
+      })
+      .catch(err => {
+        if (err.name === 'AbortError') {
+          // then we canceled the request
+          console.log("received abort signal")
+        } else {
+          // alert("server error, try again")
+          console.log("server error (ignoring for now)")
+          this.setState({userArgs: {}})
+        }
+      });
+  }
+  onChange = (type, key, value) => {
+    // console.log("onChange "+type+" "+key+" "+value)
+    var userArgs = this.state.userArgs
+
+    if (type==='array') {
+      // this.updateArgs(value)
+      userArgs = {'array': value}
+      this.props.parameter.updateUserValue(value)
+    } else {
+      if (!userArgs[type]) {
+        userArgs[type] = this.state.args[type]
+      }
+      userArgs[type][key] = value
+
+      this.updateArgs(userArgs[type]);
+      this.props.parameter.updateUserValue(userArgs[type])
+    }
+    this.setState({userArgs: userArgs})
+
+  }
+  componentDidUpdate() {
+    if (!this.state.argsLoaded) {
+      this.updateArgs();
+    }
+  }
+  componentWillUnmount() {
+    this.setState({inputType: null})
   }
   render() {
     var btnStyle = {width: "calc(25% - 4px)", margin: "2px", textAlign: "center", lineHeight: "1em"}
 
     if (this.state.inputType == null && this.props.parameter.state.details && this.props.parameter.state.details.value!==undefined) {
-      if (this.props.parameter.state.details.value.nparray || '' === 'linspace') {
-        this.setState({inputType: 'linspace'})
-      } else if (this.props.parameter.state.details.value.nparray || '' == 'arange') {
-        this.setState({inputType: 'arange'})
+      const nparrayType = this.props.parameter.state.details.value.nparray || ''
+      if (nparrayType === 'linspace') {
+        this.setState({valueType: 'linspace', inputType: 'linspace'})
+      } else if (nparrayType === 'arange') {
+        this.setState({valueType: 'arange', inputType: 'arange'})
       } else {
-        this.setState({inputType: 'array'})
+        this.setState({valueType: 'array', inputType: 'array'})
       }
     }
 
     const disabledInputStyle = {marginLeft: "10px", marginRight: "10px", width: "calc(100% - 80px)", height: "26px", borderRadius: "4px", border: "1px solid lightgray"};
 
+    var args = this.state.args[this.state.inputType] || undefined;
+    if (this.state.inputType == 'array') {
+      args = this.state.args['arraystr'] || ''
+    }
+
+    if (args === undefined) {
+      return (null)
+    }
+    // console.log("args for "+this.state.inputType+"(valueType="+this.state.valueType+"): ")
+    // console.log(args)
+
     var input = null
     var belowInput = null
-    const spanLabelStyle = {padding: "2px", width: "calc('20% - 10px')"}
+    const spanLabelStyle = {padding: "2px", display: "inline-block"}
+    const inputWidth = "80px"
     if (this.state.inputType === 'linspace') {
-      input = <span><input type="text" disabled style={disabledInputStyle}/></span>
-      belowInput = <span>
-                <span style={spanLabelStyle}>
-                  <span style={{width: "60px", textAlign: "right"}}>start</span>
-                  <Input type='float' origValue=''/>
-                </span>
-                <span style={spanLabelStyle}>
-                  stop
-                  <Input type='float' origValue='' disableFocusOnMount={true}/>
-                </span>
-                <span style={spanLabelStyle}>
-                  num
-                  <Input type='int' origValue='' disableFocusOnMount={true}/>
-                </span>
-                <span style={spanLabelStyle}>
-                  endpoint
-                  <Input type='choice' choices={['True', 'False']} origValue='True' disableFocusOnMount={true}/>
-                </span>
-              </span>
+      input = <span><input type="text" value={this.state.args.arraystr || ''} disabled style={disabledInputStyle}/></span>
+      spanLabelStyle.width = "calc(25% - 2px)"
+      belowInput = <div style={{display: 'block'}}>
+                    <span style={spanLabelStyle}>
+                      start
+                      <Input type='float' origValue={args.start.toString()} onChange={(inputValue) => this.onChange('linspace', 'start', inputValue)} width={inputWidth}/>
+                    </span>
+                    <span style={spanLabelStyle}>
+                      stop
+                      <Input type='float' origValue={args.stop.toString()} onChange={(inputValue) => this.onChange('linspace', 'stop', inputValue)} width={inputWidth} disableFocusOnMount={true}/>
+                    </span>
+                    <span style={spanLabelStyle}>
+                      num
+                      <Input type='int' origValue={args.num.toString()} onChange={(inputValue) => this.onChange('linspace', 'num', inputValue)} width={inputWidth} disableFocusOnMount={true}/>
+                    </span>
+                    <span>
+                      endpoint
+                      <Input type='choice' choices={['True', 'False']} origValue={args.endpoint.toString()} onChange={(inputValue) => this.onChange('linspace', 'endpoint', inputValue)} width={inputWidth} disableFocusOnMount={true}/>
+                    </span>
+              </div>
     } else if (this.state.inputType === 'arange') {
-      input = <span><input type="text" disabled style={disabledInputStyle}/></span>
-      belowInput = <span>
-                <Input type='float' origValue=''/>
-                <span style={spanLabelStyle}>stop</span>
-                <Input type='float' origValue='' disableFocusOnMount={true}/>
-                <span style={spanLabelStyle}>step</span>
-                <Input type='float' origValue='' disableFocusOnMount={true}/>
-                <span style={spanLabelStyle}>endpoint</span>
-                <Input type='choice' choices={['True', 'False']} origValue='True' disableFocusOnMount={true}/>
-              </span>
+      input = <span><input type="text" value={this.state.args.arraystr || ''} disabled style={disabledInputStyle}/></span>
+      spanLabelStyle.width = "calc(33% - 2px)"
+      belowInput = <div style={{display: 'block'}}>
+                    <span style={spanLabelStyle}>
+                      start
+                      <Input type='float' origValue={args.start.toString()} onChange={(inputValue) => this.onChange('arange', 'start', inputValue)} width={inputWidth}/>
+                    </span>
+                    <span style={spanLabelStyle}>
+                      stop
+                      <Input type='float' origValue={args.stop.toString()} onChange={(inputValue) => this.onChange('arange', 'stop', inputValue)} width={inputWidth} disableFocusOnMount={true}/>
+                    </span>
+                    <span style={{padding: "2px", display: "inline-block"}}>
+                      step
+                      <Input type='float' origValue={args.step.toString()} onChange={(inputValue) => this.onChange('arange', 'step', inputValue)} width={inputWidth} disableFocusOnMount={true}/>
+                    </span>
+              </div>
     } else if (this.state.inputType === 'file') {
       input = <span><input type="text" disabled style={disabledInputStyle}/></span>
       belowInput = <span>file input support coming soon</span>
     } else if (this.state.inputType === 'array') {
-      input = <Input type='array' origValue={this.props.parameter.state.details.value} onChange={this.props.parameter.updateUserValue}/>
+      input = <Input type='array' origValue={args.toString()} onChange={(inputValue) => this.onChange('array', 'value', inputValue)}/>
     }
 
     return (
@@ -696,13 +807,20 @@ class InputFloatArray extends Component {
         <span onClick={this.props.parameter.toggleExpandedValue} className="btn fa-fw fas fa-times" title="cancel changes"/>
         <span>{input}</span>
         <span onClick={this.props.parameter.submitSetValue} style={{marginLeft: "-10px"}} className="btn fa-fw fas fa-check" title="apply changes"/>
-        <span>{belowInput}</span>
-        <div>
-          <span className={this.state.inputType=='array' ? 'btn btn-primary btn-primary-active' : 'btn btn-primary'} style={btnStyle} onClick={()=>{this.setState({inputType: 'array'})}}>array</span>
-          <span className='btn btn-primary' style={btnStyle} onClick={()=>{alert("not yet implemented")}}>linspace</span>
-          <span className='btn btn-primary' style={btnStyle} onClick={()=>{alert("not yet implemented")}}>arange</span>
-          <span className='btn btn-primary' style={btnStyle} onClick={()=>{alert("not yet implemented")}}>file import</span>
-        </div>
+        {this.state.argsLoaded ?
+          <React.Fragment>
+            <span>{belowInput}</span>
+            <div>
+              <span className={this.state.inputType=='array' ? 'btn btn-primary btn-primary-active' : 'btn btn-primary'} style={btnStyle} onClick={()=>{this.setState({inputType: 'array'})}}>array</span>
+              <span className={this.state.inputType=='linspace' ? 'btn btn-primary btn-primary-active' : 'btn btn-primary'} style={btnStyle} onClick={()=>{this.setState({inputType: 'linspace'})}}>linspace</span>
+              <span className={this.state.inputType=='arange' ? 'btn btn-primary btn-primary-active' : 'btn btn-primary'} style={btnStyle} onClick={()=>{this.setState({inputType: 'arange'})}}>arange</span>
+              <span className={this.state.inputType=='file' ? 'btn btn-primary btn-primary-active' : 'btn btn-primary'} style={btnStyle} onClick={()=>{alert("not yet implemented")}}>file import</span>
+            </div>
+          </React.Fragment>
+          :
+          null
+        }
+
 
       </React.Fragment>
 
