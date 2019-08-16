@@ -859,7 +859,7 @@ class InputConstraint extends Component {
   render() {
     var parts = [];
     if (this.props.parameter.state.details && this.props.parameter.state.details.value!==undefined) {
-      parts = this.props.parameter.state.details.value.split(/(\{[a-z0-9_@]*\})/g)
+      parts = this.props.parameter.state.details.value.split(/(\{[a-zA-Z0-9_@]*\})/g)
     }
 
     var constrains = null
