@@ -280,11 +280,6 @@ export class ActionPanel extends Component {
     alert("not yet implemented")
   }
   submitAction = () => {
-    if (['remove'].indexOf(this.props.action.split('_')[0]) != -1) {
-      alert("not yet impelemented")
-      return
-    }
-
     console.log("submitAction "+this.state.packet);
     var toastID = toast.info(this.props.action+" submitted... waiting for response", { autoClose: false, closeButton: false });
 
@@ -298,6 +293,19 @@ export class ActionPanel extends Component {
       this.closePanel();
     }
 
+  }
+  removeAction = () => {
+    var packet = {bundleid: this.props.bundle.state.bundleid}
+    var context = this.props.action.split('_')[1]
+    packet.method = 'remove_'+context
+    // NOTE: this makes very specific assumptions about the format of URL
+    var label = this.props.bundle.queryParams.tmp.split('|').slice(-1)[0].replace('%22', '')
+    packet[context] = label
+    console.log("removeAction: ")
+    console.log(packet)
+    this.props.app.socket.emit('bundle_method', packet);
+
+    this.closePanel();
   }
   render() {
     if (this.state.redirect) {
@@ -344,6 +352,7 @@ export class ActionPanel extends Component {
       }
     } else if (this.props.action == 'edit_figure') {
       if (tmpFilter) {
+        // NOTE: this makes very specific assumptions about the format of URL
         var figure = this.props.bundle.queryParams.tmp.split('|').slice(-1)[0].replace('%22', '')
         // console.log(figure)
         actionContent = <React.Fragment>
@@ -364,7 +373,7 @@ export class ActionPanel extends Component {
     if (!this.state.waiting) {
       if (tmpFilter) {
         buttons = <div style={{float: "right"}}>
-                    <span onClick={() => alert("not yet implemented")} className="btn btn-primary" style={{margin: "5px"}} title="remove any added parameters and cancel"><span className="fas fa-fw fa-minus"></span> remove</span>
+                    <span onClick={this.removeAction} className="btn btn-primary" style={{margin: "5px"}} title="remove any added parameters and cancel"><span className="fas fa-fw fa-minus"></span> remove</span>
                     <span onClick={this.closePanel} className="btn btn-primary" style={{margin: "5px"}} title="accept changes and return to filtered parameters"><span className="fas fa-fw fa-chevron-right"></span> continue</span>
                 </div>
       } else {
