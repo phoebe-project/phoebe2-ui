@@ -296,11 +296,11 @@ export class ActionPanel extends Component {
   }
   removeAction = () => {
     var packet = {bundleid: this.props.bundle.state.bundleid}
-    var context = this.props.action.split('_')[1]
+    var context = this.props.bundle.queryParams.tmp.split(',').slice(-1)[0].split(':')[0].replace('%22', '')
     packet.method = 'remove_'+context
     // NOTE: this makes very specific assumptions about the format of URL
-    var label = this.props.bundle.queryParams.tmp.split('|').slice(-1)[0].replace('%22', '')
-    packet[context] = label
+    var label = this.props.bundle.queryParams.tmp.split(':').slice(-1)[0].split('|').slice(-1)[0].replace('%22', '')
+    packet[context] = label.replace('%22', '')
     console.log("removeAction: ")
     console.log(packet)
     this.props.app.socket.emit('bundle_method', packet);

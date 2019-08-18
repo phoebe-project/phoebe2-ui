@@ -31,7 +31,7 @@ export class FigurePanel extends Component {
 
 const SortableFigureItem = SortableElement(({figure, app, bundle}) => {
 
-  if (Object.keys(bundle.state.figureUpdateTimes).indexOf(figure) === -1) {
+  if (Object.keys(bundle.state.figureUpdateTimes).indexOf(figure) === -1 || bundle.state.figureUpdateTimes[figure] === 'failed') {
     return <div></div>;
   }
 

@@ -102,7 +102,7 @@ export class Bundle extends ReactQueryParams {
       console.log(data)
       var figureUpdateTimes = this.state.figureUpdateTimes
       Object.keys(data.figure_update_times).forEach( figure => {
-        figureUpdateTimes[figure]= data.figure_update_times[figure]
+        figureUpdateTimes[figure] = data.figure_update_times[figure]
       })
       this.setState({figureUpdateTimes: figureUpdateTimes})
     })
@@ -113,8 +113,12 @@ export class Bundle extends ReactQueryParams {
         var params = this.state.params;
         Object.keys(data.parameters).forEach( uniqueid => {
           // console.log("updating "+data.parameters[uniqueid].uniquetwig)
-          params[uniqueid] = data.parameters[uniqueid]
+          params[uniqueid] = data.parameters[uniqueid];
         });
+        var removed_params = data.removed_parameters || []
+        removed_params.forEach( uniqueid => {
+          delete params[uniqueid];
+        })
         this.setState({params: params});
       }
 
@@ -130,7 +134,22 @@ export class Bundle extends ReactQueryParams {
           figures.push(figure)
         }
       }
+      figures.forEach( (figure,i) => {
+        // likewise if there is a figure that is no longer in data.tags.figures, we need to remove
+        if (data.tags.figures.indexOf(figure) == -1) {
+          figures.splice(i, 1)
+        }
+      })
       this.setState({figures: figures})
+
+      var figureUpdateTimes = this.state.figureUpdateTimes
+      Object.keys(figureUpdateTimes).forEach( figure => {
+        if (figures.indexOf(figure) == -1) {
+          // then this figure has been removed, so we need to remove it from figureUpdateTimes
+          delete figureUpdateTimes[figure]
+        }
+      })
+      this.setState({figureUpdateTimes: figureUpdateTimes})
 
       if (data.add_filter) {
 
@@ -206,6 +225,8 @@ export class Bundle extends ReactQueryParams {
           this.registerBundle();
           var figureUpdateTimes = {}
           json.data.tags.figures.forEach( (figure) => {
+            // NOTE: this will show an empty icon if failed (ie no data or model);
+            // so as soon as we set this we'll request all to be updated
             figureUpdateTimes[figure] = 'load'
           });
           this.setState({params: json.data.parameters,
@@ -218,6 +239,7 @@ export class Bundle extends ReactQueryParams {
                          nparams: Object.keys(json.data.parameters).length})
 
           this.updatePollingJobs(json.data.parameters);
+          this.props.app.socket.emit('rerun_all_figures', {bundleid: this.state.bundleid});
         } else {
           alert("server error: "+json.data.error);
           this.setState({params: null, tags: null, figures: [], failedConstraints: [], checksStatus: "UNKNOWN", checksReport: null, nparams: null});
