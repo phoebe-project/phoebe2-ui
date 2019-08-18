@@ -9,6 +9,10 @@ import 'react-toastify/dist/ReactToastify.css';
 
 // import isElectron from 'is-electron'; // https://github.com/cheton/is-electron
 import PanelGroup from 'react-panelgroup'; // https://www.npmjs.com/package/react-panelgroup
+// import {arrayMove} from 'react-sortable-hoc';
+
+// will need to move to array-move if updating react-sortable-hoc, but
+// currently causes npm run build to fail
 const arrayMove = require('array-move'); // https://www.npmjs.com/package/array-move
 
 import {TagPanel} from './panel-tags';
@@ -30,6 +34,7 @@ export class Bundle extends ReactQueryParams {
       bundleid: props.match.params.bundleid,
       params: null,
       figures: [],
+      figureUpdateTimes: {},
       failedConstraints: [],
       checksReport: [],
       checksStatus: "UNKNOWN",
@@ -91,6 +96,15 @@ export class Bundle extends ReactQueryParams {
 
     this.props.app.socket.on(this.state.bundleid+':failed_constraints:react', (data) => {
       this.setState({failedConstraints: data.failed_constraints || []})
+    })
+
+    this.props.app.socket.on(this.state.bundleid+':figures_updated:react', (data) => {
+      console.log(data)
+      var figureUpdateTimes = this.state.figureUpdateTimes
+      Object.keys(data.figure_update_times).forEach( figure => {
+        figureUpdateTimes[figure]= data.figure_update_times[figure]
+      })
+      this.setState({figureUpdateTimes: figureUpdateTimes})
     })
 
     this.props.app.socket.on(this.state.bundleid+':changes:react', (data) => {
@@ -190,7 +204,19 @@ export class Bundle extends ReactQueryParams {
       .then(json => {
         if (json.data.success) {
           this.registerBundle();
-          this.setState({params: json.data.parameters, tags: json.data.tags, figures: json.data.tags.figures, failedConstraints: json.data.failed_constraints, checksStatus: json.data.checks_status || "UNKNOWN", checksReport: json.data.checks_report || [], nparams: Object.keys(json.data.parameters).length})
+          var figureUpdateTimes = {}
+          json.data.tags.figures.forEach( (figure) => {
+            figureUpdateTimes[figure] = 'load'
+          });
+          this.setState({params: json.data.parameters,
+                         tags: json.data.tags,
+                         figures: json.data.tags.figures,
+                         figureUpdateTimes: figureUpdateTimes,
+                         failedConstraints: json.data.failed_constraints,
+                         checksStatus: json.data.checks_status || "UNKNOWN",
+                         checksReport: json.data.checks_report || [],
+                         nparams: Object.keys(json.data.parameters).length})
+
           this.updatePollingJobs(json.data.parameters);
         } else {
           alert("server error: "+json.data.error);

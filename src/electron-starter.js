@@ -123,6 +123,13 @@ const launchPythonClient = (cmd) => {
 }
 global.launchPythonClient = launchPythonClient;
 
+const launchCommand = (cmd) => {
+  cmd0 = cmd.split(' ')[0];
+  args = cmd.split(' ').slice(1);
+  return child_process.spawn(cmd0, args);
+}
+global.launchCommand = launchCommand;
+
 const executeJSwithUserGesture = (code) => {
   return mainWindow.webContents.executeJavaScript(code, true)
 }

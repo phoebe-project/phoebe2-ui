@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import {Redirect} from 'react-router-dom';
 
-import {SortableContainer, SortableElement, SortableHandle, arrayMove} from 'react-sortable-hoc'; // https://github.com/clauderic/react-sortable-hoc
+import {SortableContainer, SortableElement, SortableHandle} from 'react-sortable-hoc'; // https://github.com/clauderic/react-sortable-hoc
 
 
 import {Link, generatePath, randomstr} from './common';
@@ -30,6 +30,11 @@ export class FigurePanel extends Component {
 
 
 const SortableFigureItem = SortableElement(({figure, app, bundle}) => {
+
+  if (Object.keys(bundle.state.figureUpdateTimes).indexOf(figure) === -1) {
+    return <div></div>;
+  }
+
   return (
     <div className="phoebe-parameter" style={{marginLeft: "0px", marginRight: "0px", width: "100%"}}>
       <DragHandle />
@@ -79,9 +84,7 @@ export class FigureThumb extends React.Component {
   }
   render() {
     // randomstr at end of URL forces the browser to reload the image instead of relying on cached version
-    // var app = this.props.app;
-    // var url = 'http://'+app.getSocketURI('/'+app.state.bundleid+'/figure/'+this.props.figure+'?'+randomstr(10));
-    var url = 'undefined url'
+    var url = 'http://'+this.props.app.state.serverHost+'/'+this.props.bundle.state.bundleid+'/figure/'+this.props.figure+'?'+this.props.bundle.state.figureUpdateTimes[this.props.figure]
     return (
       <div className="ReactFigureThumb">
         <img width="100%" src={url} onClick={this.onClick}></img>
@@ -129,13 +132,15 @@ class FigureMPLButton extends React.Component {
     };
   }
   onClick = () => {
-    // console.log("FigureMPLButton clicked");
+    var url = 'http://'+this.props.app.state.serverHost+'/'+this.props.bundle.state.bundleid+'/figure_afig/'+this.props.figure
 
-    // var app = this.props.app;
-    // var url = 'http://'+app.getSocketURI('/'+app.state.bundleid+'/figure_mpl/'+this.props.figure+'?'+randomstr(10));
-
-    alert("autofig show not yet implemented")
-
+    console.log("FigureMPLButton.onClick")
+    var code = 'autofig '+url;
+    if (this.props.app.state.isElectron) {
+      window.require('electron').remote.getGlobal('launchCommand')(code);
+    } else {
+      prompt("Install the dedicated desktop application to automatically launch an interactive matplotlib window.  If you have PHOEBE or autofig installed, paste the following into a terminal: ", code);
+    }
     // var spawn = require('child_process').spawn('mplshow', [url]);
     // spawn.on('error', function(err) {
       // alert('mplshow failed to launch');
@@ -200,12 +205,12 @@ export class FigurePanelWidth extends React.Component {
       return null;
     }
 
-    // var url = 'http://'+app.getSocketURI('/'+app.state.bundleid+'/figure/'+this.props.figure+'?'+randomstr(10));
-    var url = 'undefined url for '+this.props.figure
+
+    var url = 'http://'+this.props.app.state.serverHost+'/'+this.props.bundle.state.bundleid+'/figure/'+this.props.figure+'?'+this.props.bundle.state.figureUpdateTimes[this.props.figure]
 
 
     return (
-      <img style={{width: "80%"}} src={url}></img>
+      <img style={{width: "100%"}} src={url}></img>
     );
   }
 
@@ -226,8 +231,7 @@ export class FigureFullScreen extends React.Component {
       return null;
     }
 
-    // var url = 'http://'+app.getSocketURI('/'+app.state.bundleid+'/figure/'+this.props.figure+'?'+randomstr(10));
-    var url = 'undefined url for '+this.props.figure
+    var url = 'http://'+this.props.app.state.serverHost+'/'+this.props.bundle.state.bundleid+'/figure/'+this.props.figure+'?'+this.props.bundle.state.figureUpdateTimes[this.props.figure]
 
 
     return (

@@ -347,7 +347,7 @@ export class ActionPanel extends Component {
         var figure = this.props.bundle.queryParams.tmp.split('|').slice(-1)[0].replace('%22', '')
         // console.log(figure)
         actionContent = <React.Fragment>
-                          <FigurePanelWidth app={this.props.app} figure={figure}/>
+                          <FigurePanelWidth app={this.props.app} bundle={this.props.bundle} figure={figure}/>
                           <ActionContentNewParameters app={this.props.app} bundle={this.props.bundle} orderBy={'figure'}/>
                         </React.Fragment>
       }
