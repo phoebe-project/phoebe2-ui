@@ -210,7 +210,7 @@ export class FigurePanelWidth extends React.Component {
 
 
     return (
-      <img style={{width: "100%"}} src={url}></img>
+      <img style={{display: "block", marginLeft: "auto", marginRight: "auto", maxWidth: "600px"}} src={url}></img>
     );
   }
 
