@@ -9,6 +9,7 @@ import 'react-toastify/dist/ReactToastify.css';
 
 // import isElectron from 'is-electron'; // https://github.com/cheton/is-electron
 import PanelGroup from 'react-panelgroup'; // https://www.npmjs.com/package/react-panelgroup
+import {arrayMove} from 'react-sortable-hoc'; // https://github.com/clauderic/react-sortable-hoc
 
 import {TagPanel} from './panel-tags';
 import {PSPanel} from './panel-ps';
@@ -28,6 +29,7 @@ export class Bundle extends ReactQueryParams {
       redirect: null,
       bundleid: props.match.params.bundleid,
       params: null,
+      figures: [],
       failedConstraints: [],
       checksReport: [],
       checksStatus: "UNKNOWN",
@@ -107,6 +109,15 @@ export class Bundle extends ReactQueryParams {
         this.setState({tags: data.tags});
       }
 
+      // update figures
+      var figures = this.state.figures
+      for (const figure of data.tags.figures) {
+        if (figures.indexOf(figure) == -1) {
+          figures.push(figure)
+        }
+      }
+      this.setState({figures: figures})
+
       if (data.add_filter) {
 
         var filterstr = ''
@@ -179,11 +190,11 @@ export class Bundle extends ReactQueryParams {
       .then(json => {
         if (json.data.success) {
           this.registerBundle();
-          this.setState({params: json.data.parameters, tags: json.data.tags, failedConstraints: json.data.failed_constraints, checksStatus: json.data.checks_status || "UNKNOWN", checksReport: json.data.checks_report || [], nparams: Object.keys(json.data.parameters).length})
+          this.setState({params: json.data.parameters, tags: json.data.tags, figures: json.data.tags.figures, failedConstraints: json.data.failed_constraints, checksStatus: json.data.checks_status || "UNKNOWN", checksReport: json.data.checks_report || [], nparams: Object.keys(json.data.parameters).length})
           this.updatePollingJobs(json.data.parameters);
         } else {
           alert("server error: "+json.data.error);
-          this.setState({params: null, tags: null});
+          this.setState({params: null, tags: null, figures: [], failedConstraints: [], checksStatus: "UNKNOWN", checksReport: null, nparams: null});
           this.clearQueryParams();
           this.deregisterBundle();
           this.setState({redirect: generatePath(this.props.app.state.serverHost)})
@@ -265,6 +276,11 @@ export class Bundle extends ReactQueryParams {
 
     this.setState({pollingJobs: pollingJobs})
   }
+  onFigureSortEnd = ({oldIndex, newIndex}) => {
+    this.setState({
+      figures: arrayMove(this.state.figures, oldIndex, newIndex),
+    });
+  }
   filter = (params, filter, ignoreGroups=[]) => {
     var ignoreGroupsFilter = ignoreGroups.concat(["pinned", "advanced", "orderBy", "tmp", "checks"])
 
@@ -278,8 +294,19 @@ export class Bundle extends ReactQueryParams {
 
     if (filter.tmp!==undefined && filter.tmp.length) {
       // then this is a temporary filter (i.e. for the results from add_*)
-      const tmpFilterTag = filter.tmp.split(':')[0].replace('%22', '')
-      const tmpFilterValue = filter.tmp.split(':')[1].replace('%22', '')
+      // syntax: tag1:value1|value2,tag2:value1
+      const filterStrings = filter.tmp.split(',')
+      var filterTmp = {}
+      for (const filterString of filterStrings) {
+        // console.log(filterString)
+        var tmpFilterTag = filterString.split(':')[0].replace('%22', '')
+        var tmpFilterValues = filterString.split(':')[1].replace('%22', '').split('|')
+        tmpFilterValues = tmpFilterValues.map((item) => { return item == 'null' ? null : item; });
+        // console.log(tmpFilterTag)
+        // console.log(tmpFilterValues)
+        filterTmp[tmpFilterTag] = tmpFilterValues
+      }
+
       mapObject(params, (uniqueid, param) => {
         // determine initial visibility based on advanced filter
         includeThisParam = true;
@@ -291,9 +318,14 @@ export class Bundle extends ReactQueryParams {
           }
         })
 
-        if (param[tmpFilterTag] !== tmpFilterValue) {
-          includeThisParam = false
-        }
+        mapObject(filterTmp, (tmpFilterTag, tmpFilterValues) => {
+          if (tmpFilterValues.indexOf(param[tmpFilterTag]) === -1) {
+            includeThisParam = false
+          }
+        })
+        // if (tmpFilterValues.indexOf(param[tmpFilterTag]) === -1) {
+          // includeThisParam = false
+        // }
 
         if (includeThisParam) {
           paramsfilteredids.push(uniqueid)

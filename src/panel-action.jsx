@@ -5,6 +5,7 @@ import 'babel-polyfill';
 import {toast} from 'react-toastify';
 import Select from 'react-select'; // https://react-select.com/home
 
+import {FigurePanelWidth} from './panel-figures';
 import {PSPanel} from './panel-ps';
 import {LogoSpinner} from './logo';
 
@@ -20,7 +21,7 @@ import {Tag} from './panel-tags';
 class ActionContentNewParameters extends Component {
   render() {
     return (
-      <PSPanel app={this.props.app} bundleid={this.props.bundle.state.bundleid} bundle={this.props.bundle} PSPanelOnly={true} disableFiltering={true} showPopoutButton={false}/>
+      <PSPanel app={this.props.app} bundleid={this.props.bundle.state.bundleid} bundle={this.props.bundle} orderBy={this.props.orderBy} PSPanelOnly={true} disableFiltering={true} showPopoutButton={false}/>
     )
   }
 }
@@ -340,6 +341,15 @@ export class ActionPanel extends Component {
         actionContent = <ActionContentNewParameters app={this.props.app} bundle={this.props.bundle}/>
       } else {
         actionContent = <ActionContentRun app={this.props.app} bundle={this.props.bundle} action={this.props.action} onUpdatePacket={this.onUpdatePacket}/>
+      }
+    } else if (this.props.action == 'edit_figure') {
+      if (tmpFilter) {
+        var figure = this.props.bundle.queryParams.tmp.split('|').slice(-1)[0].replace('%22', '')
+        // console.log(figure)
+        actionContent = <React.Fragment>
+                          <FigurePanelWidth app={this.props.app} figure={figure}/>
+                          <ActionContentNewParameters app={this.props.app} bundle={this.props.bundle} orderBy={'figure'}/>
+                        </React.Fragment>
       }
     }
 

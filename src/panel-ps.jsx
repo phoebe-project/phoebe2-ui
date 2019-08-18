@@ -943,10 +943,14 @@ export class PSPanel extends Component {
     var enablePSAnimation = Math.abs(this.props.bundle.state.paramsfilteredids.length - this.prevNParams) <= 20 && this.props.bundle.state.paramsfilteredids.length <= 20;
     this.prevNParams = this.props.bundle.state.paramsfilteredids.length
 
-    var orderBy = this.props.bundle.queryParams.orderBy || 'context'
-    if (this.props.disableFiltering) {
-      orderBy = 'context'
+    var orderBy = this.props.orderBy
+    if (!orderBy) {
+      orderBy = this.props.bundle.queryParams.orderBy || 'context'
+      if (this.props.disableFiltering) {
+        orderBy = 'context'
+      }
     }
+
     var orderByDefault = {value: orderBy, label: orderBy}
     var orderByTags = tags[orderBy+'s'] || []
     orderByTags = orderByTags.concat([null]);
