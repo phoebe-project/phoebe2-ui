@@ -9,7 +9,7 @@ import 'react-toastify/dist/ReactToastify.css';
 
 // import isElectron from 'is-electron'; // https://github.com/cheton/is-electron
 import PanelGroup from 'react-panelgroup'; // https://www.npmjs.com/package/react-panelgroup
-import {arrayMove} from 'react-sortable-hoc'; // https://github.com/clauderic/react-sortable-hoc
+const arrayMove = require('array-move'); // https://www.npmjs.com/package/array-move
 
 import {TagPanel} from './panel-tags';
 import {PSPanel} from './panel-ps';
