@@ -495,7 +495,7 @@ class ParameterDetailsItemPin extends Component {
     this.props.PSPanel.setState({activeParameterDetails: true})
     this.props.PSPanel.setState({activeParameterValue: false})
     this.props.PSPanel.setState({activeParameterUnit: false})
-    this.props.PSPanel.setState({activeParameter: this.props.uniqueidkey})
+    this.props.PSPanel.setState({activeParameter: 'PS:'+this.props.uniqueid})
   }
   popParameter = () => {
     var bundleid = this.props.bundle.state.bundleid || this.props.bundle.match.params.bundleid
