@@ -4,6 +4,7 @@ import 'babel-polyfill';
 
 import {toast} from 'react-toastify';
 import Select from 'react-select'; // https://react-select.com/home
+import CreatableSelect from 'react-select/creatable'; // https://react-select.com/creatable
 
 import {FigurePanelWidth} from './panel-figures';
 import {PSPanel} from './panel-ps';
@@ -44,8 +45,16 @@ class ActionContentAdd extends Component {
     this.setState({component: e.value});
     this.props.onUpdatePacket({component: e.value})
   }
-  onChangeLabel = (e) => {
-    this.props.onUpdatePacket({[this.props.action.split('_')[1]]: e.target.value})
+  // onChangeLabel = (e) => {
+  //   this.props.onUpdatePacket({[this.props.action.split('_')[1]]: e.target.value})
+  // }
+  onChangeLabel = (inputValue, actionMeta) => {
+    var value = null
+    if (inputValue !== null) {
+      value = inputValue.value
+    }
+    console.log("onChangeLabel: "+value)
+    this.props.onUpdatePacket({[this.props.action.split('_')[1]]: value})
   }
   render() {
     var addType = this.props.action.split('_')[1]
@@ -67,6 +76,9 @@ class ActionContentAdd extends Component {
       this.setState({component: availableComponents[0]})
       this.props.onUpdatePacket({component: availableComponents[0]})
     }
+
+    var labelChoices = this.props.bundle.state.tags[addType+'s'] || [];
+    var labelChoicesList = labelChoices.map((choice) => ({value: choice, label: choice +' (overwrite)'}))
 
     return (
       <div>
@@ -91,7 +103,10 @@ class ActionContentAdd extends Component {
 
         <div className="form-group">
           <label id={addType} style={{width: "50%", textAlign: "right", paddingRight: "10px"}}>{addType}</label>
-          <input type="text" id={addType} placeholder="automatically generated if empty" onChange={this.onChangeLabel} style={{width: "50%"}}></input>
+          {/* <input type="text" id={addType} placeholder="automatically generated if empty" onChange={this.onChangeLabel} style={{width: "50%"}}></input> */}
+          <span style={{width: "50%", lineHeight: "1.0", display: "inline-block", verticalAlign: "sub"}}>
+            <CreatableSelect isClearable={true} onChange={this.onChangeLabel} options={labelChoicesList} placeholder={"(automatically generate)"} className="phoebe-parameter-choice" classNamePrefix="phoebe-parameter-choice"/>
+          </span>
         </div>
 
       </div>
@@ -195,6 +210,7 @@ class ActionContentRun extends Component {
     super(props);
     this.state = {
       label: null,
+      labelNew: null
     }
   }
 
@@ -211,8 +227,16 @@ class ActionContentRun extends Component {
     return null
   }
 
-  onChangeLabelNew = (e) => {
-    this.props.onUpdatePacket({[this.getNewType()]: e.target.value})
+  // onChangeLabelNew = (e) => {
+  //   this.props.onUpdatePacket({[this.getNewType()]: e.target.value})
+  // }
+  onChangeLabelNew = (inputValue, actionMeta) => {
+    var value = null
+    if (inputValue !== null) {
+      value = inputValue.value
+    }
+    this.setState({labelNew: value})
+    this.props.onUpdatePacket({[this.getNewType()]: value})
   }
 
   render() {
@@ -228,6 +252,25 @@ class ActionContentRun extends Component {
 
     var newType = this.getNewType();
 
+    if (this.state.labelNew===null) {
+      this.setState({labelNew: 'latest'})
+      this.props.onUpdatePacket({[newType]: 'latest'})
+    }
+
+    var labelNewChoices = this.props.bundle.state.tags[newType+'s'] || [];
+
+    var labelNewValue = {value: this.state.labelNew, label: this.state.labelNew}
+    if (labelNewChoices.indexOf(this.state.labelNew) !== -1) {
+      // TODO: don't incdlue (overwrite) if latest and doesn't yet exist
+      labelNewValue.label = this.state.labelNew + ' (overwrite)'
+    }
+
+    if (labelNewChoices.indexOf('latest') === -1) {
+      labelNewChoices.push('latest')
+    }
+    var labelNewChoicesList = labelNewChoices.map((choice) => ({value: choice, label: choice +' (overwrite)'}))
+
+    console.log(availableLabelsList)
 
     return (
       <div>
@@ -241,8 +284,10 @@ class ActionContentRun extends Component {
 
         <div className="form-group">
           <label id={newType} style={{width: "50%", textAlign: "right", paddingRight: "10px"}}>{newType}</label>
-          <input type="text" id={newType} placeholder="automatically generated if empty" onChange={this.onChangeLabelNew} style={{width: "50%"}}></input>
-
+          {/* <input type="text" id={newType} placeholder="automatically generated if empty" onChange={this.onChangeLabelNew} style={{width: "50%"}}></input> */}
+          <span style={{width: "50%", lineHeight: "1.0", display: "inline-block", verticalAlign: "sub"}}>
+            <CreatableSelect isClearable={false} onChange={this.onChangeLabelNew} options={labelNewChoicesList} value={labelNewValue} className="phoebe-parameter-choice" classNamePrefix="phoebe-parameter-choice"/>
+          </span>
         </div>
 
       </div>
