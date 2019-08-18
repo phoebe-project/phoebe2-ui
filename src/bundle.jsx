@@ -9,11 +9,11 @@ import 'react-toastify/dist/ReactToastify.css';
 
 // import isElectron from 'is-electron'; // https://github.com/cheton/is-electron
 import PanelGroup from 'react-panelgroup'; // https://www.npmjs.com/package/react-panelgroup
-// import {arrayMove} from 'react-sortable-hoc';
+import {arrayMove} from 'react-sortable-hoc';
 
 // will need to move to array-move if updating react-sortable-hoc, but
 // currently causes npm run build to fail
-const arrayMove = require('array-move'); // https://www.npmjs.com/package/array-move
+// const arrayMove = require('array-move'); // https://www.npmjs.com/package/array-move
 
 import {TagPanel} from './panel-tags';
 import {PSPanel} from './panel-ps';
