@@ -37,7 +37,7 @@ export class Toolbar extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      redirectTo: null,
+      redirect: null,
     }
 
   }
@@ -59,7 +59,7 @@ export class Toolbar extends Component {
       this.props.bundle.closePopUps();
       this.props.bundle.clearQueryParams();
       this.props.bundle.deregisterBundle();
-      this.setState({redirectTo: generatePath(this.props.app.state.serverHost)})
+      this.setState({redirect: generatePath(this.props.app.state.serverHost)})
       // TODO: need to tell server that we're disconnecting from the bundle.
     }
   }
@@ -78,7 +78,7 @@ export class Toolbar extends Component {
       this.props.bundle.closePopUps();
       this.props.bundle.clearQueryParams();
       this.props.bundle.deregisterBundle();
-      this.setState({redirectTo: generatePath(this.props.app.state.serverHost, "open")})
+      this.setState({redirect: generatePath(this.props.app.state.serverHost, "open")})
       // TODO: need to tell server that we're disconnecting from the bundle.
     }
   }
@@ -86,6 +86,9 @@ export class Toolbar extends Component {
     // alert("downloading bundleid "+this.props.bundleid)
     var saveURL = "http://" + this.props.app.state.serverHost + "/save_bundle/" + this.props.bundleid
     window.location.href = saveURL
+  }
+  redirect = (path) => {
+    this.setState({redirect: path})
   }
   launchPythonClient = () => {
     console.log("Bundle.launchPythonClient")
@@ -96,9 +99,14 @@ export class Toolbar extends Component {
       prompt("Install the dedicated desktop application to automatically launch an interactive python console.  From the web app, you can load this bundle in a Python console by copy and pasting the following: ", code);
     }
   }
+  componentDidUpdate() {
+    if (this.state.redirect) {
+      this.setState({redirect: null})
+    }
+  }
   render() {
-    if (this.state.redirectTo) {
-      return <Redirect to={this.state.redirectTo}/>
+    if (this.state.redirect) {
+      return <Redirect to={this.state.redirect}/>
     }
 
     var divStyle = {position: "absolute", left: 0, top: 0, width: "100%", height: "50px"}
@@ -116,8 +124,18 @@ export class Toolbar extends Component {
           <ToolbarButton iconClassNames="fas fa-file" title="new bundle" onClick={this.newBundle}/>
           <ToolbarButton iconClassNames="fas fa-folder-open" title="load/import bundle from file" onClick={this.openBundle}/>
           <ToolbarButton iconClassNames="fas fa-save" title="save bundle" to={"http://" + this.props.app.state.serverHost + "/save_bundle/" + this.props.bundleid} download={this.props.bundleid+".bundle"}/>
-          <ToolbarButton iconClassNames="fas fa-undo" title="undo" onClick={this.notImplementedAlert}/>
-          <ToolbarButton iconClassNames="fas fa-redo" title="redo" onClick={this.notImplementedAlert}/>
+          {/* <ToolbarButton iconClassNames="fas fa-undo" title="undo" onClick={this.notImplementedAlert}/>
+          <ToolbarButton iconClassNames="fas fa-redo" title="redo" onClick={this.notImplementedAlert}/> */}
+          { this.props.bundle.state.tags && this.props.bundle.state.tags.datasets && this.props.bundle.state.tags.datasets.length > 0 ?
+            <ToolbarButton iconClassNames="fas fa-upload" title="Import data to parameter(s)" onClick={() => this.redirect(generatePath(this.props.app.state.serverHost, this.props.bundle.state.bundleid, "import_data", this.props.bundle.getSearchString()))}/>
+            :
+            null
+          }
+          { this.props.bundle.state.tags && this.props.bundle.state.tags.datasets && this.props.bundle.state.tags.datasets.length > 0 ?
+            <ToolbarButton iconClassNames="fas fa-download" title="Export data from parameter(s)" onClick={() => this.redirect(generatePath(this.props.app.state.serverHost, this.props.bundle.state.bundleid, "export_data", this.props.bundle.getSearchString()))}/>
+            :
+            null
+          }
         </div>
         <div className="d-none d-lg-inline-block" style={{position: "absolute", width: "250px", left: "calc(50% - 125px)"}}>
           {/* <span className="btn btn-transparent" title="rerun model" style={{marginTop: "6px"}} onClick={this.notImplementedAlert}>

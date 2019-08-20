@@ -12,7 +12,7 @@ import {LogoSpinner} from './logo';
 
 // import FlipMove from 'react-flip-move'; // https://github.com/joshwcomeau/react-flip-move
 
-import {Link, Twig, generatePath, abortableFetch, mapObject, filterObjectByKeys, popUpWindow} from './common';
+import {Link, Twig, generatePath, abortableFetch, mapObject, filterObjectByKeys, popUpWindow, FileReader} from './common';
 // import {LogoSpinner} from './logo';
 import {Panel} from './ui';
 import {Tag} from './panel-tags';
@@ -304,7 +304,8 @@ export class ActionPanel extends Component {
       waiting: false,
       redirect: null,
       actionActive: this.props.bundle.state.pendingBundleMethod === null,
-      packet: {},
+      packet: {}, // used for most action panels with a single command
+      packets: [], // used for import_data
     };
   }
   onUpdatePacket = (packetChanges) => {
@@ -317,6 +318,14 @@ export class ActionPanel extends Component {
 
     this.setState({packet: packet})
   }
+  onUpdatePackets = (packets) => {
+    // used for import_data only
+    packets.forEach( (packet, i) => {
+      packets[i].bundleid = this.props.bundle.state.bundleid
+    })
+
+    this.setState({packets: packets})
+  }
   closePanel = () => {
     this.props.bundle.setQueryParams({tmp: []})
     this.setState({redirect: generatePath(this.props.app.state.serverHost, this.props.bundle.state.bundleid, null, this.props.bundle.getSearchString())})
@@ -326,13 +335,21 @@ export class ActionPanel extends Component {
   }
   submitAction = () => {
     console.log("submitAction "+this.state.packet);
-    var toastID = toast.info(this.props.action+" submitted... waiting for response", { autoClose: false, closeButton: false });
 
-    this.props.bundle.setState({pendingBundleMethod: toastID});
-    this.props.app.socket.emit('bundle_method', this.state.packet);
+    if (this.props.action === 'import_data') {
+      this.state.packets.forEach( packet => {
+        this.props.app.socket.emit('set_value', packet);
+      })
+    } else {
+      this.props.app.socket.emit('bundle_method', this.state.packet);
+    }
+
+
 
     if (this.props.action.split('_')[0] === 'add' || this.props.action.split('_')[0] === 'run') {
       // then we go to another screen once we receive tmpFilter
+      var toastID = toast.info(this.props.action+" submitted... waiting for response", { autoClose: false, closeButton: false });
+      this.props.bundle.setState({pendingBundleMethod: toastID});
       this.setState({waiting: true});
     } else {
       this.closePanel();
@@ -396,6 +413,7 @@ export class ActionPanel extends Component {
         actionContent = <ActionContentRun app={this.props.app} bundle={this.props.bundle} action={this.props.action} onUpdatePacket={this.onUpdatePacket}/>
       }
     } else if (this.props.action == 'edit_figure') {
+      // no actionIcon because we have a tmpFilter to show parameters
       if (tmpFilter) {
         // NOTE: this makes very specific assumptions about the format of URL
         var figure = this.props.bundle.queryParams.tmp.split('|').slice(-1)[0].replace('%22', '')
@@ -405,6 +423,11 @@ export class ActionPanel extends Component {
                           <ActionContentNewParameters app={this.props.app} bundle={this.props.bundle} orderBy={'figure'}/>
                         </React.Fragment>
       }
+    } else if (this.props.action == 'import_data') {
+      actionIcon = null;
+      actionContent = <FileReader app={this.props.app} bundle={this.props.bundle} onUpdatePackets={this.onUpdatePackets}/>
+    } else if (this.props.action == 'export_data') {
+      actionIcon = null;
     }
 
     var actionStyle = {margin: '5px'}
@@ -415,7 +438,21 @@ export class ActionPanel extends Component {
     }
 
     var buttons = null
-    if (!this.state.waiting) {
+    if (this.props.action === 'import_data') {
+      buttons = <div style={{float: "right"}}>
+                  <span onClick={this.closePanel} className="btn btn-primary" style={{margin: "5px"}} title={"cancel "+this.props.action+" and return to filtered parameters"}><span className="fas fa-fw fa-times"></span> cancel</span>
+                  <span onClick={this.submitAction} className="btn btn-primary" style={{margin: "5px"}} title="set selected parameters from columns"><span className="fas fa-fw fa-chevron-right"></span> continue</span>
+              </div>
+    } else if (this.props.action === 'export_data') {
+      buttons = <div style={{float: "right"}}>
+                  <span onClick={this.closePanel} className="btn btn-primary" style={{margin: "5px"}} title={"cancel "+this.props.action+" and return to filtered parameters"}><span className="fas fa-fw fa-times"></span> cancel</span>
+                  <span onClick={this.closePanel} className="btn btn-primary" style={{margin: "5px"}} title="export selected columns and return to filtered parameters"><span className="fas fa-fw fa-chevron-right"></span> continue</span>
+              </div>
+    } else if (this.props.action === 'edit_figure') {
+      buttons = <div style={{float: "right"}}>
+                  <span onClick={this.closePanel} className="btn btn-primary" style={{margin: "5px"}} title={"close and return to filtered parameters"}><span className="fas fa-fw fa-times"></span> close</span>
+              </div>
+    } else if (!this.state.waiting) {
       if (tmpFilter) {
         buttons = <div style={{float: "right"}}>
                     <span onClick={this.removeAction} className="btn btn-primary" style={{margin: "5px"}} title="remove any added parameters and cancel"><span className="fas fa-fw fa-minus"></span> remove</span>

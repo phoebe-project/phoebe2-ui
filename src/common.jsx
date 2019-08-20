@@ -2,6 +2,9 @@ import React, { Component } from 'react';
 import {Link as RouterLink, Router as RouterRouter, HashRouter as RouterHashRouter} from 'react-router-dom';
 import 'babel-polyfill';
 
+import Select from 'react-select'; // https://react-select.com/home
+const Papa = require('papaparse'); // https://www.npmjs.com/package/papaparse
+
 import isElectron from 'is-electron'; // https://github.com/cheton/is-electron
 
 // use native browser implementation if it supports aborting, otherwise use polyfill and whatwg-fetch
@@ -223,3 +226,112 @@ export class Twig extends Component {
     )
   }
 }
+
+
+export class FileReader extends React.Component {
+  constructor() {
+    super();
+    this.state = {
+      file: null,
+      parsedData: null,
+      parsedColumns: null,
+      selectedColumns: {}, // keys: column key, values: uniqueid
+    };
+  }
+
+  handleChange = event => {
+    const file =  event.target.files[0];
+    this.setState({file: file});
+    Papa.parse(file, {
+      skipEmptyLines: true,
+      header: true,
+      dynamicTyping: true,
+      delimitersToGuess: [',', '\t', '|', ';', ' ', Papa.RECORD_SEP, Papa.UNIT_SEP],
+      complete: this.updateData,
+      header: true
+    });
+  };
+
+  updateData = (result) => {
+    var data = result.data;
+    this.setState({parsedData: data, parsedColumns: Object.keys(data[0]), selectedColumns: {}});
+  }
+
+  selectColumn = (e, d, column) => {
+    console.log(e)
+    console.log(d)
+    var selectedColumns = this.state.selectedColumns
+    // e.value is uniqueid
+    // e.label is uniquetwig
+    var value = null
+    if (e !== null) {
+      value = e.value
+    }
+    selectedColumns[column] = value
+    this.setState({selectedColumns: selectedColumns})
+
+    if (this.props.onUpdatePackets) {
+      var packets = []
+      var packet = {}
+      mapObject(this.state.selectedColumns, (k,v) => {
+        packet = {uniqueid: v}
+        packet.value = this.state.parsedData.map(dataRow => dataRow[k])
+        packets.push(packet)
+      })
+      this.props.onUpdatePackets(packets)
+    }
+  }
+
+  render() {
+    if (!this.props.bundle.state.params) {
+      return null
+    }
+
+    const ignore = ['ld_coeffs', 'ld_coeffs_bol', 'xlim', 'ylim', 'zlim', 'compute_times', 'compute_phases'];
+    var availableParams = []
+    mapObject(this.props.bundle.state.params, (uniqueid, param) => {
+      if (param.class === 'FloatArrayParameter' && !param.readonly && param.component !== '_default' && ignore.indexOf(param.qualifier) === -1) {
+        availableParams.push({value: uniqueid, label: param.uniquetwig})
+      }
+    })
+
+
+    return (
+      <div>
+        <input
+          className="csv-input"
+          type="file"
+          ref={input => {
+            this.filesInput = input;
+          }}
+          name="file"
+          placeholder={null}
+          onChange={this.handleChange}
+        />
+        <p />
+
+        {this.state.parsedData ?
+          <div className="csv-parsed-columns" style={{}}>
+            {this.state.parsedColumns.map( column => {
+              return <div style={{display: "inline-block", padding: "0px", margin: "20px", width: "calc(33% - 40px)"}}>
+                        <Select isClearable={true} options={availableParams}  onChange={(e, d) => this.selectColumn(e, d, column)}/>
+                        {/*  TODO: add units Select based on chosen parameter */}
+                        {/* TODO: allow common conversions to_time and mag_to_flux? */}
+
+                        <div style={{overflowX: "scroll"}}>
+                          <div><b>{column}</b></div>
+                          {this.state.parsedData.slice(0,10).map(dataRow => <div>{dataRow[column]}</div>)}
+                        </div>
+                    </div>
+            })}
+          </div>
+          :
+          null
+        }
+
+      </div>
+    );
+  }
+}
+
+export default FileReader;
