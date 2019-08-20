@@ -125,31 +125,33 @@ export class Bundle extends ReactQueryParams {
 
       if (data.tags) {
         this.setState({tags: data.tags});
+
+        // update figures
+        var figures = this.state.figures
+        for (const figure of data.tags.figures) {
+          if (figures.indexOf(figure) == -1) {
+            figures.push(figure)
+          }
+        }
+        figures.forEach( (figure,i) => {
+          // likewise if there is a figure that is no longer in data.tags.figures, we need to remove
+          if (data.tags.figures.indexOf(figure) == -1) {
+            figures.splice(i, 1)
+          }
+        })
+        this.setState({figures: figures})
+
+        var figureUpdateTimes = this.state.figureUpdateTimes
+        Object.keys(figureUpdateTimes).forEach( figure => {
+          if (figures.indexOf(figure) == -1) {
+            // then this figure has been removed, so we need to remove it from figureUpdateTimes
+            delete figureUpdateTimes[figure]
+          }
+        })
+        this.setState({figureUpdateTimes: figureUpdateTimes})
+
       }
 
-      // update figures
-      var figures = this.state.figures
-      for (const figure of data.tags.figures) {
-        if (figures.indexOf(figure) == -1) {
-          figures.push(figure)
-        }
-      }
-      figures.forEach( (figure,i) => {
-        // likewise if there is a figure that is no longer in data.tags.figures, we need to remove
-        if (data.tags.figures.indexOf(figure) == -1) {
-          figures.splice(i, 1)
-        }
-      })
-      this.setState({figures: figures})
-
-      var figureUpdateTimes = this.state.figureUpdateTimes
-      Object.keys(figureUpdateTimes).forEach( figure => {
-        if (figures.indexOf(figure) == -1) {
-          // then this figure has been removed, so we need to remove it from figureUpdateTimes
-          delete figureUpdateTimes[figure]
-        }
-      })
-      this.setState({figureUpdateTimes: figureUpdateTimes})
 
       if (data.add_filter) {
 

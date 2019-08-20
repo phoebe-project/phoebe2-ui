@@ -31,9 +31,7 @@ export class FigurePanel extends Component {
 
 const SortableFigureItem = SortableElement(({figure, app, bundle}) => {
 
-  if (Object.keys(bundle.state.figureUpdateTimes).indexOf(figure) === -1 || bundle.state.figureUpdateTimes[figure] === 'failed') {
-    return <div></div>;
-  }
+  var figureReady = (Object.keys(bundle.state.figureUpdateTimes).indexOf(figure) !== -1 && bundle.state.figureUpdateTimes[figure] !== 'failed')
 
   return (
     <div className="phoebe-parameter" style={{marginLeft: "0px", marginRight: "0px", width: "100%"}}>
@@ -41,13 +39,30 @@ const SortableFigureItem = SortableElement(({figure, app, bundle}) => {
       {figure}
       <div className="ReactFigureActions">
         <FigureEditButton app={app} bundle={bundle} figure={figure}/>
-        <FigureMPLButton app={app} bundle={bundle} figure={figure}/>
-        <FigureExpandButton app={app} bundle={bundle} figure={figure} />
+        {figureReady ?
+          <React.Fragment>
+            <FigureMPLButton app={app} bundle={bundle} figure={figure}/>
+            <FigureExpandButton app={app} bundle={bundle} figure={figure} />
+          </React.Fragment>
+          :
+          <div style={{border: "1px dotted black", borderRadius: "6px", height: "80px", marginTop: "6px", marginBottom: "6px"}}>
+            <span style={{textAlign: "center", display: "inline-block", width: "100%", marginTop: "25px"}}>nothing to show</span>
+          </div>
+        }
+
       </div>
       <div className="ReactFigureImage">
-        <FigureThumb app={app} bundle={bundle} figure={figure} />
+        {figureReady ?
+          <FigureThumb app={app} bundle={bundle} figure={figure} />
+          :
+          null
+        }
         <div className="ReactFigureActionsBottom">
-          <FigureSaveButton app={app} bundle={bundle} figure={figure} />
+          {figureReady ?
+            <FigureSaveButton app={app} bundle={bundle} figure={figure} />
+            :
+            <span style={{height: "14px", display: "inline-block"}}/>
+          }
         </div>
       </div>
 
