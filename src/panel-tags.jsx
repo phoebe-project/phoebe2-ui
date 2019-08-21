@@ -305,7 +305,7 @@ class TagGroup extends Component {
         <div className='phoebe-tag-header' onClick={this.toggleExpanded}>
           {this.props.title}
           <div style={{float: "right"}}>
-            {this.props.run && tags.length ?
+            {this.props.run && tags.length && (group==='compute' && this.props.bundle.state.tags.datasets.length) ?
               <TagHeaderButton app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} to={`run_${group}`} iconClassNames="fas fa-fw fa-play"/>
               :
               <div style={{display: "inline-block", width: "34px"}}>&nbsp;</div>
