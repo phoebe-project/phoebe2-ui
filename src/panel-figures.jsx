@@ -23,6 +23,16 @@ export class FigurePanel extends Component {
           {/* <TagSectionActionButton app={this.props.app} type='add' sectionLabel='Figure' label=' Add New Figure' tagLabelsList={[]}/> */}
         </div>
 
+
+        {this.props.bundle.state.figures.length > 0 ?
+          <div>
+            <EditFigureTimeSourceButton app={this.props.app} bundle={this.props.bundle}/>
+          </div>
+          :
+          null
+        }
+
+
       </Panel>
     )
   }
@@ -135,6 +145,37 @@ class FigureEditButton extends React.Component {
     }
     return (
       <span style={{width: "24px"}} className="btn btn-tag btn-tag-clear" onClick={this.onClick}><span className='fas fa-fw fa-pen'></span></span>
+    );
+  }
+}
+
+class EditFigureTimeSourceButton extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      redirect: null
+    };
+  }
+
+  onClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    // if changing the syntax here, will also need to update the logic in panel-action.jsx for finding the figure name
+    this.props.bundle.setQueryParams({tmp: '"qualifier:figure_time_source|figure_time|time_source|time,context:figure|setting"'})
+    this.setState({redirect: generatePath(this.props.app.state.serverHost, this.props.bundle.state.bundleid, "edit_figure_times", this.props.bundle.getSearchString())});
+
+  }
+  componentDidUpdate() {
+    if (this.state.redirect) {
+      this.setState({redirect: null})
+    }
+  }
+  render() {
+    if (this.state.redirect) {
+      return (<Redirect to={this.state.redirect}/>)
+    }
+    return (
+      <span style={{maxWidth: "100%"}} className="btn btn-tag btn-tag-clear" onClick={this.onClick}><span className='fas fa-fw fa-clock'></span> edit times</span>
     );
   }
 }

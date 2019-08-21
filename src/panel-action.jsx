@@ -423,6 +423,13 @@ export class ActionPanel extends Component {
                           <ActionContentNewParameters app={this.props.app} bundle={this.props.bundle} orderBy={'figure'}/>
                         </React.Fragment>
       }
+    } else if (this.props.action == 'edit_figure_times') {
+      // no actionIcon because we have a tmpFilter to show parameters
+      if (tmpFilter) {
+        actionContent = <React.Fragment>
+                          <ActionContentNewParameters app={this.props.app} bundle={this.props.bundle} orderBy={'figure'}/>
+                        </React.Fragment>
+      }
     } else if (this.props.action == 'import_data') {
       actionIcon = null;
       actionContent = <FileReader app={this.props.app} bundle={this.props.bundle} onUpdatePackets={this.onUpdatePackets}/>
@@ -448,7 +455,7 @@ export class ActionPanel extends Component {
                   <span onClick={this.closePanel} className="btn btn-primary" style={{margin: "5px"}} title={"cancel "+this.props.action+" and return to filtered parameters"}><span className="fas fa-fw fa-times"></span> cancel</span>
                   <span onClick={this.closePanel} className="btn btn-primary" style={{margin: "5px"}} title="export selected columns and return to filtered parameters"><span className="fas fa-fw fa-chevron-right"></span> continue</span>
               </div>
-    } else if (this.props.action === 'edit_figure') {
+    } else if (['edit_figure', 'edit_figure_times'].indexOf(this.props.action) !== -1) {
       buttons = <div style={{float: "right"}}>
                   <span onClick={this.closePanel} className="btn btn-primary" style={{margin: "5px"}} title={"close and return to filtered parameters"}><span className="fas fa-fw fa-times"></span> close</span>
               </div>
