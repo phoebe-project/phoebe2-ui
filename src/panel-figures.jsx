@@ -216,8 +216,14 @@ export class FigurePanelWidth extends React.Component {
   render() {
     var app = this.props.app;
 
-    if (this.props.figure==null) {
-      return null;
+    var figureReady = (this.props.figure && Object.keys(this.props.bundle.state.figureUpdateTimes).indexOf(this.props.figure) !== -1 && this.props.bundle.state.figureUpdateTimes[this.props.figure] !== 'failed')
+
+    if (!figureReady) {
+      return(
+        <div style={{border: "1px dotted black", borderRadius: "6px", height: "150px"}}>
+          <span style={{textAlign: "center", display: "inline-block", width: "100%", marginTop: "60px"}}>nothing to show yet, try adding observations to the dataset or running a forward model</span>
+        </div>
+      )
     }
 
 
