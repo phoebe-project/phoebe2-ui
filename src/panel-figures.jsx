@@ -161,7 +161,7 @@ class EditFigureTimeSourceButton extends React.Component {
     e.preventDefault();
     e.stopPropagation();
     // if changing the syntax here, will also need to update the logic in panel-action.jsx for finding the figure name
-    this.props.bundle.setQueryParams({tmp: '"qualifier:figure_time_source|figure_time|time_source|time,context:figure|setting"'})
+    this.props.bundle.setQueryParams({tmp: '"qualifier:default_time_source|default_time|time_source|time,context:figure"'})
     this.setState({redirect: generatePath(this.props.app.state.serverHost, this.props.bundle.state.bundleid, "edit_figure_times", this.props.bundle.getSearchString())});
 
   }
