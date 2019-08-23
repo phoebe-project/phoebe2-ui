@@ -52,9 +52,9 @@ export class SplashBundle extends Component {
               null
             }
 
-            <NewBundleButton type='load:open' title="From File" app={this.props.app} openDialog={this.props.openDialog} splashBundle={this} logoSplash={this.logoSplash}>
-              {/* <NewBundleButton type='load:open' title="Open Bundle File" style={{width: "calc(50% - 2px)", marginRight: "2px"}} app={this.props.app} splashBundle={this} logoSplash={this.logoSplash}/> */}
-              {/* <NewBundleButton type='load:import' title="Import Legacy File" style={{width: "calc(50% - 2px)", marginLeft: "2px"}} app={this.props.app} splashBundle={this} logoSplash={this.logoSplash}/> */}
+            <NewBundleButton type='load:phoebe2' title="From File" app={this.props.app} openDialog={this.props.openDialog} splashBundle={this} logoSplash={this.logoSplash}>
+              <NewBundleButton type='load:phoebe2' title="Open Bundle File" style={{width: "calc(50% - 2px)", marginRight: "2px"}} app={this.props.app} splashBundle={this} logoSplash={this.logoSplash}/>
+              <NewBundleButton type='load:legacy' title="Import Legacy File" style={{width: "calc(50% - 2px)", marginLeft: "2px"}} app={this.props.app} splashBundle={this} logoSplash={this.logoSplash}/>
             </NewBundleButton>
 
             <NewBundleButton type='single' title="Default Single Star" app={this.props.app} splashBundle={this} logoSplash={this.logoSplash}/>
@@ -114,7 +114,7 @@ class NewBundleButton extends Component {
     var doFetch = true
     let fetchURL, fetchMethod, fetchBody
 
-    if (['load:open', 'load:import'].indexOf(this.props.type)!==-1) {
+    if (['load:phoebe2', 'load:legacy'].indexOf(this.props.type)!==-1) {
       if (this.fileInput.current.files.length===0) {
         // then coming from clicking on the button.  We need to open the dialog first,
         // once its value is changed the else will be triggered.
@@ -122,7 +122,7 @@ class NewBundleButton extends Component {
         doFetch = false
       } else {
         // then coming from the onChange of the input
-        fetchURL = "http://"+this.props.app.state.serverHost+"/open_bundle"
+        fetchURL = "http://"+this.props.app.state.serverHost+"/open_bundle/"+this.props.type
         fetchMethod = 'POST'
 
         var data = new FormData()
@@ -257,7 +257,7 @@ class NewBundleButton extends Component {
     }
 
     var fileInput = null;
-    if (['load:open', 'load:import'].indexOf(this.props.type)!==-1) {
+    if (['load:phoebe2', 'load:legacy'].indexOf(this.props.type)!==-1) {
       fileInput = <input id={"fileinput-"+this.props.type} type="file" ref={this.fileInput} style={{ display: 'none' }} onFocus={this.loadBundle} onChange={this.loadBundle}/>
     }
 
