@@ -4,6 +4,7 @@ import 'babel-polyfill';
 
 import FlipMove from 'react-flip-move'; // https://github.com/joshwcomeau/react-flip-move
 import Select from 'react-select'; // https://react-select.com/home
+import CreatableSelect from 'react-select/creatable'; // https://react-select.com/creatable
 import makeAnimated from 'react-select/animated';
 const animatedComponents = makeAnimated();
 
@@ -616,11 +617,20 @@ class Input extends Component {
         var defaultValueList = null
       }
 
-      return (
-        <span style={{marginLeft: "10px", marginRight: "10px", width: width, height: "26px", display: "inline-block", verticalAlign: "sub", lineHeight: "1.0"}}>
-          <Select options={choicesList} defaultValue={defaultValueList} value={valueList} onChange={this.onChange} defaultMenuIsOpen={!(this.props.disableFocusOnMount || false)} isMulti={isMulti} isClearable={isMulti} closeMenuOnSelect={!isMulti} components={animatedComponents} className={className} classNamePrefix={className}/>
-        </span>
-      )
+      if (isMulti) {
+        return (
+          <span style={{marginLeft: "10px", marginRight: "10px", width: width, height: "26px", display: "inline-block", verticalAlign: "sub", lineHeight: "1.0"}}>
+            <CreatableSelect options={choicesList} defaultValue={defaultValueList} value={valueList} onChange={this.onChange} defaultMenuIsOpen={!(this.props.disableFocusOnMount || false)} isMulti={isMulti} isClearable={isMulti} closeMenuOnSelect={!isMulti} components={animatedComponents} className={className} classNamePrefix={className}/>
+          </span>
+        )
+      } else {
+
+        return (
+          <span style={{marginLeft: "10px", marginRight: "10px", width: width, height: "26px", display: "inline-block", verticalAlign: "sub", lineHeight: "1.0"}}>
+            <Select options={choicesList} defaultValue={defaultValueList} value={valueList} onChange={this.onChange} defaultMenuIsOpen={!(this.props.disableFocusOnMount || false)} isMulti={isMulti} isClearable={isMulti} closeMenuOnSelect={!isMulti} components={animatedComponents} className={className} classNamePrefix={className}/>
+          </span>
+        )
+      }
     } else if (this.props.type == 'array') {
       return (
         <span>
