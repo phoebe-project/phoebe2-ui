@@ -215,6 +215,12 @@ export class Twig extends Component {
   render() {
 
     var sliceIndex = this.props.twig.indexOf("@")
+
+    if (this.props.paramOverview && this.props.paramOverview.time) {
+      // then we want to select on the second @
+      sliceIndex += this.props.twig.slice(sliceIndex+1).indexOf("@") + 1
+    }
+
     var qualifier = this.props.twig.slice(0, sliceIndex);
     var twigRemainder = this.props.twig.slice(sliceIndex);
 

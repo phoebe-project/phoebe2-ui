@@ -511,6 +511,7 @@ export class TagPanel extends Component {
         <TagGroup title="Figure" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.figures || null} add={true} rename={true} remove={true}></TagGroup>
         <TagGroup title="Compute" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.computes || null} add={true} rename={true} remove={true} run={true}></TagGroup>
         <TagGroup title="Model" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.models || null} add={false} rename={true} remove={true}></TagGroup>
+        <TagGroup title="Time" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.times || null} add={false} rename={false} remove={false}></TagGroup>
         {/* <TagGroup title="Fitting" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.fittings || null} add={true} rename={true} remove={true} run={true}></TagGroup> */}
         {/* <TagGroup title="Feedback" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.feedbacks || null} add={false} remove={true} rename={true}></TagGroup> */}
         <TagGroup title="Qualifier" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.qualifiers || null} expanded={true}></TagGroup>

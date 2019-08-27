@@ -352,7 +352,7 @@ class Parameter extends Component {
           <Checkbox style={{verticalAlign: "super"}} checked={this.state.pinned} pinnable={this.props.pinnable} onClick={this.togglePinned} checkedTitle="unpin parameter" uncheckedTitle="pin parameter" />
 
           <span style={{display: "inline-block", marginLeft: "10px", fontWeight: "bold", width: "calc(100% - 280px)", overflowX: "hidden"}} onClick={this.toggleExpandedDetails}>
-            <Twig twig={this.props.paramOverview.twig}/>
+            <Twig twig={this.props.paramOverview.twig} paramOverview={this.props.paramOverview}/>
           </span>
 
           {inlineValueContent}
@@ -388,6 +388,7 @@ class Parameter extends Component {
                     {this.props.paramOverview.figure && <div><Tag bundle={this.props.bundle} group="figure" includeGroup={true} currentGroupFilter={null} tag={this.props.paramOverview.figure}/></div>}
                     {this.props.paramOverview.compute && <div><Tag bundle={this.props.bundle} group="compute" includeGroup={true} currentGroupFilter={null} tag={this.props.paramOverview.compute}/></div>}
                     {this.props.paramOverview.model && <div><Tag bundle={this.props.bundle} group="model" includeGroup={true} currentGroupFilter={null} tag={this.props.paramOverview.model}/></div>}
+                    {this.props.paramOverview.time && <div><Tag bundle={this.props.bundle} group="time" includeGroup={true} currentGroupFilter={null} tag={this.props.paramOverview.time}/></div>}
                     {this.props.paramOverview.qualifier && <div><Tag bundle={this.props.bundle} group="qualifier" includeGroup={true} currentGroupFilter={null} tag={this.props.paramOverview.qualifier}/></div>}
                   </span>
               </ParameterDetailsItem>
@@ -973,6 +974,7 @@ export class PSPanel extends Component {
                           {value: "figure", label: "figure"},
                           {value: "compute", label: "compute"},
                           {value: "model", label: "model"},
+                          {value: "time", label: "time"},
                           {value: "qualifier", label: "qualifier"}]
 
     return (
