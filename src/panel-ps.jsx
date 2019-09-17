@@ -231,7 +231,7 @@ class Parameter extends Component {
       this.setState({receivedDetails: false, details: {}})
     }
 
-    if ((this.state.expandedDetails || (this.state.expandedValue && ['ChoiceParameter', 'SelectParameter', 'FloatArrayParameter', 'BoolParameter', 'ConstraintParameter'].indexOf(this.props.paramOverview.class)!==-1) || this.state.expandedUnit) && !this.state.receivedDetails) {
+    if ((this.state.expandedDetails || (this.state.expandedValue && ['ChoiceParameter', 'SelectParameter', 'UnitParameter', 'FloatArrayParameter', 'BoolParameter', 'ConstraintParameter'].indexOf(this.props.paramOverview.class)!==-1) || this.state.expandedUnit) && !this.state.receivedDetails) {
       this.setState({receivedDetails: true})
 
       this.abortGetDetailsController = new window.AbortController();
@@ -286,7 +286,7 @@ class Parameter extends Component {
                                 SET VALUE HierarchyParameter
                                 <span onClick={this.toggleExpandedValue} style={{marginLeft: "-10px"}} className="btn fa-fw fas fa-check" title="apply changes"/>
                              </span>
-      } else if (['ChoiceParameter', 'BoolParameter'].indexOf(this.props.paramOverview.class)!==-1) {
+      } else if (['ChoiceParameter', 'BoolParameter', 'UnitParameter'].indexOf(this.props.paramOverview.class)!==-1) {
         inlineValueContent = <span style={{verticalAlign: "super"}}>
                                 <span onClick={this.toggleExpandedValue} className="btn fa-fw fas fa-times" title="cancel changes"/>
                                 <span><Input type='choice' origValue={this.props.paramOverview.valuestr} onChange={this.updateUserValue} choices={this.state.details.choices}/></span>
