@@ -193,12 +193,12 @@ export class Statusbar extends Component {
           <span style={{margin: "4px"}}>{this.props.app.state.serverHost}</span>
         </Link>
 
-        <span style={{marginLeft: "50px"}}>clientid: {this.props.app.state.clientid}</span>
+
+        <span style={{float: "right", marginRight: "10px"}}>clientid: {this.props.app.state.clientid}</span>
 
         {this.props.bundleid ?
-          <div className="d-none d-lg-inline">
-            <span style={{marginLeft: "50px"}}>bundleid: {this.props.bundleid}</span>
-            <span style={{marginLeft: "50px"}}>status: idle/waiting for confirmation/etc</span>
+          <div className="d-none d-lg-inline" style={{float: "right"}}>
+            <span style={{marginRight: "20px"}}>bundleid: {this.props.bundleid}</span>
           </div>
           :
           null
