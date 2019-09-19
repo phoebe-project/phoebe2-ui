@@ -28,6 +28,68 @@ class ActionContentNewParameters extends Component {
 }
 
 
+class ActionContentImportModel extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      file: null
+    }
+  }
+  onChangeFile = (event) => {
+    const file = event.target.files[0];
+    this.setState({file: file});
+    // console.log(file)
+    var reader = new window.FileReader();
+    reader.onload = this.onLoadFileHandler;
+    reader.readAsText(file, "UTF-8");
+
+  }
+  onLoadFileHandler = (event) => {
+    // console.log(event.target.result)
+    this.props.onUpdatePacket({fname: event.target.result})
+
+  }
+
+  onChangeLabel = (inputValue, actionMeta) => {
+    var value = null
+    if (inputValue !== null) {
+      value = inputValue.value
+    }
+    console.log("onChangeLabel: "+value)
+    this.props.onUpdatePacket({[this.props.action.split('_')[1]]: value})
+  }
+  render() {
+    var addType = 'model'
+    var labelChoices = this.props.bundle.state.tags.models || [];
+    var labelChoicesList = labelChoices.map((choice) => ({value: choice, label: choice +' (overwrite)'}))
+
+    return (
+      <div>
+        <div className="form-group">
+          <label id={"file"} style={{width: "50%", textAlign: "right", paddingRight: "10px"}}>import from file</label>
+
+          <input
+            className="model-input"
+            type="file"
+            ref={input => {
+              this.filesInput = input;
+            }}
+            name="file"
+            placeholder={null}
+            onChange={this.onChangeFile}
+          />
+
+          <label id={addType} style={{width: "50%", textAlign: "right", paddingRight: "10px"}}>{addType}</label>
+
+          <span style={{width: "50%", lineHeight: "1.0", display: "inline-block", verticalAlign: "sub"}}>
+            <CreatableSelect isClearable={true} onChange={this.onChangeLabel} options={labelChoicesList} placeholder={"(automatically generate)"} className="phoebe-parameter-choice" classNamePrefix="phoebe-parameter-choice"/>
+          </span>
+        </div>
+      </div>
+    )
+  }
+}
+
 class ActionContentAdd extends Component {
   constructor(props) {
     super(props);
@@ -330,9 +392,6 @@ export class ActionPanel extends Component {
     this.props.bundle.setQueryParams({tmp: []})
     this.setState({redirect: generatePath(this.props.app.state.serverHost, this.props.bundle.state.bundleid, null, this.props.bundle.getSearchString())})
   }
-  downloadRunAction = () => {
-    alert("not yet implemented")
-  }
   submitAction = () => {
     console.log("submitAction "+this.state.packet);
 
@@ -346,7 +405,7 @@ export class ActionPanel extends Component {
 
 
 
-    if (this.props.action.split('_')[0] === 'add' || this.props.action.split('_')[0] === 'run') {
+    if (['add', 'run'].indexOf(this.props.action.split('_')[0]) !== -1 || ['import_model'].indexOf(this.props.action) !== -1) {
       // then we go to another screen once we receive tmpFilter
       var toastID = toast.info(this.props.action+" submitted... waiting for response", { autoClose: false, closeButton: false });
       this.props.bundle.setState({pendingBundleMethod: toastID});
@@ -398,7 +457,13 @@ export class ActionPanel extends Component {
       } else {
         actionContent = <ActionContentAdd app={this.props.app} bundle={this.props.bundle} action={this.props.action} onUpdatePacket={this.onUpdatePacket}/>
       }
-
+    } else if (this.props.action == 'import_model') {
+      actionIcon += 'fa-plus'
+      if (tmpFilter) {
+        actionContent = <ActionContentNewParameters app={this.props.app} bundle={this.props.bundle}/>
+      } else {
+        actionContent = <ActionContentImportModel app={this.props.app} bundle={this.props.bundle} action={this.props.action} onUpdatePacket={this.onUpdatePacket}/>
+      }
     } else if (action == 'rename') {
       actionIcon += 'fa-pen'
       actionContent = <ActionContentRename app={this.props.app} bundle={this.props.bundle} action={this.props.action} onUpdatePacket={this.onUpdatePacket}/>
@@ -469,7 +534,8 @@ export class ActionPanel extends Component {
         buttons = <div style={{float: "right"}}>
                     <span onClick={this.closePanel} className="btn btn-primary" style={{margin: "5px"}} title={"cancel "+this.props.action+" and return to filtered parameters"}><span className="fas fa-fw fa-times"></span> cancel</span>
                     { action === 'run' ?
-                      <span onClick={this.downloadRunAction} className="btn btn-primary" style={{actionStyle}} title="download script to run on external machine"><span className="fas fa-fw fa-download"></span> download script</span>
+                      // <span onClick={this.downloadRunAction} className="btn btn-primary" style={{actionStyle}} title="Download script to run on an external machine.  Once executed, use 'add_model' to import the results."><span className="fas fa-fw fa-download"></span> download script</span>
+                      <Link href={"http://"+this.props.app.state.serverHost+'/export_compute/'+this.props.bundle.state.bundleid+'/'+this.state.packet.compute+'/'+this.state.packet.model} target="_blank" className="btn btn-primary" style={{actionStyle}} title="Download script to run on an external machine.  Once executed, use 'add_model' to import the results."><span className="fas fa-fw fa-download"></span> download script</Link>
                       :
                       null
                     }
