@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import {Redirect} from 'react-router-dom';
 import 'babel-polyfill';
+import cloneDeep from 'lodash/cloneDeep';
+
 
 import {toast} from 'react-toastify';
 import Select from 'react-select'; // https://react-select.com/home
@@ -319,20 +321,20 @@ class ActionContentRun extends Component {
       this.props.onUpdatePacket({[newType]: 'latest'})
     }
 
-    var labelNewChoices = this.props.bundle.state.tags[newType+'s'] || [];
+    var labelNewChoices = cloneDeep(this.props.bundle.state.tags[newType+'s']) || [];
 
     var labelNewValue = {value: this.state.labelNew, label: this.state.labelNew}
-    if (labelNewChoices.indexOf(this.state.labelNew) !== -1) {
+    // if (labelNewChoices.indexOf(this.state.labelNew) !== -1) {
       // TODO: don't incdlue (overwrite) if latest and doesn't yet exist
-      labelNewValue.label = this.state.labelNew + ' (overwrite)'
-    }
+      // labelNewValue.label = this.state.labelNew + ' (overwrite)'
+    // }
 
     if (labelNewChoices.indexOf('latest') === -1) {
       labelNewChoices.push('latest')
     }
     var labelNewChoicesList = labelNewChoices.map((choice) => ({value: choice, label: choice +' (overwrite)'}))
 
-    console.log(availableLabelsList)
+    // console.log(availableLabelsList)
 
     return (
       <div>
