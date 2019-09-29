@@ -7,6 +7,8 @@ import cloneDeep from 'lodash/cloneDeep';
 import {toast} from 'react-toastify';
 import Select from 'react-select'; // https://react-select.com/home
 import CreatableSelect from 'react-select/creatable'; // https://react-select.com/creatable
+import makeAnimated from 'react-select/animated';
+const animatedComponents = makeAnimated();
 
 import {FigurePanelWidth} from './panel-figures';
 import {PSPanel} from './panel-ps';
@@ -359,6 +361,59 @@ class ActionContentRun extends Component {
   }
 }
 
+class ActionContentExportArrays extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      params: [],
+    }
+  }
+  onChangeParams = (e) => {
+    if (e) {
+      // make sure all have the same length
+      if (!e.map(item => item.len).every(len => len === e[0].len)) {
+        alert("all selected arrays must have same length")
+        return
+      }
+
+
+      this.props.onUpdatePacket({uniqueids: e.map(item => item.value).join()})
+      this.setState({params: e})
+
+    } else {
+      this.props.onUpdatePacket({uniqueids: ""})
+      this.setState({params: []})
+
+    }
+  }
+
+  render() {
+    var availableParamsList = []
+    if (this.props.bundle.state.params) {
+      mapObject(this.props.bundle.state.params, (uniqueid, param) => {
+        if (param.class === 'FloatArrayParameter' && ['dataset', 'model'].indexOf(param.context)!== -1 && param.len > 0 && param.qualifier.indexOf('ld_') === -1) {
+          availableParamsList.push({value: uniqueid, label: param.uniquetwig+' ('+param.len+')', len: param.len})
+        }
+      })
+    }
+
+    var valueParamsList = this.state.params
+
+
+    return (
+      <div>
+        <div className="form-group">
+          <label style={{width: "50%", textAlign: "right", paddingRight: "10px"}}>Export Arrays from Parameters:</label>
+          <span style={{width: "50%", lineHeight: "1.0", display: "inline-block", verticalAlign: "sub"}}>
+            <Select options={availableParamsList} value={valueParamsList} onChange={this.onChangeParams} isMulti={true} isClearable={true} closeMenuOnSelect={false} components={animatedComponents} />
+          </span>
+
+        </div>
+      </div>
+    )
+  }
+}
+
 
 
 export class ActionPanel extends Component {
@@ -502,6 +557,7 @@ export class ActionPanel extends Component {
       actionContent = <FileReader app={this.props.app} bundle={this.props.bundle} onUpdatePackets={this.onUpdatePackets}/>
     } else if (this.props.action == 'export_data') {
       actionIcon = null;
+      actionContent = <ActionContentExportArrays app={this.props.app} bundle={this.props.bundle} action={this.props.action} onUpdatePacket={this.onUpdatePacket}/>
     }
 
     var actionStyle = {margin: '5px'}
@@ -520,7 +576,7 @@ export class ActionPanel extends Component {
     } else if (this.props.action === 'export_data') {
       buttons = <div style={{float: "right"}}>
                   <span onClick={this.closePanel} className="btn btn-primary" style={{margin: "5px"}} title={"cancel "+this.props.action+" and return to filtered parameters"}><span className="fas fa-fw fa-times"></span> cancel</span>
-                  <span onClick={this.closePanel} className="btn btn-primary" style={{margin: "5px"}} title="export selected columns and return to filtered parameters"><span className="fas fa-fw fa-chevron-right"></span> continue</span>
+                  <Link onClick={this.closePanel} href={"http://"+this.props.app.state.serverHost+'/export_arrays/'+this.props.bundle.state.bundleid+'/'+this.state.packet.uniqueids} target="_blank" className="btn btn-primary" style={{actionStyle}} title="Download file containing exported arrays"><span className="fas fa-fw fa-download"></span> export arrays</Link>
               </div>
     } else if (['edit_figure', 'edit_figure_times'].indexOf(this.props.action) !== -1) {
       buttons = <div style={{float: "right"}}>
@@ -536,8 +592,7 @@ export class ActionPanel extends Component {
         buttons = <div style={{float: "right"}}>
                     <span onClick={this.closePanel} className="btn btn-primary" style={{margin: "5px"}} title={"cancel "+this.props.action+" and return to filtered parameters"}><span className="fas fa-fw fa-times"></span> cancel</span>
                     { action === 'run' ?
-                      // <span onClick={this.downloadRunAction} className="btn btn-primary" style={{actionStyle}} title="Download script to run on an external machine.  Once executed, use 'add_model' to import the results."><span className="fas fa-fw fa-download"></span> download script</span>
-                      <Link href={"http://"+this.props.app.state.serverHost+'/export_compute/'+this.props.bundle.state.bundleid+'/'+this.state.packet.compute+'/'+this.state.packet.model} target="_blank" className="btn btn-primary" style={{actionStyle}} title="Download script to run on an external machine.  Once executed, use 'add_model' to import the results."><span className="fas fa-fw fa-download"></span> download script</Link>
+                      <Link onClick={this.closePanel} href={"http://"+this.props.app.state.serverHost+'/export_compute/'+this.props.bundle.state.bundleid+'/'+this.state.packet.compute+'/'+this.state.packet.model} target="_blank" className="btn btn-primary" style={{actionStyle}} title="Download script to run on an external machine.  Once executed, use 'add_model' to import the results."><span className="fas fa-fw fa-download"></span> download script</Link>
                       :
                       null
                     }
