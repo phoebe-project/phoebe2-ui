@@ -305,14 +305,14 @@ export class Bundle extends ReactQueryParams {
     var pollingJobs = [];
     mapObject(params, (uniqueid, param) => {
       if (Object.keys(this.state.pollingJobs).indexOf(uniqueid) === -1) {
-        if (param.qualifier === 'detached_job' && param.valuestr !== 'loaded') {
+        if (param.qualifier === 'detached_job' && ['loaded', 'error'].indexOf(param.valuestr) === -1) {
           // then we need to poll for updates to this parameter
           // console.log("adding polling interval for detached_job "+uniqueid+" with status "+param.valuestr)
           var interval = setInterval(() => this.pollJob(uniqueid), 1000);
           pollingJobs[uniqueid] = interval
         }
       } else {
-        if (param.qualifier === 'detached_job' && param.valuestr !== 'loaded') {
+        if (param.qualifier === 'detached_job' && ['loaded', 'error'].indexOf(param.valuestr) === -1) {
           // then we leave the current interval in place
           pollingJobs[uniqueid] = this.state.pollingJobs[uniqueid]
         } else {
