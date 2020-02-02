@@ -305,7 +305,7 @@ class TagGroup extends Component {
         <div className='phoebe-tag-header' onClick={this.toggleExpanded}>
           {this.props.title}
           <div style={{float: "right"}}>
-            {this.props.run && tags.length && (group==='compute' && this.props.bundle.state.tags.datasets.length) ?
+            {this.props.run && tags.length && ((group==='compute' && this.props.bundle.state.tags.datasets.length) || (group==='solver' && this.props.bundle.state.tags.datasets.length && this.props.bundle.state.tags.solvers.length) || (group==='solution' && this.props.bundle.state.tags.solutions.length)) ?
               <TagHeaderButton app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} to={`run_${group}`} iconClassNames="fas fa-fw fa-play"/>
               :
               <div style={{display: "inline-block", width: "34px"}}>&nbsp;</div>
@@ -506,14 +506,15 @@ export class TagPanel extends Component {
         <TagGroup title="Component" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.components || null} add={true} rename={true} remove={true}></TagGroup>
         <TagGroup title="Feature" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.features || null} add={true} rename={true} remove={true}></TagGroup>
         <TagGroup title="Dataset" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.datasets || null} add={true} rename={true} remove={true}></TagGroup>
+        <TagGroup title="Time" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.times || null} add={false} rename={false} remove={false}></TagGroup>
         {/* <TagGroup title="Constraint" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.constraints || null} add={true} remove={true}></TagGroup> */}
-        {/* <TagGroup title="Distribution" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.distributions || null} add={true} rename={true} remove={true}></TagGroup> */}
+        <TagGroup title="Distribution" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.distributions || null} add={true} rename={true} remove={true}></TagGroup>
         <TagGroup title="Figure" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.figures || null} add={true} rename={true} remove={true}></TagGroup>
         <TagGroup title="Compute" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.computes || null} add={true} rename={true} remove={true} run={true}></TagGroup>
         <TagGroup title="Model" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.models || null} add={false} import={true} rename={true} remove={true}></TagGroup>
-        <TagGroup title="Time" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.times || null} add={false} rename={false} remove={false}></TagGroup>
-        {/* <TagGroup title="Fitting" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.fittings || null} add={true} rename={true} remove={true} run={true}></TagGroup> */}
-        {/* <TagGroup title="Feedback" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.feedbacks || null} add={false} remove={true} rename={true}></TagGroup> */}
+        <TagGroup title="Solver" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.solvers || null} add={true} rename={true} remove={true} run={true}></TagGroup>
+        {/* TODO: expose process_solution */}
+        <TagGroup title="Solution" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.solutions || null} add={false} remove={true} rename={true} run={false}></TagGroup>
         <TagGroup title="Qualifier" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.qualifiers || null} expanded={true}></TagGroup>
 
       </Panel>

@@ -289,6 +289,8 @@ class ActionContentRun extends Component {
     var runType = this.props.action.split('_')[1]
     if (runType == 'compute') {
       return 'model'
+    } else if (runType == 'solver') {
+      return 'solution'
     }
     return null
   }

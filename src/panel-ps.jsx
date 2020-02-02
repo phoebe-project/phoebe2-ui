@@ -226,12 +226,12 @@ class Parameter extends Component {
   //   return false;
   // }
   render() {
-    if (['SelectParameter', 'FloatArrayParameter', 'ConstraintParameter'].indexOf(this.props.paramOverview.class)!==-1 && !this.state.expandedValue && !this.state.expandedUnit &&!this.state.expandedDetails && this.state.receivedDetails) {
+    if (['SelectParameter', 'SelectTwigParameter', 'FloatArrayParameter', 'ConstraintParameter'].indexOf(this.props.paramOverview.class)!==-1 && !this.state.expandedValue && !this.state.expandedUnit &&!this.state.expandedDetails && this.state.receivedDetails) {
       // reset so that we force a new refresh next time - this is only needed for parameters where we rely on state.details.value vs props.valuestr
       this.setState({receivedDetails: false, details: {}})
     }
 
-    if ((this.state.expandedDetails || (this.state.expandedValue && ['ChoiceParameter', 'SelectParameter', 'UnitParameter', 'FloatArrayParameter', 'BoolParameter', 'ConstraintParameter'].indexOf(this.props.paramOverview.class)!==-1) || this.state.expandedUnit) && !this.state.receivedDetails) {
+    if ((this.state.expandedDetails || (this.state.expandedValue && ['ChoiceParameter', 'SelectParameter', 'SelectTwigParameter', 'UnitParameter', 'FloatArrayParameter', 'BoolParameter', 'ConstraintParameter'].indexOf(this.props.paramOverview.class)!==-1) || this.state.expandedUnit) && !this.state.receivedDetails) {
       this.setState({receivedDetails: true})
 
       this.abortGetDetailsController = new window.AbortController();
@@ -268,7 +268,7 @@ class Parameter extends Component {
         expandedValueContent = <span style={{verticalAlign: "super"}}>
                                 <InputFloatArray app={this.props.app} parameter={this}/>
                              </span>
-      } else if (this.props.paramOverview.class==='SelectParameter') {
+      } else if (['SelectParameter', 'SelectTwigParameter'].indexOf(this.props.paramOverview.class)!==-1) {
         expandedValueContent = <span style={{verticalAlign: "super"}}>
                                 <span onClick={this.toggleExpandedValue} className="btn fa-fw fas fa-times" title="cancel changes"/>
                                 <span><Input type='select' origValue={this.state.details.value} onChange={this.updateUserValue} choices={this.state.details.choices}/></span>
