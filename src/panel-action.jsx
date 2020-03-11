@@ -32,7 +32,7 @@ class ActionContentNewParameters extends Component {
 }
 
 
-class ActionContentImportModel extends Component {
+class ActionContentImport extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -63,7 +63,8 @@ class ActionContentImportModel extends Component {
     this.props.onUpdatePacket({[this.props.action.split('_')[1]]: value})
   }
   render() {
-    var addType = 'model'
+    var addType = this.props.context;
+
     var labelChoices = this.props.bundle.state.tags.models || [];
     var labelChoicesList = labelChoices.map((choice) => ({value: choice, label: choice +' (overwrite)'}))
 
@@ -363,6 +364,44 @@ class ActionContentRun extends Component {
   }
 }
 
+class ActionContentAdopt extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      label: null,
+    }
+  }
+
+  onChangeLabel = (e) => {
+    this.setState({label: e.value});
+
+    this.props.onUpdatePacket({[this.props.action.split('_')[1]]: e.value})
+  }
+  render() {
+    var runType = this.props.action.split('_')[1]
+    var availableLabels = this.props.bundle.state.tags[runType+'s'] || [];
+    var availableLabelsList = availableLabels.map((choice) => ({value: choice, label: choice}))
+
+    if (this.state.label===null) {
+      // then defaults based on kind
+      this.setState({label: availableLabels[0]})
+      this.props.onUpdatePacket({[runType]: availableLabels[0]})
+    }
+
+    return (
+      <div>
+        <div className="form-group">
+          <label id={runType} style={{width: "50%", textAlign: "right", paddingRight: "10px"}}>{runType}</label>
+          <span style={{width: "50%", lineHeight: "1.0", display: "inline-block", verticalAlign: "sub"}}>
+            <Select options={availableLabelsList} value={{value: this.state.label, label: this.state.label}} onChange={this.onChangeLabel} className="phoebe-parameter-choice" classNamePrefix="phoebe-parameter-choice"/>
+          </span>
+
+        </div>
+      </div>
+    )
+  }
+}
+
 class ActionContentExportArrays extends Component {
   constructor(props) {
     super(props);
@@ -493,6 +532,7 @@ export class ActionPanel extends Component {
     }
 
     var action = this.props.action.split("_")[0];
+    var context = this.props.action.split("_")[1];
     var actionIcon = "fas fa-fw "
     var actionContent = null
 
@@ -516,12 +556,12 @@ export class ActionPanel extends Component {
       } else {
         actionContent = <ActionContentAdd app={this.props.app} bundle={this.props.bundle} action={this.props.action} onUpdatePacket={this.onUpdatePacket}/>
       }
-    } else if (this.props.action == 'import_model') {
+    } else if (action == 'import') {
       actionIcon += 'fa-plus'
       if (tmpFilter) {
         actionContent = <ActionContentNewParameters app={this.props.app} bundle={this.props.bundle}/>
       } else {
-        actionContent = <ActionContentImportModel app={this.props.app} bundle={this.props.bundle} action={this.props.action} onUpdatePacket={this.onUpdatePacket}/>
+        actionContent = <ActionContentImport app={this.props.app} bundle={this.props.bundle} action={this.props.action} context={context} onUpdatePacket={this.onUpdatePacket}/>
       }
     } else if (action == 'rename') {
       actionIcon += 'fa-pen'
@@ -535,6 +575,13 @@ export class ActionPanel extends Component {
         actionContent = <ActionContentNewParameters app={this.props.app} bundle={this.props.bundle}/>
       } else {
         actionContent = <ActionContentRun app={this.props.app} bundle={this.props.bundle} action={this.props.action} onUpdatePacket={this.onUpdatePacket}/>
+      }
+    } else if (action == 'adopt') {
+      actionIcon += 'fa-check-double'
+      if (tmpFilter) {
+        actionContent = <ActionContentNewParameters app={this.props.app} bundle={this.props.bundle}/>
+      } else {
+        actionContent = <ActionContentAdopt app={this.props.app} bundle={this.props.bundle} action={this.props.action} onUpdatePacket={this.onUpdatePacket}/>
       }
     } else if (this.props.action == 'edit_figure') {
       // no actionIcon because we have a tmpFilter to show parameters
