@@ -355,6 +355,9 @@ export class Bundle extends ReactQueryParams {
         // console.log(tmpFilterTag)
         // console.log(tmpFilterValues)
         filterTmp[tmpFilterTag] = tmpFilterValues
+
+        // override the advanced setting for single-choices to always show in the tmpFilter
+        advanced.push('is_single')
       }
 
       mapObject(params, (uniqueid, param) => {
