@@ -495,7 +495,6 @@ class ChecksBox extends Component {
 export class TagPanel extends Component {
   render() {
     var tags = this.props.bundle.state.tags || {}
-
     return (
       <Panel inactive={this.props.inactive}>
         <FilterBox bundle={this.props.bundle}/>
@@ -503,11 +502,16 @@ export class TagPanel extends Component {
 
         <TagGroup title="Context" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} expanded={true} tags={tags.contexts || null}/>
         <TagGroup title="Kind" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.kinds || null}></TagGroup>
+        {(tags.times || []).length ?
+          <TagGroup title="Time" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.times || null} add={false} rename={false} remove={false}></TagGroup>
+          :
+          null
+        }
+        {/* <TagGroup title="Constraint" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.constraints || null} add={true} remove={true}></TagGroup> */}
+
         <TagGroup title="Component" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.components || null} add={true} rename={true} remove={true}></TagGroup>
         <TagGroup title="Feature" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.features || null} add={true} rename={true} remove={true}></TagGroup>
         <TagGroup title="Dataset" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.datasets || null} add={true} rename={true} remove={true}></TagGroup>
-        <TagGroup title="Time" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.times || null} add={false} rename={false} remove={false}></TagGroup>
-        {/* <TagGroup title="Constraint" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.constraints || null} add={true} remove={true}></TagGroup> */}
         <TagGroup title="Distribution" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.distributions || null} add={true} rename={true} remove={true}></TagGroup>
         <TagGroup title="Figure" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.figures || null} add={true} rename={true} remove={true}></TagGroup>
         <TagGroup title="Compute" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.computes || null} add={true} rename={true} remove={true} run={true}></TagGroup>
