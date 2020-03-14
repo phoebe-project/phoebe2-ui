@@ -5,6 +5,7 @@ import cloneDeep from 'lodash/cloneDeep';
 
 
 import {toast} from 'react-toastify';
+import ToggleButton from 'react-toggle-button'; // https://www.npmjs.com/package/react-toggle-button
 import Select from 'react-select'; // https://react-select.com/home
 import CreatableSelect from 'react-select/creatable'; // https://react-select.com/creatable
 import makeAnimated from 'react-select/animated';
@@ -369,6 +370,7 @@ class ActionContentAdopt extends Component {
     super(props);
     this.state = {
       label: null,
+      remove: false,
     }
   }
 
@@ -376,6 +378,10 @@ class ActionContentAdopt extends Component {
     this.setState({label: e.value});
 
     this.props.onUpdatePacket({[this.props.action.split('_')[1]]: e.value})
+  }
+  onChangeRemove = (value) => {
+    this.setState({remove: !value})
+    this.props.onUpdatePacket({['remove_'+this.props.action.split('_')[1]]: !value})
   }
   render() {
     var runType = this.props.action.split('_')[1]
@@ -394,6 +400,15 @@ class ActionContentAdopt extends Component {
           <label id={runType} style={{width: "50%", textAlign: "right", paddingRight: "10px"}}>{runType}</label>
           <span style={{width: "50%", lineHeight: "1.0", display: "inline-block", verticalAlign: "sub"}}>
             <Select options={availableLabelsList} value={{value: this.state.label, label: this.state.label}} onChange={this.onChangeLabel} className="phoebe-parameter-choice" classNamePrefix="phoebe-parameter-choice"/>
+          </span>
+          <label id={'remove_'+runType} style={{width: "50%", textAlign: "right", paddingRight: "10px"}}>{'remove_'+runType}</label>
+          <span style={{width: "50%", lineHeight: "1.0", display: "inline-block"}}>
+            <ToggleButton
+              inactiveLabel={<span className="fas fa-fw fa-times"></span>}
+              activeLabel={<span className="fas fa-fw fa-check"></span>}
+              trackStyle = {{width: '600px'}}
+              value={this.state.remove}
+              onToggle={this.onChangeRemove} />
           </span>
 
         </div>
