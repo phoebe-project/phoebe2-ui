@@ -509,6 +509,8 @@ export class TagPanel extends Component {
 
         <TagGroup title="Context" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} expanded={true} tags={tags.contexts || null}/>
         <TagGroup title="Kind" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.kinds || null}></TagGroup>
+        <TagGroup title="Figure" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.figures || null} add={true} rename={true} remove={true}></TagGroup>
+
         {(tags.times || []).length ?
           <TagGroup title="Time" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.times || null} add={false} rename={false} remove={false}></TagGroup>
           :
@@ -520,7 +522,6 @@ export class TagPanel extends Component {
         <TagGroup title="Feature" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.features || null} add={true} rename={true} remove={true}></TagGroup>
         <TagGroup title="Dataset" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.datasets || null} add={true} rename={true} remove={true}></TagGroup>
         <TagGroup title="Distribution" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.distributions || null} add={true} rename={true} remove={true}></TagGroup>
-        <TagGroup title="Figure" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.figures || null} add={true} rename={true} remove={true}></TagGroup>
         <TagGroup title="Compute" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.computes || null} add={true} rename={true} remove={true} run={true}></TagGroup>
         <TagGroup title="Model" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.models || null} add={false} import={true} rename={true} remove={true}></TagGroup>
         <TagGroup title="Solver" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.solvers || null} add={true} rename={true} remove={true} run={true}></TagGroup>
