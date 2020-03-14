@@ -3,8 +3,7 @@ import {Redirect} from 'react-router-dom';
 
 import {SortableContainer, SortableElement, SortableHandle} from 'react-sortable-hoc'; // https://github.com/clauderic/react-sortable-hoc
 
-
-import {Link, generatePath, randomstr} from './common';
+import {Link, generatePath, popUpWindow, randomstr} from './common';
 import {Tour} from './tour';
 import {Panel} from './ui';
 
@@ -12,19 +11,41 @@ const DragHandle = SortableHandle(() => <span className='fas fa-grip-lines' styl
 
 export class FigurePanel extends Component {
 
+  popFigures = () => {
+    var bundleid = this.props.bundleid || this.props.match.params.bundleid
+
+    var url = generatePath(this.props.app.state.serverHost, bundleid, 'figures');
+    var win = popUpWindow(url, window.location.search);
+    // TODO: callback to remove from childrenWindows when manually closed?
+    this.props.bundle.childrenWindows.push(win);
+  }
+
   render() {
 
     return (
-      <Panel inactive={this.props.inactive}>
-        <Tour app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid}/>
+      <Panel inactive={this.props.inactive} backgroundColor="#f0f0f0">
+
+        {this.props.showPopoutButton ?
+          <div style={{float: "right", marginTop: "6px", paddingRight: "10px"}}>
+            <span className="btn btn-blue" onClick={this.popFigures} style={{height: "34px", width: "34px"}} title="popout into external window"><span className="fas fa-fw fa-external-link-alt"/></span>
+          </div>
+          :
+          null
+        }
+
+        {this.props.FigurePanelOnly ?
+          null
+          :
+          <Tour app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid}/>
+        }
 
         <div style={{padding: "0px"}}>
-          <SortableFigureList figures={this.props.bundle.state.figures} app={this.props.app} bundle={this.props.bundle} onSortEnd={this.props.bundle.onFigureSortEnd} useDragHandle={true} />
+          <SortableFigureList figures={this.props.bundle.state.figures} app={this.props.app} bundle={this.props.bundle} FigurePanelOnly={this.props.FigurePanelOnly} onSortEnd={this.props.bundle.onFigureSortEnd} useDragHandle={true} axis={this.props.FigurePanelOnly ? 'xy' : 'y'} lockAxis={this.props.FigurePanelOnly ? null : 'y'} />
           {/* <TagSectionActionButton app={this.props.app} type='add' sectionLabel='Figure' label=' Add New Figure' tagLabelsList={[]}/> */}
         </div>
 
 
-        {this.props.bundle.state.figures.length > 0 ?
+        {this.props.bundle.state.figures.length > 0 && !this.props.FigurePanelOnly ?
           <div>
             <EditFigureTimeSourceButton app={this.props.app} bundle={this.props.bundle}/>
           </div>
@@ -39,16 +60,29 @@ export class FigurePanel extends Component {
 }
 
 
-const SortableFigureItem = SortableElement(({figure, app, bundle}) => {
+const SortableFigureItem = SortableElement(({figure, app, bundle, FigurePanelOnly}) => {
 
   var figureReady = (Object.keys(bundle.state.figureUpdateTimes).indexOf(figure) !== -1 && bundle.state.figureUpdateTimes[figure] !== 'failed')
 
+  var width = "100%"
+  var margin = "0px"
+  // var height = "auto";
+  if (FigurePanelOnly) {
+    width = "250px"
+    margin = "10px"
+    // height = "350px"
+  }
+
   return (
-    <div className="phoebe-parameter" style={{marginLeft: "0px", marginRight: "0px", width: "100%"}}>
+    <div className="phoebe-parameter" style={{marginLeft: margin, marginRight: margin, width: width, float: "left"}}>
       <DragHandle />
       {figure}
       <div className="ReactFigureActions">
-        <FigureEditButton app={app} bundle={bundle} figure={figure}/>
+        {FigurePanelOnly ?
+          null
+          :
+          <FigureEditButton app={app} bundle={bundle} figure={figure}/>
+        }
         {figureReady ?
           <React.Fragment>
             <FigureMPLButton app={app} bundle={bundle} figure={figure}/>
@@ -63,7 +97,7 @@ const SortableFigureItem = SortableElement(({figure, app, bundle}) => {
       </div>
       <div className="ReactFigureImage">
         {figureReady ?
-          <FigureThumb app={app} bundle={bundle} figure={figure} />
+          <FigureThumb app={app} bundle={bundle} figure={figure} FigurePanelOnly={FigurePanelOnly} />
           :
           null
         }
@@ -80,11 +114,11 @@ const SortableFigureItem = SortableElement(({figure, app, bundle}) => {
   );
 });
 
-const SortableFigureList = SortableContainer(({figures, app, bundle}) => {
+const SortableFigureList = SortableContainer(({figures, app, bundle, FigurePanelOnly}) => {
   return (
-    <ul style={{padding: '0px'}}>
+    <ul style={{padding: "0px"}}>
       {figures.map((figure, index) => (
-        <SortableFigureItem key={`item-${index}`} index={index} figure={figure} app={app} bundle={bundle} />
+        <SortableFigureItem key={`item-${index}`} index={index} figure={figure} app={app} bundle={bundle} FigurePanelOnly={FigurePanelOnly}/>
       ))}
     </ul>
   );

@@ -482,6 +482,8 @@ export class Bundle extends ReactQueryParams {
 
     if (this.props.PSPanelOnly) {
       return (<PSPanel app={this.props.app} bundleid={this.state.bundleid} bundle={this} PSPanelOnly={this.props.PSPanelOnly}/>)
+    } else if (this.props.FigurePanelOnly) {
+      return (<FigurePanel app={this.props.app} bundleid={this.state.bundleid} bundle={this} showPopoutButton={false} FigurePanelOnly={this.props.FigurePanelOnly}/>)
     }
 
     var action = this.props.match.params.action
@@ -519,7 +521,7 @@ export class Bundle extends ReactQueryParams {
               :
               <PSPanel app={this.props.app} bundleid={this.state.bundleid} bundle={this} showPopoutButton={true} showChecks={!this.queryParams.hideChecks}/>
             }
-            <FigurePanel app={this.props.app} bundleid={this.state.bundleid} bundle={this} inactive={this.props.match.params.action}/>
+            <FigurePanel app={this.props.app} bundleid={this.state.bundleid} bundle={this} showPopoutButton={true} inactive={this.props.match.params.action}/>
           </PanelGroup>
         </div>
         <div className="d-block d-lg-none" style={{paddingTop: "50px", paddingBottom: "28px", height: "100%"}}>
