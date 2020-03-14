@@ -20,6 +20,7 @@ export class FigurePanel extends Component {
     this.props.bundle.childrenWindows.push(win);
   }
 
+
   render() {
 
     return (
@@ -86,7 +87,12 @@ const SortableFigureItem = SortableElement(({figure, app, bundle, FigurePanelOnl
         {figureReady ?
           <React.Fragment>
             <FigureMPLButton app={app} bundle={bundle} figure={figure}/>
-            <FigureExpandButton app={app} bundle={bundle} figure={figure} />
+            {FigurePanelOnly ?
+              null
+              :
+              <FigureExpandButton app={app} bundle={bundle} figure={figure} />
+            }
+            <FigurePopoutButton app={app} bundle={bundle} figure={figure} />
           </React.Fragment>
           :
           <div style={{border: "1px dotted black", borderRadius: "6px", height: "80px", marginTop: "6px", marginBottom: "6px"}}>
@@ -247,16 +253,53 @@ class FigureExpandButton extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-
+      redirect: null
     };
   }
-  onClick = () => {
-    alert("expanding figures coming soon");
-    // this.props.app.setState({activeView: 'Figure', activeFigure: this.props.figure});
+  onClick = (e) => {
+    // var url = 'http://'+this.props.app.state.serverHost+'/'+this.props.bundle.state.bundleid+'/figure/'+this.props.figure+'?'+this.props.bundle.state.figureUpdateTimes[this.props.figure]
+    // var win = popUpWindow(url, window.location.search);
+    // // TODO: callback to remove from childrenWindows when manually closed?
+    // this.props.bundle.childrenWindows.push(win);
+
+
+    e.preventDefault();
+    e.stopPropagation();
+    // if changing the syntax here, will also need to update the logic in panel-action.jsx for finding the figure name
+    this.props.bundle.setQueryParams({tmp: '"context:figure,figure:null|'+this.props.figure+'"'})
+    this.setState({redirect: generatePath(this.props.app.state.serverHost, this.props.bundle.state.bundleid, "view_figure", this.props.bundle.getSearchString())});
+
+  }
+  componentDidUpdate() {
+    if (this.state.redirect) {
+      this.setState({redirect: null})
+    }
+  }
+  render() {
+    if (this.state.redirect) {
+      return (<Redirect to={this.state.redirect}/>)
+    }
+    return (
+      <span style={{width: "24px"}} className="btn btn-tag btn-tag-clear" onClick={this.onClick}><span className='fas fa-fw fa-expand'></span></span>
+    );
+  }
+}
+
+class FigurePopoutButton extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+    };
+  }
+  onClick = (e) => {
+    var url = 'http://'+this.props.app.state.serverHost+'/'+this.props.bundle.state.bundleid+'/figure/'+this.props.figure+'?'+this.props.bundle.state.figureUpdateTimes[this.props.figure]
+    var win = popUpWindow(url, window.location.search);
+    // TODO: callback to remove from childrenWindows when manually closed?
+    this.props.bundle.childrenWindows.push(win);
   }
   render() {
     return (
-      <span style={{width: "24px"}} className="btn btn-tag btn-tag-clear" onClick={this.onClick}><span className='fas fa-fw fa-expand'></span></span>
+      <span style={{width: "24px"}} className="btn btn-tag btn-tag-clear" onClick={this.onClick}><span className='fas fa-fw fa-external-link-alt'></span></span>
     );
   }
 }
@@ -271,6 +314,8 @@ class FigureSaveButton extends React.Component {
   onClick = () => {
     // console.log("FigureSaveButton clicked");
     alert("saving figures coming soon");
+    var url = 'http://'+this.props.app.state.serverHost+'/'+this.props.bundle.state.bundleid+'/figure/'+this.props.figure+'?'+this.props.bundle.state.figureUpdateTimes[this.props.figure]
+    // var win = popUpWindow(url, window.location.search);
   }
   render() {
     return (

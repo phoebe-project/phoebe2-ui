@@ -609,6 +609,16 @@ export class ActionPanel extends Component {
                           <ActionContentNewParameters app={this.props.app} bundle={this.props.bundle} orderBy={'figure'}/>
                         </React.Fragment>
       }
+    } else if (this.props.action == 'view_figure') {
+      // no actionIcon because we have a tmpFilter to show parameters
+      if (tmpFilter) {
+        // NOTE: this makes very specific assumptions about the format of URL
+        var figure = this.props.bundle.queryParams.tmp.split('|').slice(-1)[0].replace('%22', '')
+        // console.log(figure)
+        actionContent = <React.Fragment>
+                          <FigurePanelWidth app={this.props.app} bundle={this.props.bundle} figure={figure}/>
+                        </React.Fragment>
+      }
     } else if (this.props.action == 'edit_figure_times') {
       // no actionIcon because we have a tmpFilter to show parameters
       if (tmpFilter) {
@@ -643,6 +653,10 @@ export class ActionPanel extends Component {
                   <Link onClick={this.closePanel} href={"http://"+this.props.app.state.serverHost+'/export_arrays/'+this.props.bundle.state.bundleid+'/'+this.state.packet.uniqueids} target="_blank" className="btn btn-primary" style={{actionStyle}} title="Download file containing exported arrays"><span className="fas fa-fw fa-download"></span> export arrays</Link>
               </div>
     } else if (['edit_figure', 'edit_figure_times'].indexOf(this.props.action) !== -1) {
+      buttons = <div style={{float: "right"}}>
+                  <span onClick={this.closePanel} className="btn btn-primary" style={{margin: "5px"}} title={"close and return to filtered parameters"}><span className="fas fa-fw fa-times"></span> close</span>
+              </div>
+    } else if (['view_figure'].indexOf(this.props.action) !== -1) {
       buttons = <div style={{float: "right"}}>
                   <span onClick={this.closePanel} className="btn btn-primary" style={{margin: "5px"}} title={"close and return to filtered parameters"}><span className="fas fa-fw fa-times"></span> close</span>
               </div>
