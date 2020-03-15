@@ -33,6 +33,7 @@ export class Bundle extends ReactQueryParams {
       redirect: null,
       bundleid: props.match.params.bundleid,
       params: null,
+      adjustableParams: {},
       figures: [],
       figureUpdateTimes: {},
       failedConstraints: [],
@@ -58,6 +59,10 @@ export class Bundle extends ReactQueryParams {
 
     // window.location.search = "";
   }
+  // getUpdatedSearchString = (updates) => {
+  //   this.setQueryParams(updates)
+  //   return this.getSearchString()
+  // }
   registerBundle = () => {
     console.log("registerBundle")
     this.props.app.socket.emit('register client', {'clientid': this.props.app.state.clientid, 'bundleid': this.state.bundleid});
@@ -120,6 +125,10 @@ export class Bundle extends ReactQueryParams {
           delete params[uniqueid];
         })
         this.setState({params: params});
+      }
+
+      if (data.adjustable_parameters) {
+        this.setState({adjustableParams: data.adjustable_parameters})
       }
 
 
@@ -233,6 +242,7 @@ export class Bundle extends ReactQueryParams {
           });
           this.setState({params: json.data.parameters,
                          tags: json.data.tags,
+                         adjustableParams: json.data.adjustable_parameters,
                          figures: json.data.tags.figures,
                          figureUpdateTimes: figureUpdateTimes,
                          failedConstraints: json.data.failed_constraints,
@@ -332,7 +342,7 @@ export class Bundle extends ReactQueryParams {
     });
   }
   filter = (params, filter, ignoreGroups=[]) => {
-    var ignoreGroupsFilter = ignoreGroups.concat(["pinned", "advanced", "orderBy", "tmp", "checks"])
+    var ignoreGroupsFilter = ignoreGroups.concat(["pinned", "advanced", "orderBy", "tmp", "checks", "lastActive"])
 
     var nAdvancedHiddenEach = {};
     var nAdvancedHiddenTotal = 0;

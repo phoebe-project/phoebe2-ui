@@ -350,6 +350,10 @@ class Parameter extends Component {
                           </span>
     }
 
+    if (this.state.expandedDetails && this.props.bundle.queryParams['lastActive'] != this.props.uniqueid) {
+      this.props.bundle.setQueryParams({lastActive: this.props.uniqueid})
+    }
+
     return (
       <div ref={this.ref} className='phoebe-parameter'>
         <div className='phoebe-parameter-header' style={{minWidth: "250px"}}>
@@ -420,6 +424,31 @@ class Parameter extends Component {
               </ParameterDetailsItem>
               :
               null
+            }
+
+            {Object.keys(this.state.details.referenced_parameter || {}).length ?
+              <ParameterDetailsItem title="Referenced Parameter">
+                <div style={{display: "inline-block"}}>
+                  {mapObject(this.state.details.referenced_parameter, (uniqueid, twig) => {
+                    return <ParameterDetailsItemPin key={uniqueid} app={this.props.app} bundle={this.props.bundle} PSPanel={this.props.PSPanel} uniqueid={uniqueid} twig={twig} disableFiltering={this.props.disableFiltering}/>
+                  })}
+                </div>
+              </ParameterDetailsItem>
+            :
+            null
+            }
+
+            {this.state.details.is_adjustable || false ?
+              <ParameterDetailsItem title="Distributions">
+                <div style={{display: "inline-block"}}>
+                  {mapObject(this.state.details.distributions || {} , (uniqueid, twig) => {
+                    return <ParameterDetailsItemPin key={uniqueid} app={this.props.app} bundle={this.props.bundle} PSPanel={this.props.PSPanel} uniqueid={uniqueid} twig={twig} disableFiltering={this.props.disableFiltering}/>
+                  })}
+                  <Link to={generatePath(this.props.app.state.serverHost, this.props.bundle.state.bundleid, 'add_distribution', this.props.bundle.getSearchString())}><span className="fas fa-fw fa-plus" style={{paddingLeft: "26px", paddingRight: "22px"}}></span><span style={{color: "#000000"}}>add distribution</span></Link>
+                </div>
+              </ParameterDetailsItem>
+            :
+            null
             }
 
             {Object.keys(this.state.details.constraint || {}).length ?

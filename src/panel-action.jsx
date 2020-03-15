@@ -182,6 +182,66 @@ class ActionContentAdd extends Component {
   }
 }
 
+class ActionContentAddDistribution extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      referencedUniqueid: null
+    }
+  }
+  onChangeLabel = (inputValue, actionMeta) => {
+    var value = null
+    if (inputValue !== null) {
+      value = inputValue.value
+    }
+    // console.log("onChangeLabel: "+value)
+    this.props.onUpdatePacket({distribution: value})
+  }
+  onChangeParameter = (inputValue, actionMeta) => {
+    var value = null
+    if (inputValue !== null) {
+      value = inputValue.value
+    }
+    // console.log("onChangeParameter: "+value)
+    this.setState({referencedUniqueid: value})
+    this.props.onUpdatePacket({uniqueid: value})
+  }
+  render() {
+    var addType = this.props.action.split('_')[1]
+
+    var parameterChoicesList = mapObject(this.props.bundle.state.adjustableParams, (uniqueid, twig) => ({value: uniqueid, label: twig}))
+
+    var labelChoices = this.props.bundle.state.tags[addType+'s'] || [];
+    var labelChoicesList = labelChoices.map((choice) => ({value: choice, label: choice +' (add to existing)'}))
+
+    var uniqueid = this.state.referencedUniqueid || this.props.bundle.queryParams['lastActive'] || parameterChoicesList[0]['value']
+    var value = {value: uniqueid, label: this.props.bundle.state.adjustableParams[uniqueid]}
+
+    if (!this.state.referencedUniqueid) {
+      this.onChangeParameter(value, null)
+    }
+
+    return (
+      <div>
+        <div className="form-group">
+          <label id={"twig"} style={{width: "50%", textAlign: "right", paddingRight: "10px"}}>parameter</label>
+          <span style={{width: "50%", lineHeight: "1.0", display: "inline-block", verticalAlign: "sub"}}>
+            <Select isClearable={true} onChange={this.onChangeParameter} options={parameterChoicesList} value={value} className="phoebe-parameter-choice" classNamePrefix="phoebe-parameter-choice"/>
+          </span>
+        </div>
+
+        <div className="form-group">
+          <label id={addType} style={{width: "50%", textAlign: "right", paddingRight: "10px"}}>{addType}</label>
+          <span style={{width: "50%", lineHeight: "1.0", display: "inline-block", verticalAlign: "sub"}}>
+            <CreatableSelect isClearable={true} onChange={this.onChangeLabel} options={labelChoicesList} placeholder={"(automatically generate)"} className="phoebe-parameter-choice" classNamePrefix="phoebe-parameter-choice"/>
+          </span>
+        </div>
+
+      </div>
+    )
+  }
+}
+
 class ActionContentRename extends Component {
   constructor(props) {
     super(props);
@@ -506,7 +566,8 @@ export class ActionPanel extends Component {
     this.setState({redirect: generatePath(this.props.app.state.serverHost, this.props.bundle.state.bundleid, null, this.props.bundle.getSearchString())})
   }
   submitAction = () => {
-    console.log("submitAction "+this.state.packet);
+    console.log("submitAction: ");
+    console.log(this.state.packet);
 
     if (this.props.action === 'import_data') {
       this.state.packets.forEach( packet => {
@@ -568,6 +629,9 @@ export class ActionPanel extends Component {
       actionIcon += 'fa-plus'
       if (tmpFilter) {
         actionContent = <ActionContentNewParameters app={this.props.app} bundle={this.props.bundle}/>
+      } else if (this.props.action === 'add_distribution'){
+        actionContent = <ActionContentAddDistribution app={this.props.app} bundle={this.props.bundle} action={this.props.action} onUpdatePacket={this.onUpdatePacket}/>
+
       } else {
         actionContent = <ActionContentAdd app={this.props.app} bundle={this.props.bundle} action={this.props.action} onUpdatePacket={this.onUpdatePacket}/>
       }
