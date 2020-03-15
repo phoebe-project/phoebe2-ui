@@ -226,12 +226,12 @@ class Parameter extends Component {
   //   return false;
   // }
   render() {
-    if (['SelectParameter', 'SelectTwigParameter', 'FloatArrayParameter', 'ConstraintParameter'].indexOf(this.props.paramOverview.class)!==-1 && !this.state.expandedValue && !this.state.expandedUnit &&!this.state.expandedDetails && this.state.receivedDetails) {
+    if (['SelectParameter', 'SelectTwigParameter', 'FloatArrayParameter', 'DistributionParameter', 'ConstraintParameter'].indexOf(this.props.paramOverview.class)!==-1 && !this.state.expandedValue && !this.state.expandedUnit &&!this.state.expandedDetails && this.state.receivedDetails) {
       // reset so that we force a new refresh next time - this is only needed for parameters where we rely on state.details.value vs props.valuestr
       this.setState({receivedDetails: false, details: {}})
     }
 
-    if ((this.state.expandedDetails || (this.state.expandedValue && ['ChoiceParameter', 'SelectParameter', 'SelectTwigParameter', 'UnitParameter', 'FloatArrayParameter', 'BoolParameter', 'ConstraintParameter'].indexOf(this.props.paramOverview.class)!==-1) || this.state.expandedUnit) && !this.state.receivedDetails) {
+    if ((this.state.expandedDetails || (this.state.expandedValue && ['ChoiceParameter', 'SelectParameter', 'SelectTwigParameter', 'UnitParameter', 'FloatArrayParameter', 'BoolParameter', 'DistributionParameter', 'ConstraintParameter'].indexOf(this.props.paramOverview.class)!==-1) || this.state.expandedUnit) && !this.state.receivedDetails) {
       this.setState({receivedDetails: true})
 
       this.abortGetDetailsController = new window.AbortController();
@@ -267,6 +267,10 @@ class Parameter extends Component {
       if (this.props.paramOverview.class==='FloatArrayParameter') {
         expandedValueContent = <span style={{verticalAlign: "super"}}>
                                 <InputFloatArray app={this.props.app} parameter={this}/>
+                             </span>
+      } else if (this.props.paramOverview.class==='DistributionParameter') {
+        expandedValueContent = <span style={{verticalAlign: "super"}}>
+                                <InputDistribution app={this.props.app} parameter={this}/>
                              </span>
       } else if (['SelectParameter', 'SelectTwigParameter'].indexOf(this.props.paramOverview.class)!==-1) {
         expandedValueContent = <span style={{verticalAlign: "super"}}>
@@ -729,6 +733,14 @@ class InputFloatArray extends Component {
     this.setState({userArgs: userArgs})
 
   }
+  onChangeType = (type) => {
+    var userArgs = this.state.userArgs
+    if (!userArgs[type]) {
+      userArgs[type] = this.state.args[type]
+    }
+    this.props.parameter.updateUserValue(userArgs[type])
+    this.setState({inputType: type})
+  }
   componentDidUpdate() {
     if (!this.state.argsLoaded) {
       this.updateArgs();
@@ -822,10 +834,186 @@ class InputFloatArray extends Component {
           <React.Fragment>
             <span>{belowInput}</span>
             <div>
-              <span className={this.state.inputType=='array' ? 'btn btn-primary btn-primary-active' : 'btn btn-primary'} style={btnStyle} onClick={()=>{this.setState({inputType: 'array'})}}>array</span>
-              <span className={this.state.inputType=='linspace' ? 'btn btn-primary btn-primary-active' : 'btn btn-primary'} style={btnStyle} onClick={()=>{this.setState({inputType: 'linspace'})}}>linspace</span>
-              <span className={this.state.inputType=='arange' ? 'btn btn-primary btn-primary-active' : 'btn btn-primary'} style={btnStyle} onClick={()=>{this.setState({inputType: 'arange'})}}>arange</span>
+              <span className={this.state.inputType=='array' ? 'btn btn-primary btn-primary-active' : 'btn btn-primary'} style={btnStyle} onClick={()=>{this.onChangeType('array')}}>array</span>
+              <span className={this.state.inputType=='linspace' ? 'btn btn-primary btn-primary-active' : 'btn btn-primary'} style={btnStyle} onClick={()=>{this.onChangeType('linspace')}}>linspace</span>
+              <span className={this.state.inputType=='arange' ? 'btn btn-primary btn-primary-active' : 'btn btn-primary'} style={btnStyle} onClick={()=>{this.onChangeType('arange')}}>arange</span>
               <span className={this.state.inputType=='file' ? 'btn btn-primary btn-primary-active' : 'btn btn-primary'} style={btnStyle} onClick={()=>{alert("not yet implemented: can import in bulk from import button on main toolbar")}}>file import</span>
+            </div>
+          </React.Fragment>
+          :
+          null
+        }
+
+
+      </React.Fragment>
+
+    )
+  }
+}
+
+class InputDistribution extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      valueType: null,
+      inputType: null,
+      args: {},
+      userArgs: {},
+      argsLoaded: false,
+    };
+    this.refinput = React.createRef();
+  }
+  updateArgs = (value) => {
+
+
+    if (!this.props.parameter || !this.props.parameter.state.details || this.props.parameter.state.details.value === undefined) {
+      console.log("deferring converting distl object")
+      return
+    }
+
+    if (!value) {
+      value = this.props.parameter.state.details.value
+    }
+
+    this.abortGetArgsForType = new window.AbortController();
+
+    console.log("requesting conversion of distl object: "+JSON.stringify(value))
+    abortableFetch("http://"+this.props.app.state.serverHost+"/distl/"+JSON.stringify(value), {signal: this.abortGetArgsForType.signal})
+      .then(res => res.json())
+      .then(json => {
+        // console.log(json)
+        if (json.data.success) {
+          var args = json.data.response
+          // api won't return the original array (just to be cheaper)
+          args[this.state.valueType] = this.props.parameter.state.details.value
+
+          this.setState({args: args, argsLoaded: true})
+
+          if (!this.state.userArgs[this.state.inputType]) {
+            var userArgs = this.state.userArgs
+            userArgs[this.state.inputType] = args[this.state.inputType]
+            this.setState({userArgs: userArgs})
+          }
+
+        } else {
+          console.log("server error (ignoring for now): "+json.data.error);
+          this.setState({userArgs: {}})
+        }
+      }, err=> {
+        // then we canceled the request
+        console.log("received abort signal")
+      })
+      .catch(err => {
+        if (err.name === 'AbortError') {
+          // then we canceled the request
+          console.log("received abort signal")
+        } else {
+          // alert("server error, try again")
+          console.log("server error (ignoring for now)")
+          this.setState({userArgs: {}})
+        }
+      });
+  }
+  onChange = (type, key, value) => {
+    // console.log("onChange "+type+" "+key+" "+value)
+    var userArgs = this.state.userArgs
+
+    if (!userArgs[type]) {
+      userArgs[type] = this.state.args[type]
+    }
+    userArgs[type][key] = value
+
+    this.updateArgs(userArgs[type]);
+    this.props.parameter.updateUserValue(userArgs[type])
+
+    this.setState({userArgs: userArgs})
+
+  }
+  onChangeType = (type) => {
+    var userArgs = this.state.userArgs
+    if (!userArgs[type]) {
+      userArgs[type] = this.state.args[type]
+    }
+    this.props.parameter.updateUserValue(userArgs[type])
+    this.setState({inputType: type})
+  }
+  componentDidUpdate() {
+    if (!this.state.argsLoaded) {
+      this.updateArgs();
+    }
+  }
+  componentWillUnmount() {
+    this.setState({inputType: null})
+  }
+  render() {
+    var btnStyle = {width: "calc(25% - 4px)", margin: "2px", textAlign: "center", lineHeight: "1em"}
+
+    if (this.state.inputType == null && this.props.parameter.state.details && this.props.parameter.state.details.value!==undefined) {
+      console.log(this.props.parameter.state.details.value)
+      const distlType = this.props.parameter.state.details.value.distl || ''
+      this.setState({valueType: distlType, inputType: distlType})
+    }
+
+    const disabledInputStyle = {marginLeft: "10px", marginRight: "10px", width: "calc(100% - 80px)", height: "26px", borderRadius: "4px", border: "1px solid lightgray"};
+
+    var args = this.state.args[this.state.inputType] || undefined;
+
+    if (args === undefined) {
+      return (null)
+    }
+    // console.log("args for "+this.state.inputType+"(valueType="+this.state.valueType+"): ")
+    // console.log(args)
+
+    var belowInput = null
+    const spanLabelStyle = {padding: "2px", display: "inline-block"}
+    const inputWidth = "80px"
+    if (this.state.inputType === 'Delta') {
+      spanLabelStyle.width = "calc(100% - 60px)"
+      belowInput = <div style={{display: 'inline'}}>
+                    <span style={spanLabelStyle}>
+                      loc
+                      <Input type='float' origValue={args.loc.toString()} onChange={(inputValue) => this.onChange('Delta', 'loc', inputValue)} width={inputWidth}/>
+                    </span>
+              </div>
+    } else if (this.state.inputType === 'Uniform') {
+      spanLabelStyle.width = "calc(50% - 30px)"
+      belowInput = <div style={{display: 'inline'}}>
+                    <span style={spanLabelStyle}>
+                      low
+                      <Input type='float' origValue={args.low.toString()} onChange={(inputValue) => this.onChange('Uniform', 'low', inputValue)} width={inputWidth}/>
+                    </span>
+                    <span style={spanLabelStyle}>
+                      high
+                      <Input type='float' origValue={args.high.toString()} onChange={(inputValue) => this.onChange('Uniform', 'high', inputValue)} width={inputWidth}/>
+                    </span>
+              </div>
+    } else if (this.state.inputType === 'Gaussian') {
+      spanLabelStyle.width = "calc(50% - 30px)"
+      belowInput = <div style={{display: 'inline'}}>
+                    <span style={spanLabelStyle}>
+                      loc
+                      <Input type='float' origValue={args.loc.toString()} onChange={(inputValue) => this.onChange('Gaussian', 'loc', inputValue)} width={inputWidth}/>
+                    </span>
+                    <span style={spanLabelStyle}>
+                      scale
+                      <Input type='float' origValue={args.scale.toString()} onChange={(inputValue) => this.onChange('Gaussian', 'scale', inputValue)} width={inputWidth}/>
+                    </span>
+              </div>
+      }
+
+    return (
+      <React.Fragment>
+        {this.state.argsLoaded ?
+          <React.Fragment>
+            <span onClick={this.props.parameter.toggleExpandedValue} className="btn fa-fw fas fa-times" title="cancel changes"/>
+            <span>{belowInput}</span>
+            <span onClick={this.props.parameter.submitSetValue} style={{marginLeft: "-10px"}} className="btn fa-fw fas fa-check" title="apply changes"/>
+
+            <div>
+              <span className={this.state.inputType=='Delta' ? 'btn btn-primary btn-primary-active' : 'btn btn-primary'} style={btnStyle} onClick={()=>{this.onChangeType('Delta')}}>delta</span>
+              <span className={this.state.inputType=='Uniform' ? 'btn btn-primary btn-primary-active' : 'btn btn-primary'} style={btnStyle} onClick={()=>{this.onChangeType('Uniform')}}>uniform</span>
+              <span className={this.state.inputType=='Gaussian' ? 'btn btn-primary btn-primary-active' : 'btn btn-primary'} style={btnStyle} onClick={()=>{this.onChangeType('Gaussian')}}>gaussian</span>
+              <span className={this.state.inputType=='Other' ? 'btn btn-primary btn-primary-active' : 'btn btn-primary'} style={btnStyle} onClick={()=>{alert("not yet implemented")}}>other</span>
             </div>
           </React.Fragment>
           :

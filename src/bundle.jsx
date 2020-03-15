@@ -99,7 +99,7 @@ export class Bundle extends ReactQueryParams {
     })
 
     this.props.app.socket.on(this.state.bundleid+':figures_updated:react', (data) => {
-      console.log(data)
+      // console.log(data)
       var figureUpdateTimes = this.state.figureUpdateTimes
       Object.keys(data.figure_update_times).forEach( figure => {
         figureUpdateTimes[figure] = data.figure_update_times[figure]
