@@ -602,6 +602,15 @@ export class ActionPanel extends Component {
 
     this.closePanel();
   }
+  gotoAction = (newAction) => {
+    alert("not yet implemented.  Click continue and then manually click "+newAction+" in left panel")
+    // this.props.bundle.setQueryParams({tmp: []})
+    // var url = generatePath(this.props.app.state.serverHost, this.props.bundle.state.bundleid, newAction, this.props.bundle.getSearchString())
+    // this.setState({redirect: url})
+  }
+  componentDidMount() {
+    this.setState({redirect: null})
+  }
   render() {
     if (this.state.redirect) {
       return (<Redirect to={this.state.redirect}/>)
@@ -728,6 +737,21 @@ export class ActionPanel extends Component {
       if (tmpFilter) {
         buttons = <div style={{float: "right"}}>
                     <span onClick={this.removeAction} className="btn btn-primary" style={{margin: "5px"}} title="remove any added parameters and cancel"><span className="fas fa-fw fa-minus"></span> remove</span>
+                    {this.props.action == 'add_compute' ?
+                      <span onClick={()=>this.gotoAction('run_compute')} className="btn btn-primary" style={{margin: "5px"}} title="accept changes and go to run_compute"><span className="fas fa-fw fa-play"></span> run</span>
+                      :
+                      null
+                    }
+                    {this.props.action == 'add_solver' ?
+                      <span onClick={()=>this.gotoAction('run_solver')} className="btn btn-primary" style={{margin: "5px"}} title="accept changes and go to run_solver"><span className="fas fa-fw fa-play"></span> run</span>
+                      :
+                      null
+                    }
+                    {this.props.action == 'run_solver' ?
+                      <span onClick={()=>this.gotoAction('adopt_solution')} className="btn btn-primary" style={{margin: "5px"}} title="accept changes and go to adopt_solution"><span className="fas fa-fw fa-check-double"></span> adopt</span>
+                      :
+                      null
+                    }
                     <span onClick={this.closePanel} className="btn btn-primary" style={{margin: "5px"}} title="accept changes and return to filtered parameters"><span className="fas fa-fw fa-chevron-right"></span> continue</span>
                 </div>
       } else {
