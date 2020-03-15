@@ -270,7 +270,7 @@ class Parameter extends Component {
                              </span>
       } else if (this.props.paramOverview.class==='DistributionParameter') {
         expandedValueContent = <span style={{verticalAlign: "super"}}>
-                                <InputDistribution app={this.props.app} parameter={this}/>
+                                <InputDistribution app={this.props.app} bundle={this.props.bundle} parameter={this}/>
                              </span>
       } else if (['SelectParameter', 'SelectTwigParameter'].indexOf(this.props.paramOverview.class)!==-1) {
         expandedValueContent = <span style={{verticalAlign: "super"}}>
@@ -889,6 +889,7 @@ class InputDistribution extends Component {
       args: {},
       userArgs: {},
       argsLoaded: false,
+      current_face_value: null,
     };
     this.refinput = React.createRef();
   }
@@ -900,14 +901,20 @@ class InputDistribution extends Component {
       return
     }
 
+    if (!this.state.current_face_value) {
+        var current_face_value_uniqueid = Object.keys(this.props.parameter.state.details.referenced_parameter)[0]
+        var current_face_value = this.props.bundle.state.params[current_face_value_uniqueid].valuestr
+        this.setState({current_face_value: current_face_value})
+    }
+
     if (!value) {
       value = this.props.parameter.state.details.value
     }
 
     this.abortGetArgsForType = new window.AbortController();
 
-    console.log("requesting conversion of distl object: "+JSON.stringify(value))
-    abortableFetch("http://"+this.props.app.state.serverHost+"/distl/"+JSON.stringify(value), {signal: this.abortGetArgsForType.signal})
+    console.log("requesting conversion of distl object: "+JSON.stringify(value)+ " current face value: "+this.state.current_face_value)
+    abortableFetch("http://"+this.props.app.state.serverHost+"/distl/"+JSON.stringify(value)+"/"+this.state.current_face_value, {signal: this.abortGetArgsForType.signal})
       .then(res => res.json())
       .then(json => {
         // console.log(json)
@@ -975,7 +982,8 @@ class InputDistribution extends Component {
     this.setState({inputType: null})
   }
   render() {
-    var btnStyle = {width: "calc(25% - 4px)", margin: "2px", textAlign: "center", lineHeight: "1em"}
+    // var btnStyle = {width: "calc(25% - 4px)", margin: "2px", textAlign: "center", lineHeight: "1em"}
+    var btnStyle = {width: "calc(33% - 4px)", margin: "2px", textAlign: "center", lineHeight: "1em"}
 
     if (this.state.inputType == null && this.props.parameter.state.details && this.props.parameter.state.details.value!==undefined) {
       console.log(this.props.parameter.state.details.value)
@@ -1004,6 +1012,14 @@ class InputDistribution extends Component {
                       <Input type='float' origValue={args.loc.toString()} onChange={(inputValue) => this.onChange('Delta', 'loc', inputValue)} width={inputWidth}/>
                     </span>
               </div>
+    } else if (this.state.inputType === 'Delta_Around') {
+      spanLabelStyle.width = "calc(100% - 60px)"
+      belowInput = <div style={{display: 'inline'}}>
+                    <span style={spanLabelStyle}>
+                      loc
+                      <input type='text' value={this.state.current_face_value} disabled style={disabledInputStyle}/>
+                    </span>
+                    </div>
     } else if (this.state.inputType === 'Uniform') {
       spanLabelStyle.width = "calc(50% - 30px)"
       belowInput = <div style={{display: 'inline'}}>
@@ -1014,6 +1030,18 @@ class InputDistribution extends Component {
                     <span style={spanLabelStyle}>
                       high
                       <Input type='float' origValue={args.high.toString()} onChange={(inputValue) => this.onChange('Uniform', 'high', inputValue)} width={inputWidth}/>
+                    </span>
+              </div>
+    } else if (this.state.inputType === 'Uniform_Around') {
+      spanLabelStyle.width = "calc(50% - 30px)"
+      belowInput = <div style={{display: 'inline'}}>
+                    <span style={spanLabelStyle}>
+                      loc
+                      <input type='text' value={this.state.current_face_value} disabled style={disabledInputStyle}/>
+                    </span>
+                    <span style={spanLabelStyle}>
+                      width
+                      <Input type='float' origValue={args.width.toString()} onChange={(inputValue) => this.onChange('Uniform_Around', 'width', inputValue)} width={inputWidth}/>
                     </span>
               </div>
     } else if (this.state.inputType === 'Gaussian') {
@@ -1028,7 +1056,19 @@ class InputDistribution extends Component {
                       <Input type='float' origValue={args.scale.toString()} onChange={(inputValue) => this.onChange('Gaussian', 'scale', inputValue)} width={inputWidth}/>
                     </span>
               </div>
-      }
+    } else if (this.state.inputType === 'Gaussian_Around') {
+      spanLabelStyle.width = "calc(50% - 30px)"
+      belowInput = <div style={{display: 'inline'}}>
+                    <span style={spanLabelStyle}>
+                      loc
+                      <input type='text' value={this.state.current_face_value} disabled style={disabledInputStyle}/>
+                    </span>
+                    <span style={spanLabelStyle}>
+                      scale
+                      <Input type='float' origValue={args.scale.toString()} onChange={(inputValue) => this.onChange('Gaussian_Around', 'scale', inputValue)} width={inputWidth}/>
+                    </span>
+              </div>
+    }
 
     return (
       <React.Fragment>
@@ -1042,7 +1082,13 @@ class InputDistribution extends Component {
               <span className={this.state.inputType=='Delta' ? 'btn btn-primary btn-primary-active' : 'btn btn-primary'} style={btnStyle} onClick={()=>{this.onChangeType('Delta')}}>delta</span>
               <span className={this.state.inputType=='Uniform' ? 'btn btn-primary btn-primary-active' : 'btn btn-primary'} style={btnStyle} onClick={()=>{this.onChangeType('Uniform')}}>uniform</span>
               <span className={this.state.inputType=='Gaussian' ? 'btn btn-primary btn-primary-active' : 'btn btn-primary'} style={btnStyle} onClick={()=>{this.onChangeType('Gaussian')}}>gaussian</span>
-              <span className={this.state.inputType=='Other' ? 'btn btn-primary btn-primary-active' : 'btn btn-primary'} style={btnStyle} onClick={()=>{alert("not yet implemented")}}>other</span>
+              {/* <span className={this.state.inputType=='Other' ? 'btn btn-primary btn-primary-active' : 'btn btn-primary'} style={btnStyle} onClick={()=>{alert("not yet implemented")}}>other</span> */}
+            </div>
+            <div>
+              <span className={this.state.inputType=='Delta_Around' ? 'btn btn-primary btn-primary-active' : 'btn btn-primary'} style={btnStyle} onClick={()=>{this.onChangeType('Delta_Around')}}>delta around</span>
+              <span className={this.state.inputType=='Uniform_Around' ? 'btn btn-primary btn-primary-active' : 'btn btn-primary'} style={btnStyle} onClick={()=>{this.onChangeType('Uniform_Around')}}>uniform around</span>
+              <span className={this.state.inputType=='Gaussian_Around' ? 'btn btn-primary btn-primary-active' : 'btn btn-primary'} style={btnStyle} onClick={()=>{this.onChangeType('Gaussian_Around')}}>gaussian around</span>
+              {/* <span className={this.state.inputType=='Other' ? 'btn btn-primary btn-primary-active' : 'btn btn-primary'} style={btnStyle} onClick={()=>{alert("not yet implemented")}}>other</span> */}
             </div>
           </React.Fragment>
           :
