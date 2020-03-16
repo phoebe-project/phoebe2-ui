@@ -644,7 +644,7 @@ export class ActionPanel extends Component {
       } else {
         actionContent = <ActionContentAdd app={this.props.app} bundle={this.props.bundle} action={this.props.action} onUpdatePacket={this.onUpdatePacket}/>
       }
-    } else if (action == 'import') {
+    } else if (['import_model', 'import_solution'].indexOf(this.props.action)!==-1) {
       actionIcon += 'fa-plus'
       if (tmpFilter) {
         actionContent = <ActionContentNewParameters app={this.props.app} bundle={this.props.bundle}/>
