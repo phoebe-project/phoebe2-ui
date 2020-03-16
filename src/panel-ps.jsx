@@ -390,12 +390,15 @@ class Parameter extends Component {
                     {this.props.paramOverview.context && <div><Tag bundle={this.props.bundle} group="context" includeGroup={true} currentGroupFilter={null} tag={this.props.paramOverview.context}/></div>}
                     {this.props.paramOverview.kind && <div><Tag bundle={this.props.bundle} group="kind" includeGroup={true} currentGroupFilter={null} tag={this.props.paramOverview.kind}/></div>}
                     {/* {this.props.paramOverview.constraint && <div><Tag bundle={this.props.bundle} group="constraint" includeGroup={true} currentGroupFilter={null} tag={this.props.paramOverview.constraint}/></div>} */}
+                    {this.props.paramOverview.figure && <div><Tag bundle={this.props.bundle} group="figure" includeGroup={true} currentGroupFilter={null} tag={this.props.paramOverview.figure}/></div>}
                     {this.props.paramOverview.component && <div><Tag bundle={this.props.bundle} group="component" includeGroup={true} currentGroupFilter={null} tag={this.props.paramOverview.component}/></div>}
                     {this.props.paramOverview.feature && <div><Tag bundle={this.props.bundle} group="feature" includeGroup={true} currentGroupFilter={null} tag={this.props.paramOverview.feature}/></div>}
                     {this.props.paramOverview.dataset && <div><Tag bundle={this.props.bundle} group="dataset" includeGroup={true} currentGroupFilter={null} tag={this.props.paramOverview.dataset}/></div>}
-                    {this.props.paramOverview.figure && <div><Tag bundle={this.props.bundle} group="figure" includeGroup={true} currentGroupFilter={null} tag={this.props.paramOverview.figure}/></div>}
+                    {this.props.paramOverview.distribution && <div><Tag bundle={this.props.bundle} group="distribution" includeGroup={true} currentGroupFilter={null} tag={this.props.paramOverview.distribution}/></div>}
                     {this.props.paramOverview.compute && <div><Tag bundle={this.props.bundle} group="compute" includeGroup={true} currentGroupFilter={null} tag={this.props.paramOverview.compute}/></div>}
                     {this.props.paramOverview.model && <div><Tag bundle={this.props.bundle} group="model" includeGroup={true} currentGroupFilter={null} tag={this.props.paramOverview.model}/></div>}
+                    {this.props.paramOverview.solver && <div><Tag bundle={this.props.bundle} group="solver" includeGroup={true} currentGroupFilter={null} tag={this.props.paramOverview.solver}/></div>}
+                    {this.props.paramOverview.solution && <div><Tag bundle={this.props.bundle} group="solution" includeGroup={true} currentGroupFilter={null} tag={this.props.paramOverview.solution}/></div>}
                     {this.props.paramOverview.time && <div><Tag bundle={this.props.bundle} group="time" includeGroup={true} currentGroupFilter={null} tag={this.props.paramOverview.time}/></div>}
                     {this.props.paramOverview.qualifier && <div><Tag bundle={this.props.bundle} group="qualifier" includeGroup={true} currentGroupFilter={null} tag={this.props.paramOverview.qualifier}/></div>}
                   </span>
@@ -1231,12 +1234,15 @@ export class PSPanel extends Component {
 
     var orderByChoices = [{value: "context", label: "context"},
                           {value: "kind", label: "kind"},
+                          {value: "figure", label: "figure"},
                           {value: "component", label: "component"},
                           {value: "feature", label: "feature"},
                           {value: "dataset", label: "dataset"},
-                          {value: "figure", label: "figure"},
+                          {value: "distribution", label: "distribution"},
                           {value: "compute", label: "compute"},
                           {value: "model", label: "model"},
+                          {value: "solver", label: "solver"},
+                          {value: "solution", label: "solution"},
                           {value: "time", label: "time"},
                           {value: "qualifier", label: "qualifier"}]
 
