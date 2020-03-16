@@ -184,7 +184,7 @@ class FigureEditButton extends React.Component {
       return (<Redirect to={this.state.redirect}/>)
     }
     return (
-      <span style={{width: "24px"}} className="btn btn-tag btn-tag-clear" onClick={this.onClick}><span className='fas fa-fw fa-pen'></span></span>
+      <span style={{width: "24px"}} className="btn btn-tag btn-tag-clear" onClick={this.onClick} title='edit figure parameters'><span className='fas fa-fw fa-pen'></span></span>
     );
   }
 }
@@ -244,7 +244,7 @@ class FigureMPLButton extends React.Component {
   }
   render() {
     return (
-      <span style={{width: "24px"}} className="btn btn-tag btn-tag-clear" onClick={this.onClick}><span className='fas fa-fw fa-chart-line'></span></span>
+      <span style={{width: "24px"}} className="btn btn-tag btn-tag-clear" onClick={this.onClick} title='open interactive figure'><span className='fas fa-fw fa-chart-line'></span></span>
     );
   }
 }
@@ -280,7 +280,7 @@ class FigureExpandButton extends React.Component {
       return (<Redirect to={this.state.redirect}/>)
     }
     return (
-      <span style={{width: "24px"}} className="btn btn-tag btn-tag-clear" onClick={this.onClick}><span className='fas fa-fw fa-expand'></span></span>
+      <span style={{width: "24px"}} className="btn btn-tag btn-tag-clear" onClick={this.onClick} title='view image in middle panel'><span className='fas fa-fw fa-expand'></span></span>
     );
   }
 }
@@ -299,7 +299,7 @@ class FigurePopoutButton extends React.Component {
   }
   render() {
     return (
-      <span style={{width: "24px"}} className="btn btn-tag btn-tag-clear" onClick={this.onClick}><span className='fas fa-fw fa-external-link-alt'></span></span>
+      <span style={{width: "24px"}} className="btn btn-tag btn-tag-clear" onClick={this.onClick} title='open figure image in new window'><span className='fas fa-fw fa-external-link-alt'></span></span>
     );
   }
 }
@@ -319,7 +319,7 @@ class FigureSaveButton extends React.Component {
   }
   render() {
     return (
-      <span style={{width: "24px"}} className="btn btn-tag btn-tag-clear" onClick={this.onClick}><span className='fas fa-fw fa-save'></span></span>
+      <span style={{width: "24px"}} className="btn btn-tag btn-tag-clear" onClick={this.onClick} title='save figure image'><span className='fas fa-fw fa-save'></span></span>
     );
   }
 }
