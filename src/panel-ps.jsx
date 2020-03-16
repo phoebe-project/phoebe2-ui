@@ -406,6 +406,14 @@ class Parameter extends Component {
             }
 
 
+            {Object.keys(this.state.details.referenced_parameter || {}).length ?
+
+
+              <img style={{width: "30%", display: "block", marginLeft: "auto", marginRight: "auto"}} src={"http://"+this.props.app.state.serverHost+"/"+this.props.bundle.state.bundleid+"/distribution_plot/"+Object.keys(this.state.details.referenced_parameter)[0]+"/"+this.props.paramOverview.distribution+'?'+Math.random()}/>
+              :
+              null
+            }
+
             {this.state.details.limits && (this.state.details.limits[0]!==null || this.state.details.limits[1]!==null) ?
               <ParameterDetailsItem title="Limits">
                 {this.state.details.limits[0]!==null ?
@@ -441,13 +449,13 @@ class Parameter extends Component {
             null
             }
 
-            {this.state.details.is_adjustable || false ?
+            {Object.keys(this.state.details.distributions || {}).length ?
               <ParameterDetailsItem title="Distributions">
                 <div style={{display: "inline-block"}}>
                   {mapObject(this.state.details.distributions || {} , (uniqueid, twig) => {
-                    return <ParameterDetailsItemPin key={uniqueid} app={this.props.app} bundle={this.props.bundle} PSPanel={this.props.PSPanel} uniqueid={uniqueid} twig={twig} disableFiltering={this.props.disableFiltering}/>
+                    return <ParameterDetailsItemPin key={uniqueid} app={this.props.app} bundle={this.props.bundle} PSPanel={this.props.PSPanel} param={this} uniqueid={uniqueid} twig={twig} disableFiltering={this.props.disableFiltering} isDistribution={true}/>
                   })}
-                  <Link to={generatePath(this.props.app.state.serverHost, this.props.bundle.state.bundleid, 'add_distribution', this.props.bundle.getSearchString())}><span className="fas fa-fw fa-plus" style={{paddingLeft: "26px", paddingRight: "22px"}}></span><span style={{color: "#000000"}}>add distribution</span></Link>
+                  <Link to={generatePath(this.props.app.state.serverHost, this.props.bundle.state.bundleid, 'add_distribution', this.props.bundle.getSearchString())}><span className="fas fa-fw fa-plus" style={{paddingLeft: "49px", paddingRight: "22px"}}></span><span style={{color: "#000000"}}>add distribution</span></Link>
                 </div>
               </ParameterDetailsItem>
             :
@@ -518,12 +526,12 @@ class ParameterDetailsItem extends Component {
 }
 
 class ParameterDetailsItemPin extends Component {
-  // constructor(props) {
-    // super(props);
-    // this.state = {
-      // pinned: false,
-    // };
-  // }
+  constructor(props) {
+    super(props);
+    this.state = {
+      peakDistributionImg: false,
+    };
+  }
   addToPinned = () => {
     var pinned = this.props.bundle.queryParams.pinned || []
     var newPinned = pinned.concat(this.props.uniqueid)
@@ -542,7 +550,16 @@ class ParameterDetailsItemPin extends Component {
     var win = popUpWindow(url, `?advanced=["onlyPinned"]&pinned=["${this.props.uniqueid}"]`);
     // TODO: callback to remove from childrenWindows when manually closed?
     this.props.bundle.childrenWindows.push(win);
-
+  }
+  peakDistribution = () => {
+    if (this.state.peakDistributionImg) {
+      this.setState({peakDistributionImg: false})
+    } else {
+      var dist_param = this.props.bundle.state.params[this.props.uniqueid];
+      var distribution = dist_param.distribution
+      var url = "http://"+this.props.app.state.serverHost+"/"+this.props.bundle.state.bundleid+"/distribution_plot/"+this.props.param.props.uniqueid+"/"+distribution
+      this.setState({peakDistributionImg: url})
+    }
   }
   render() {
     var isCurrentlyVisible = this.props.bundle.state.paramsfilteredids.indexOf(this.props.uniqueid) !== -1
@@ -560,7 +577,23 @@ class ParameterDetailsItemPin extends Component {
         }
         <span style={{marginLeft: "4px", color: "#2B71B1", cursor: "pointer"}} title="open parameter in external window" onClick={this.popParameter} className="fas fa-fw fa-external-link-alt"/>
 
+
+        {this.props.isDistribution ?
+          <span style={{marginLeft: "4px", color: "#2B71B1", cursor: "pointer"}} title="toggle distribution plot" onClick={this.peakDistribution} className="fas fa-fw fa-chart-area"/>
+          :
+          <span style={{marginLeft: "4px"}} className="fas fa-fw"/>
+        }
+
         <Twig twig={this.props.twig}/>
+
+        {this.state.peakDistributionImg ?
+          <div>
+            <img style={{width: "60%", display: "block", marginLeft: "auto", marginRight: "auto"}} src={this.state.peakDistributionImg}/>
+          </div>
+          :
+          null
+        }
+
 
 
       </div>
