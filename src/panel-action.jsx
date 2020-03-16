@@ -135,7 +135,7 @@ class ActionContentAdd extends Component {
 
     if (this.state.kind===null) {
       // then defaults based on kind
-      var kind = {'dataset': 'lc', 'compute': 'phoebe', 'component': 'star', 'figure': 'lc'}[addType] || availableKinds[0]
+      var kind = {'dataset': 'lc', 'compute': 'phoebe', 'component': 'star', 'figure': 'dataset.lc'}[addType] || availableKinds[0]
       this.setState({kind: kind})
       this.props.onUpdatePacket({kind: kind})
     }
