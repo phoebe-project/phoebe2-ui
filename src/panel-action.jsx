@@ -102,6 +102,7 @@ class ActionContentAdd extends Component {
     this.state = {
       kind: null,
       component: null,
+      dataset: null,
     }
   }
 
@@ -112,6 +113,10 @@ class ActionContentAdd extends Component {
   onChangeComponent = (e) => {
     this.setState({component: e.value});
     this.props.onUpdatePacket({component: e.value})
+  }
+  onChangeDataset = (e) => {
+    this.setState({dataset: e.value});
+    this.props.onUpdatePacket({dataset: e.value})
   }
   // onChangeLabel = (e) => {
   //   this.props.onUpdatePacket({[this.props.action.split('_')[1]]: e.target.value})
@@ -129,9 +134,16 @@ class ActionContentAdd extends Component {
     var availableKinds = this.props.app.state.serverAvailableKinds[addType]
     var availableKindsList = availableKinds.map((choice) => ({value: choice, label: choice}))
 
-    var availableComponents = this.props.bundle.state.tags['components'] || ['']
-    var availableComponentsList = availableComponents.map((choice) => ({value: choice, label: choice}))
+    if (addType=='feature'){
+      var availableComponents = this.props.bundle.state.tags['components'] || ['']
+      var availableComponentsList = availableComponents.map((choice) => ({value: choice, label: choice}))
 
+      var availableDatasets = this.props.bundle.state.tags['datasets'] || ['']
+      var availableDatasetsList = availableDatasets.map((choice) => ({value: choice, label: choice}))
+
+      const contextsForFeatureKind = {'spot': ['component'], 'pulsation': ['component'], 'gaussian_process': ['dataset']}
+      var contextsForFeature = contextsForFeatureKind[this.state.kind] || ['component']
+    }
 
     if (this.state.kind===null) {
       // then defaults based on kind
@@ -140,10 +152,29 @@ class ActionContentAdd extends Component {
       this.props.onUpdatePacket({kind: kind})
     }
 
-    if (addType=='feature' && this.state.component===null) {
-      this.setState({component: availableComponents[0]})
-      this.props.onUpdatePacket({component: availableComponents[0]})
+    if (addType=='feature') {
+      // alert(contextsForFeature)
+      if (contextsForFeature.indexOf('component') === -1) {
+        if (this.state.component !== null) {
+          this.props.onUpdatePacket({component: null})
+          this.setState({component: null})
+        }
+      } else if (this.state.component === null) {
+        this.setState({component: availableComponents[0]})
+        this.props.onUpdatePacket({component: availableComponents[0]})
+      }
+
+      if (contextsForFeature.indexOf('dataset') === -1) {
+        if (this.state.dataset !== null) {
+          this.props.onUpdatePacket({dataset: null})
+          this.setState({dataset: null})
+        }
+      } else if (this.state.dataset === null) {
+        this.setState({dataset: availableDatasets[0]})
+        this.props.onUpdatePacket({dataset: availableDatasets[0]})
+      }
     }
+
 
     var labelChoices = this.props.bundle.state.tags[addType+'s'] || [];
     var labelChoicesList = labelChoices.map((choice) => ({value: choice, label: choice +' (overwrite)'}))
@@ -158,11 +189,22 @@ class ActionContentAdd extends Component {
           </span>
         </div>
 
-        {addType==='feature' ?
+        {addType==='feature' && contextsForFeature.indexOf('component') !== -1 ?
           <div className="form-group">
             <label id="component" style={{width: "50%", textAlign: "right", paddingRight: "10px"}}>component</label>
             <span style={{width: "50%", lineHeight: "1.0", display: "inline-block", verticalAlign: "sub"}}>
               <Select options={availableComponentsList} value={{value: this.state.component, label: this.state.component}} onChange={this.onChangeComponent} className="phoebe-parameter-choice" classNamePrefix="phoebe-parameter-choice"/>
+            </span>
+          </div>
+        :
+          null
+        }
+
+        {addType==='feature' && contextsForFeature.indexOf('dataset') !== -1 ?
+          <div className="form-group">
+            <label id="dataset" style={{width: "50%", textAlign: "right", paddingRight: "10px"}}>dataset</label>
+            <span style={{width: "50%", lineHeight: "1.0", display: "inline-block", verticalAlign: "sub"}}>
+              <Select options={availableDatasetsList} value={{value: this.state.dataset, label: this.state.dataset}} onChange={this.onChangeDataset} className="phoebe-parameter-choice" classNamePrefix="phoebe-parameter-choice"/>
             </span>
           </div>
         :
