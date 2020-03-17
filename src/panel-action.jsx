@@ -209,13 +209,13 @@ class ActionContentAddDistribution extends Component {
   render() {
     var addType = this.props.action.split('_')[1]
 
-    var parameterChoicesList = mapObject(this.props.bundle.state.adjustableParams, (uniqueid, twig) => ({value: uniqueid, label: twig}))
+    var parameterChoicesList = mapObject(this.props.bundle.state.paramsAllowDist, (uniqueid, twig) => ({value: uniqueid, label: twig}))
 
     var labelChoices = this.props.bundle.state.tags[addType+'s'] || [];
     var labelChoicesList = labelChoices.map((choice) => ({value: choice, label: choice +' (add to existing)'}))
 
     var uniqueid = this.state.referencedUniqueid || this.props.bundle.queryParams['lastActive'] || parameterChoicesList[0]['value']
-    var value = {value: uniqueid, label: this.props.bundle.state.adjustableParams[uniqueid]}
+    var value = {value: uniqueid, label: this.props.bundle.state.paramsAllowDist[uniqueid]}
 
     if (!this.state.referencedUniqueid) {
       this.onChangeParameter(value, null)

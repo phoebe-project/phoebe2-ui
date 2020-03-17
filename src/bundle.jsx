@@ -33,7 +33,7 @@ export class Bundle extends ReactQueryParams {
       redirect: null,
       bundleid: props.match.params.bundleid,
       params: null,
-      adjustableParams: {},
+      paramsAllowDist: {},
       figures: [],
       figureUpdateTimes: {},
       failedConstraints: [],
@@ -127,8 +127,8 @@ export class Bundle extends ReactQueryParams {
         this.setState({params: params});
       }
 
-      if (data.adjustable_parameters) {
-        this.setState({adjustableParams: data.adjustable_parameters})
+      if (data.params_allow_dist) {
+        this.setState({paramsAllowDist: data.params_allow_dist})
       }
 
 
@@ -242,7 +242,7 @@ export class Bundle extends ReactQueryParams {
           });
           this.setState({params: json.data.parameters,
                          tags: json.data.tags,
-                         adjustableParams: json.data.adjustable_parameters,
+                         paramsAllowDist: json.data.params_allow_dist,
                          figures: json.data.tags.figures,
                          figureUpdateTimes: figureUpdateTimes,
                          failedConstraints: json.data.failed_constraints,
