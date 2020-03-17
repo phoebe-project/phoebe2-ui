@@ -409,7 +409,7 @@ class Parameter extends Component {
             {Object.keys(this.state.details.referenced_parameter || {}).length ?
 
 
-              <img style={{width: "30%", display: "block", marginLeft: "auto", marginRight: "auto"}} src={"http://"+this.props.app.state.serverHost+"/"+this.props.bundle.state.bundleid+"/distribution_plot/"+Object.keys(this.state.details.referenced_parameter)[0]+"/"+this.props.paramOverview.distribution+'?'+Math.random()}/>
+              <img style={{width: "30%", display: "block", marginLeft: "auto", marginRight: "auto", marginTop: "10px", marginBottom: "10px"}} src={"http://"+this.props.app.state.serverHost+"/"+this.props.bundle.state.bundleid+"/distribution_plot/"+Object.keys(this.state.details.referenced_parameter)[0]+"/"+this.props.paramOverview.distribution+'?'+Math.random()}/>
               :
               null
             }
@@ -439,7 +439,7 @@ class Parameter extends Component {
 
             {Object.keys(this.state.details.referenced_parameter || {}).length ?
               <ParameterDetailsItem title="Referenced Parameter">
-                <div style={{display: "inline-block"}}>
+                <div style={{display: "inline-block", "maxWidth": "calc(100% - 130px)"}}>
                   {mapObject(this.state.details.referenced_parameter, (uniqueid, twig) => {
                     return <ParameterDetailsItemPin key={uniqueid} app={this.props.app} bundle={this.props.bundle} PSPanel={this.props.PSPanel} uniqueid={uniqueid} twig={twig} disableFiltering={this.props.disableFiltering}/>
                   })}
@@ -449,9 +449,9 @@ class Parameter extends Component {
             null
             }
 
-            {Object.keys(this.state.details.distributions || {}).length ?
+            {this.state.details.allows_distribution ?
               <ParameterDetailsItem title="Distributions">
-                <div style={{display: "inline-block"}}>
+                <div style={{display: "inline-block", "maxWidth": "calc(100% - 130px)"}}>
                   {mapObject(this.state.details.distributions || {} , (uniqueid, twig) => {
                     return <ParameterDetailsItemPin key={uniqueid} app={this.props.app} bundle={this.props.bundle} PSPanel={this.props.PSPanel} param={this} uniqueid={uniqueid} twig={twig} disableFiltering={this.props.disableFiltering} isDistribution={true}/>
                   })}
@@ -529,8 +529,9 @@ class ParameterDetailsItemPin extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      peakDistributionImg: false,
+      peakDistributionImgs: [],
     };
+    this.abortGetDetailsController = null;
   }
   addToPinned = () => {
     var pinned = this.props.bundle.queryParams.pinned || []
@@ -552,51 +553,78 @@ class ParameterDetailsItemPin extends Component {
     this.props.bundle.childrenWindows.push(win);
   }
   peakDistribution = () => {
-    if (this.state.peakDistributionImg) {
-      this.setState({peakDistributionImg: false})
+    if (this.state.peakDistributionImgs.length) {
+      this.setState({peakDistributionImgs: []})
     } else {
       var dist_param = this.props.bundle.state.params[this.props.uniqueid];
+
       var distribution = dist_param.distribution
-      var url = "http://"+this.props.app.state.serverHost+"/"+this.props.bundle.state.bundleid+"/distribution_plot/"+this.props.param.props.uniqueid+"/"+distribution
-      this.setState({peakDistributionImg: url})
+      var urls = ["http://"+this.props.app.state.serverHost+"/"+this.props.bundle.state.bundleid+"/distribution_plot/"+this.props.param.props.uniqueid+"/"+distribution]
+      this.setState({peakDistributionImgs: urls})
+
+      this.abortGetDetailsController = new window.AbortController();
+      abortableFetch("http://"+this.props.app.state.serverHost+"/parameter/"+this.props.bundle.state.bundleid+"/"+this.props.uniqueid, {signal: this.abortGetDetailsController.signal})
+        .then(res => res.json())
+        .then(json => {
+          if (json.data.success) {
+            console.log("received parameter details for distribution parameter")
+            console.log(json.data.parameter);
+
+            var dist_param_referenced_uniqueid = Object.keys(json.data.parameter.referenced_parameter)[0]
+            console.log(dist_param_referenced_uniqueid)
+            if (dist_param_referenced_uniqueid !== this.props.param.props.uniqueid) {
+              urls.unshift("http://"+this.props.app.state.serverHost+"/"+this.props.bundle.state.bundleid+"/distribution_plot/"+dist_param_referenced_uniqueid+"/"+distribution)
+              this.setState({peakDistributionImgs: urls})
+            }
+
+          } else {
+            alert("server error: "+json.data.error);
+          }
+        }, err=> {
+          console.log("received abort signal")
+        })
+        .catch(err => {
+          if (err.name === 'AbortError') {
+            console.log("received abort signal")
+          } else {
+            alert("server error, try again: "+err)
+          }
+
+        });
     }
   }
   render() {
     var isCurrentlyVisible = this.props.bundle.state.paramsfilteredids.indexOf(this.props.uniqueid) !== -1
 
     return (
-      <div>
-        {isCurrentlyVisible ?
-          <span style={{color: "#2B71B1", cursor: "pointer"}} className="fa-fw fas fa-sign-in-alt" onClick={this.expandParameter} title="go to parameter"/>
-          :
-          this.props.disableFiltering ?
-            <span style={{minWidth: "20px", display: "inline-block"}}></span>
+      <React.Fragment>
+        <div>
+          {isCurrentlyVisible ?
+            <span style={{color: "#2B71B1", cursor: "pointer"}} className="fa-fw fas fa-sign-in-alt" onClick={this.expandParameter} title="go to parameter"/>
             :
-            <Checkbox checked={false} pinnable={true} onClick={this.addToPinned} checkedTitle="unpin parameter" uncheckedTitle="pin parameter"/>
+            this.props.disableFiltering ?
+              <span style={{minWidth: "20px", display: "inline-block"}}></span>
+              :
+              <Checkbox checked={false} pinnable={true} onClick={this.addToPinned} checkedTitle="unpin parameter" uncheckedTitle="pin parameter"/>
 
-        }
-        <span style={{marginLeft: "4px", color: "#2B71B1", cursor: "pointer"}} title="open parameter in external window" onClick={this.popParameter} className="fas fa-fw fa-external-link-alt"/>
-
-
-        {this.props.isDistribution ?
-          <span style={{marginLeft: "4px", color: "#2B71B1", cursor: "pointer"}} title="toggle distribution plot" onClick={this.peakDistribution} className="fas fa-fw fa-chart-area"/>
-          :
-          <span style={{marginLeft: "4px"}} className="fas fa-fw"/>
-        }
-
-        <Twig twig={this.props.twig}/>
-
-        {this.state.peakDistributionImg ?
-          <div>
-            <img style={{width: "60%", display: "block", marginLeft: "auto", marginRight: "auto"}} src={this.state.peakDistributionImg}/>
-          </div>
-          :
-          null
-        }
+          }
+          <span style={{marginLeft: "4px", color: "#2B71B1", cursor: "pointer"}} title="open parameter in external window" onClick={this.popParameter} className="fas fa-fw fa-external-link-alt"/>
 
 
+          {this.props.isDistribution ?
+            <span style={{marginLeft: "4px", color: "#2B71B1", cursor: "pointer"}} title="toggle distribution plot" onClick={this.peakDistribution} className="fas fa-fw fa-chart-area"/>
+            :
+            <span style={{marginLeft: "4px"}} className="fas fa-fw"/>
+          }
 
-      </div>
+          <Twig twig={this.props.twig}/>
+
+        </div>
+        <div style={{marginLeft: "auto", marginRight: "auto"}}>
+          {this.state.peakDistributionImgs.map(src => <img style={{width: "30%", minWidth: "250px", textAlign: "center"}} src={src}/>)}
+        </div>
+      </React.Fragment>
+
     )
   }
 }
