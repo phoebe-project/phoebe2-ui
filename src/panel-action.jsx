@@ -88,7 +88,7 @@ class ActionContentImport extends Component {
           <label id={addType} style={{width: "50%", textAlign: "right", paddingRight: "10px"}}>{addType}</label>
 
           <span style={{width: "50%", lineHeight: "1.0", display: "inline-block", verticalAlign: "sub"}}>
-            <CreatableSelect isClearable={true} onChange={this.onChangeLabel} options={labelChoicesList} placeholder={"(automatically generate)"} className="phoebe-parameter-choice" classNamePrefix="phoebe-parameter-choice"/>
+            <CreatableSelect isClearable={true} onChange={this.onChangeLabel} options={labelChoicesList} placeholder={"(automatically generate)"}/>
           </span>
         </div>
       </div>
@@ -185,7 +185,7 @@ class ActionContentAdd extends Component {
 
           <label id="kind" style={{width: "50%", textAlign: "right", paddingRight: "10px"}}>kind</label>
           <span style={{width: "50%", lineHeight: "1.0", display: "inline-block", verticalAlign: "sub"}}>
-            <Select options={availableKindsList}  value={{value: this.state.kind, label: this.state.kind}} onChange={this.onChangeKind} className="phoebe-parameter-choice" classNamePrefix="phoebe-parameter-choice"/>
+            <Select options={availableKindsList}  value={{value: this.state.kind, label: this.state.kind}} onChange={this.onChangeKind}/>
           </span>
         </div>
 
@@ -193,7 +193,7 @@ class ActionContentAdd extends Component {
           <div className="form-group">
             <label id="component" style={{width: "50%", textAlign: "right", paddingRight: "10px"}}>component</label>
             <span style={{width: "50%", lineHeight: "1.0", display: "inline-block", verticalAlign: "sub"}}>
-              <Select options={availableComponentsList} value={{value: this.state.component, label: this.state.component}} onChange={this.onChangeComponent} className="phoebe-parameter-choice" classNamePrefix="phoebe-parameter-choice"/>
+              <Select options={availableComponentsList} value={{value: this.state.component, label: this.state.component}} onChange={this.onChangeComponent}/>
             </span>
           </div>
         :
@@ -204,7 +204,7 @@ class ActionContentAdd extends Component {
           <div className="form-group">
             <label id="dataset" style={{width: "50%", textAlign: "right", paddingRight: "10px"}}>dataset</label>
             <span style={{width: "50%", lineHeight: "1.0", display: "inline-block", verticalAlign: "sub"}}>
-              <Select options={availableDatasetsList} value={{value: this.state.dataset, label: this.state.dataset}} onChange={this.onChangeDataset} className="phoebe-parameter-choice" classNamePrefix="phoebe-parameter-choice"/>
+              <Select options={availableDatasetsList} value={{value: this.state.dataset, label: this.state.dataset}} onChange={this.onChangeDataset}/>
             </span>
           </div>
         :
@@ -215,7 +215,7 @@ class ActionContentAdd extends Component {
           <label id={addType} style={{width: "50%", textAlign: "right", paddingRight: "10px"}}>{addType}</label>
           {/* <input type="text" id={addType} placeholder="automatically generated if empty" onChange={this.onChangeLabel} style={{width: "50%"}}></input> */}
           <span style={{width: "50%", lineHeight: "1.0", display: "inline-block", verticalAlign: "sub"}}>
-            <CreatableSelect isClearable={true} onChange={this.onChangeLabel} options={labelChoicesList} placeholder={"(automatically generate)"} className="phoebe-parameter-choice" classNamePrefix="phoebe-parameter-choice"/>
+            <CreatableSelect isClearable={true} onChange={this.onChangeLabel} options={labelChoicesList} placeholder={"(automatically generate)"}/>
           </span>
         </div>
 
@@ -228,7 +228,8 @@ class ActionContentAddDistribution extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      referencedUniqueid: null
+      parameters: [],
+      alreadyLoadedLastActive: false
     }
   }
   onChangeLabel = (inputValue, actionMeta) => {
@@ -239,43 +240,49 @@ class ActionContentAddDistribution extends Component {
     // console.log("onChangeLabel: "+value)
     this.props.onUpdatePacket({distribution: value})
   }
-  onChangeParameter = (inputValue, actionMeta) => {
-    var value = null
-    if (inputValue !== null) {
-      value = inputValue.value
+  onChangeParameters = (e) => {
+    if (e) {
+      this.props.onUpdatePacket({uniqueid: e.map(item => item.value)})
+      this.setState({parameters: e})
+
+    } else {
+      this.props.onUpdatePacket({uniqueid: ""})
+      this.setState({parameters: []})
     }
-    // console.log("onChangeParameter: "+value)
-    this.setState({referencedUniqueid: value})
-    this.props.onUpdatePacket({uniqueid: value})
   }
+
   render() {
     var addType = this.props.action.split('_')[1]
-
-    var parameterChoicesList = mapObject(this.props.bundle.state.paramsAllowDist, (uniqueid, twig) => ({value: uniqueid, label: twig}))
 
     var labelChoices = this.props.bundle.state.tags[addType+'s'] || [];
     var labelChoicesList = labelChoices.map((choice) => ({value: choice, label: choice +' (add to existing)'}))
 
-    var uniqueid = this.state.referencedUniqueid || this.props.bundle.queryParams['lastActive'] || parameterChoicesList[0]['value']
-    var value = {value: uniqueid, label: this.props.bundle.state.paramsAllowDist[uniqueid]}
-
-    if (!this.state.referencedUniqueid) {
-      this.onChangeParameter(value, null)
+    var availableParamsList = []
+    if (this.props.bundle.state.paramsAllowDist) {
+      mapObject(this.props.bundle.state.paramsAllowDist, (uniqueid, twig) => {
+          availableParamsList.push({value: uniqueid, label: twig})
+        })
     }
 
+    var valueParamsList = this.state.parameters
+    if (valueParamsList.length === 0 && !this.state.alreadyLoadedLastActive && this.props.bundle.queryParams['lastActive']) {
+      var uniqueid = this.props.bundle.queryParams['lastActive']
+      this.onChangeParameters([{value: uniqueid, label: this.props.bundle.state.paramsAllowDist[uniqueid]}])
+      this.setState({alreadyLoadedLastActive: true})
+    }
     return (
       <div>
         <div className="form-group">
-          <label id={"twig"} style={{width: "50%", textAlign: "right", paddingRight: "10px"}}>parameter</label>
+          <label id={"twig"} style={{width: "50%", textAlign: "right", paddingRight: "10px"}}>parameter(s)</label>
           <span style={{width: "50%", lineHeight: "1.0", display: "inline-block", verticalAlign: "sub"}}>
-            <Select isClearable={true} onChange={this.onChangeParameter} options={parameterChoicesList} value={value} className="phoebe-parameter-choice" classNamePrefix="phoebe-parameter-choice"/>
+            <Select isMulti={true} isClearable={true} closeMenuOnSelect={false} onChange={this.onChangeParameters} options={availableParamsList} value={valueParamsList}/>
           </span>
         </div>
 
         <div className="form-group">
           <label id={addType} style={{width: "50%", textAlign: "right", paddingRight: "10px"}}>{addType}</label>
           <span style={{width: "50%", lineHeight: "1.0", display: "inline-block", verticalAlign: "sub"}}>
-            <CreatableSelect isClearable={true} onChange={this.onChangeLabel} options={labelChoicesList} placeholder={"(automatically generate)"} className="phoebe-parameter-choice" classNamePrefix="phoebe-parameter-choice"/>
+            <CreatableSelect isClearable={true} onChange={this.onChangeLabel} options={labelChoicesList} placeholder={"(automatically generate)"}/>
           </span>
         </div>
 
@@ -319,7 +326,7 @@ class ActionContentRename extends Component {
 
           <label id={"old_"+renameType} style={{width: "50%", textAlign: "right", paddingRight: "10px"}}>old {renameType}</label>
           <span style={{width: "50%", lineHeight: "1.0", display: "inline-block", verticalAlign: "sub"}}>
-            <Select options={availableLabelsList} value={{value: this.state.labelOld, label: this.state.labelOld}} onChange={this.onChangeLabelOld} className="phoebe-parameter-choice" classNamePrefix="phoebe-parameter-choice"/>
+            <Select options={availableLabelsList} value={{value: this.state.labelOld, label: this.state.labelOld}} onChange={this.onChangeLabelOld}/>
           </span>
         </div>
 
@@ -366,7 +373,7 @@ class ActionContentRemove extends Component {
 
           <label id={removeType} style={{width: "50%", textAlign: "right", paddingRight: "10px"}}>{removeType}</label>
           <span style={{width: "50%", lineHeight: "1.0", display: "inline-block", verticalAlign: "sub"}}>
-            <Select options={availableLabelsList} value={{value: this.state.label, label: this.state.label}} onChange={this.onChangeLabel} className="phoebe-parameter-choice" classNamePrefix="phoebe-parameter-choice"/>
+            <Select options={availableLabelsList} value={{value: this.state.label, label: this.state.label}} onChange={this.onChangeLabel}/>
           </span>
         </div>
 
@@ -449,7 +456,7 @@ class ActionContentRun extends Component {
         <div className="form-group">
           <label id={runType} style={{width: "50%", textAlign: "right", paddingRight: "10px"}}>{runType}</label>
           <span style={{width: "50%", lineHeight: "1.0", display: "inline-block", verticalAlign: "sub"}}>
-            <Select options={availableLabelsList} value={{value: this.state.label, label: this.state.label}} onChange={this.onChangeLabel} className="phoebe-parameter-choice" classNamePrefix="phoebe-parameter-choice"/>
+            <Select options={availableLabelsList} value={{value: this.state.label, label: this.state.label}} onChange={this.onChangeLabel}/>
           </span>
 
         </div>
@@ -458,7 +465,7 @@ class ActionContentRun extends Component {
           <label id={newType} style={{width: "50%", textAlign: "right", paddingRight: "10px"}}>{newType}</label>
           {/* <input type="text" id={newType} placeholder="automatically generated if empty" onChange={this.onChangeLabelNew} style={{width: "50%"}}></input> */}
           <span style={{width: "50%", lineHeight: "1.0", display: "inline-block", verticalAlign: "sub"}}>
-            <CreatableSelect isClearable={false} onChange={this.onChangeLabelNew} options={labelNewChoicesList} value={labelNewValue} className="phoebe-parameter-choice" classNamePrefix="phoebe-parameter-choice"/>
+            <CreatableSelect isClearable={false} onChange={this.onChangeLabelNew} options={labelNewChoicesList} value={labelNewValue}/>
           </span>
         </div>
 
@@ -501,7 +508,7 @@ class ActionContentAdopt extends Component {
         <div className="form-group">
           <label id={runType} style={{width: "50%", textAlign: "right", paddingRight: "10px"}}>{runType}</label>
           <span style={{width: "50%", lineHeight: "1.0", display: "inline-block", verticalAlign: "sub"}}>
-            <Select options={availableLabelsList} value={{value: this.state.label, label: this.state.label}} onChange={this.onChangeLabel} className="phoebe-parameter-choice" classNamePrefix="phoebe-parameter-choice"/>
+            <Select options={availableLabelsList} value={{value: this.state.label, label: this.state.label}} onChange={this.onChangeLabel}/>
           </span>
           <label id={'remove_'+runType} style={{width: "50%", textAlign: "right", paddingRight: "10px"}}>{'remove_'+runType}</label>
           <span style={{width: "50%", lineHeight: "1.0", display: "inline-block"}}>
