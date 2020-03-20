@@ -579,6 +579,27 @@ class ActionContentExportArrays extends Component {
   }
 }
 
+class ActionContentJobs extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+    }
+  }
+
+  render() {
+    // this.props.bundle.state.pollingJobs {uniqueid: intervaleObject}
+    // this.props.bundle.state.params {uniqueid: parameter}
+
+    return (
+      <div>
+        <span>{Object.keys(this.props.bundle.state.pollingJobs).length} running jobs currently being polled</span>
+        {/* {Object.keys(this.props.bundle.state.pollingJobs).map( (uniqueid) => <p>{uniqueid}</p>)} */}
+        <ActionContentNewParameters app={this.props.app} bundle={this.props.bundle} orderBy={'context'}/>
+      </div>
+    )
+  }
+}
+
 
 
 export class ActionPanel extends Component {
@@ -754,6 +775,8 @@ export class ActionPanel extends Component {
     } else if (this.props.action == 'export_data') {
       actionIcon = null;
       actionContent = <ActionContentExportArrays app={this.props.app} bundle={this.props.bundle} action={this.props.action} onUpdatePacket={this.onUpdatePacket}/>
+    } else if (action == 'jobs') {
+      actionContent = <ActionContentJobs app={this.props.app} bundle={this.props.bundle}/>
     }
 
     var actionStyle = {margin: '5px'}
@@ -774,7 +797,7 @@ export class ActionPanel extends Component {
                   <span onClick={this.closePanel} className="btn btn-primary" style={{margin: "5px"}} title={"cancel "+this.props.action+" and return to filtered parameters"}><span className="fas fa-fw fa-times"></span> cancel</span>
                   <Link onClick={this.closePanel} href={"http://"+this.props.app.state.serverHost+'/export_arrays/'+this.props.bundle.state.bundleid+'/'+this.state.packet.uniqueids} target="_blank" className="btn btn-primary" style={{actionStyle}} title="Download file containing exported arrays"><span className="fas fa-fw fa-download"></span> export arrays</Link>
               </div>
-    } else if (['edit_figure', 'edit_figure_times'].indexOf(this.props.action) !== -1) {
+    } else if (['edit_figure', 'edit_figure_times', 'jobs'].indexOf(this.props.action) !== -1) {
       buttons = <div style={{float: "right"}}>
                   <span onClick={this.closePanel} className="btn btn-primary" style={{margin: "5px"}} title={"close and return to filtered parameters"}><span className="fas fa-fw fa-times"></span> close</span>
               </div>

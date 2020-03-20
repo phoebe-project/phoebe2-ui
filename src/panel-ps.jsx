@@ -338,7 +338,9 @@ class Parameter extends Component {
     }
 
     let inlineUnitContent
-    if (this.state.expandedUnit) {
+    if (this.props.paramOverview.qualifier == 'detached_job' && (this.props.paramOverview.valuestr === 'running' || this.props.paramOverview.valuestr.indexOf("progress:")!==-1)) {
+      inlineUnitContent = <span className="fas fa-fw fa-skull-crossbones" title={"terminate running job"} onClick={()=>this.props.app.socket.emit('bundle_method', {'method': 'kill_job', 'bundleid': this.props.bundle.state.bundleid, 'uniqueid': this.props.uniqueid})} style={{color: "red", display: "inline-block", width: "65px", paddingLeft: "5px", paddingBottom: "3px", overflowX: "hidden"}}></span>
+    } else if (this.state.expandedUnit) {
       inlineUnitContent = <span style={{verticalAlign: "super"}}>
                               <span onClick={this.toggleExpandedUnit} className="btn fa-fw fas fa-times" title="cancel changes"/>
                               <span><Input type='choice' origValue={this.props.paramOverview.unitstr} onChange={this.updateUserUnit} choices={this.state.details.unit_choices}/></span>
@@ -354,8 +356,14 @@ class Parameter extends Component {
       this.props.bundle.setQueryParams({lastActive: this.props.uniqueid})
     }
 
+    var statusBarStyle = {}
+    if (this.props.paramOverview.qualifier == 'detached_job' && this.props.paramOverview.valuestr.indexOf("progress:")!==-1) {
+      var progress = this.props.paramOverview.valuestr.split("progress:")[1]
+      statusBarStyle.backgroundImage = "linear-gradient(90deg, rgba(43, 113, 177, 0.3) "+progress+", #FFFFFF "+progress+")"
+    }
+
     return (
-      <div ref={this.ref} className='phoebe-parameter'>
+      <div ref={this.ref} className='phoebe-parameter' style={statusBarStyle}>
         <div className='phoebe-parameter-header' style={{minWidth: "250px"}}>
           <Checkbox style={{verticalAlign: "super"}} checked={this.state.pinned} pinnable={this.props.pinnable} onClick={this.togglePinned} checkedTitle="unpin parameter" uncheckedTitle="pin parameter" />
 

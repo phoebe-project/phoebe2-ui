@@ -25,8 +25,13 @@ class ToolbarButton extends Component {
   render() {
     return (
       <a className="btn btn-phoebe-toolbar" style={{height: "50px", minWidth: "50px", paddingLeft: 0, paddingRight: 0, marginLeft: "3px", marginRight: "3px"}} href={this.props.to} download={this.props.download} title={this.props.title} onClick={this.props.onClick}>
-        <span className={"fa-fw fa-lg "+this.props.iconClassNames} style={{minWidth: "50px", textAlign: "center", marginTop: "10px"}}>
-          {this.props.children}
+        <span class="fa-layers">
+          <i class={"fas fa-fw fa-lg "+this.props.iconClassNames} style={{minWidth: "50px", textAlign: "center", marginTop: "10px"}}></i>
+          {/* {this.props.counter ?
+            <span class="fa-layers-counter" style={{backgroundColor: 'blue', color: 'white'}}>{this.props.counter}</span>
+            :
+            null
+          } */}
         </span>
       </a>
     )
@@ -90,6 +95,10 @@ export class Toolbar extends Component {
   redirect = (path) => {
     this.setState({redirect: path})
   }
+  redirectJobs = () => {
+    this.props.bundle.setQueryParams({tmp: '"qualifier:detached_job"'})
+    this.redirect(generatePath(this.props.app.state.serverHost, this.props.bundle.state.bundleid, "jobs", this.props.bundle.getSearchString()))
+  }
   launchPythonClient = () => {
     console.log("Bundle.launchPythonClient")
     var code = 'import phoebe; logger=phoebe.logger(\'info\'); b=phoebe.Bundle.from_server(\''+this.props.bundleid+'\', \''+this.props.app.state.serverHost+'\');'
@@ -117,6 +126,9 @@ export class Toolbar extends Component {
       divStyle.color = "#D6D6D6"
     }
 
+    var nPollingJobs = Object.keys(this.props.bundle.state.pollingJobs).length;
+    // var nPollingJobs = 2
+
 
     return (
       <div style={divStyle} className="toolbar">
@@ -136,6 +148,12 @@ export class Toolbar extends Component {
             :
             null
           }
+          { nPollingJobs > 0 ?
+            <ToolbarButton iconClassNames="fas fa-tasks" counter={nPollingJobs} title="access running tasks" onClick={this.redirectJobs}/>
+            :
+            null
+          }
+
         </div>
         <div className="d-none d-lg-inline-block" style={{position: "absolute", width: "250px", left: "calc(50% - 125px)"}}>
           {/* <span className="btn btn-transparent" title="rerun model" style={{marginTop: "6px"}} onClick={this.notImplementedAlert}>
