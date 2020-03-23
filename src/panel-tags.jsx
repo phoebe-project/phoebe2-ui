@@ -305,6 +305,16 @@ class TagGroup extends Component {
         <div className='phoebe-tag-header' onClick={this.toggleExpanded}>
           {this.props.title}
           <div style={{float: "right"}}>
+            {this.props.other && group=='dataset' && this.props.bundle.state.tags.datasets && this.props.bundle.state.tags.datasets.length ?
+              <TagHeaderButton app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} to={'import_data'} iconClassNames="fas fa-fw fa-upload"/>
+              :
+              null
+            }
+            {this.props.other && group=='model' && this.props.bundle.state.tags.models && this.props.bundle.state.tags.models.length ?
+              <TagHeaderButton app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} to={'export_data'} iconClassNames="fas fa-fw fa-download"/>
+              :
+              null
+            }
             {this.props.adopt && tags.length && ((group==='solution' && this.props.bundle.state.tags.solutions.length)) ?
               <TagHeaderButton app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} to={`adopt_${group}`} iconClassNames="fas fa-fw fa-check-double"/>
               :
@@ -332,6 +342,7 @@ class TagGroup extends Component {
               :
               <div style={{display: "inline-block", width: "34px"}}>&nbsp;</div>
             }
+
 
           </div>
         </div>
@@ -520,10 +531,10 @@ export class TagPanel extends Component {
 
         <TagGroup title="Component" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.components || null} add={true} rename={true} remove={true}></TagGroup>
         <TagGroup title="Feature" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.features || null} add={true} rename={true} remove={true}></TagGroup>
-        <TagGroup title="Dataset" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.datasets || null} add={true} rename={true} remove={true}></TagGroup>
+        <TagGroup title="Dataset" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.datasets || null} other={true} add={true} rename={true} remove={true}></TagGroup>
         <TagGroup title="Distribution" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.distributions || null} add={true} rename={true} remove={true}></TagGroup>
         <TagGroup title="Compute" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.computes || null} add={true} rename={true} remove={true} run={true}></TagGroup>
-        <TagGroup title="Model" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.models || null} add={false} import={true} rename={true} remove={true}></TagGroup>
+        <TagGroup title="Model" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.models || null} other={true} add={false} import={true} rename={true} remove={true}></TagGroup>
         <TagGroup title="Solver" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.solvers || null} add={true} rename={true} remove={true} run={true}></TagGroup>
         {/* TODO: expose process_solution */}
         <TagGroup title="Solution" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.solutions || null} add={false} import={true} remove={true} rename={true} run={false} adopt={true}></TagGroup>

@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-// import {Redirect} from 'react-router-dom';
+import {Redirect} from 'react-router-dom';
 import 'babel-polyfill';
 
 import FlipMove from 'react-flip-move'; // https://github.com/joshwcomeau/react-flip-move
@@ -266,7 +266,7 @@ class Parameter extends Component {
     if (this.state.expandedValue) {
       if (this.props.paramOverview.class==='FloatArrayParameter') {
         expandedValueContent = <span style={{verticalAlign: "super"}}>
-                                <InputFloatArray app={this.props.app} parameter={this}/>
+                                <InputFloatArray app={this.props.app} bundle={this.props.bundle} parameter={this}/>
                              </span>
       } else if (this.props.paramOverview.class==='DistributionParameter') {
         expandedValueContent = <span style={{verticalAlign: "super"}}>
@@ -760,6 +760,7 @@ class InputFloatArray extends Component {
       args: {},
       userArgs: {},
       argsLoaded: false,
+      redirect: null
     };
     this.refinput = React.createRef();
   }
@@ -846,11 +847,23 @@ class InputFloatArray extends Component {
     if (!this.state.argsLoaded) {
       this.updateArgs();
     }
+    if (this.state.redirect) {
+      this.setState({redirect: null})
+    }
   }
   componentWillUnmount() {
     this.setState({inputType: null})
   }
+  gotoAction = (newAction) => {
+    this.props.bundle.setQueryParams({tmp: []})
+    var url = generatePath(this.props.app.state.serverHost, this.props.bundle.state.bundleid, newAction, this.props.bundle.getSearchString())
+    this.setState({redirect: url})
+  }
   render() {
+    if (this.state.redirect) {
+      return (<Redirect to={this.state.redirect}/>)
+    }
+
     var btnStyle = {width: "calc(25% - 4px)", margin: "2px", textAlign: "center", lineHeight: "1em"}
 
     if (this.state.inputType == null && this.props.parameter.state.details && this.props.parameter.state.details.value!==undefined) {
@@ -938,7 +951,7 @@ class InputFloatArray extends Component {
               <span className={this.state.inputType=='array' ? 'btn btn-primary btn-primary-active' : 'btn btn-primary'} style={btnStyle} onClick={()=>{this.onChangeType('array')}}>array</span>
               <span className={this.state.inputType=='linspace' ? 'btn btn-primary btn-primary-active' : 'btn btn-primary'} style={btnStyle} onClick={()=>{this.onChangeType('linspace')}}>linspace</span>
               <span className={this.state.inputType=='arange' ? 'btn btn-primary btn-primary-active' : 'btn btn-primary'} style={btnStyle} onClick={()=>{this.onChangeType('arange')}}>arange</span>
-              <span className={this.state.inputType=='file' ? 'btn btn-primary btn-primary-active' : 'btn btn-primary'} style={btnStyle} onClick={()=>{alert("not yet implemented: can import in bulk from import button on main toolbar")}}>file import</span>
+              <span className={this.state.inputType=='file' ? 'btn btn-primary btn-primary-active' : 'btn btn-primary'} style={btnStyle} onClick={()=>{this.gotoAction('import_data')}}>file import</span>
             </div>
           </React.Fragment>
           :

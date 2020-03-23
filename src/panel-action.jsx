@@ -673,13 +673,14 @@ export class ActionPanel extends Component {
     this.closePanel();
   }
   gotoAction = (newAction) => {
-    alert("not yet implemented.  Click continue and then manually click "+newAction+" in left panel")
-    // this.props.bundle.setQueryParams({tmp: []})
-    // var url = generatePath(this.props.app.state.serverHost, this.props.bundle.state.bundleid, newAction, this.props.bundle.getSearchString())
-    // this.setState({redirect: url})
+    this.props.bundle.setQueryParams({tmp: []})
+    var url = generatePath(this.props.app.state.serverHost, this.props.bundle.state.bundleid, newAction, this.props.bundle.getSearchString())
+    this.setState({redirect: url})
   }
-  componentDidMount() {
-    this.setState({redirect: null})
+  componentDidUpdate() {
+    if (this.state.redirect) {
+      this.setState({redirect: null})
+    }
   }
   render() {
     if (this.state.redirect) {
@@ -811,6 +812,11 @@ export class ActionPanel extends Component {
                     <span onClick={this.removeAction} className="btn btn-primary" style={{margin: "5px"}} title="remove any added parameters and cancel"><span className="fas fa-fw fa-minus"></span> remove</span>
                     {this.props.action == 'add_compute' ?
                       <span onClick={()=>this.gotoAction('run_compute')} className="btn btn-primary" style={{margin: "5px"}} title="accept changes and go to run_compute"><span className="fas fa-fw fa-play"></span> run</span>
+                      :
+                      null
+                    }
+                    {this.props.action == 'add_dataset' ?
+                      <span onClick={()=>this.gotoAction('import_data')} className="btn btn-primary" style={{margin: "5px"}} title="accept changes and import data from a file"><span className="fas fa-fw fa-upload"></span> import data</span>
                       :
                       null
                     }

@@ -138,16 +138,6 @@ export class Toolbar extends Component {
           <ToolbarButton iconClassNames="fas fa-save" title="save bundle" to={"http://" + this.props.app.state.serverHost + "/save_bundle/" + this.props.bundleid} download={this.props.bundleid+".bundle"}/>
           {/* <ToolbarButton iconClassNames="fas fa-undo" title="undo" onClick={this.notImplementedAlert}/>
           <ToolbarButton iconClassNames="fas fa-redo" title="redo" onClick={this.notImplementedAlert}/> */}
-          { this.props.bundle.state.tags && this.props.bundle.state.tags.datasets && this.props.bundle.state.tags.datasets.length > 0 ?
-            <ToolbarButton iconClassNames="fas fa-upload" title="Import data to parameter(s)" onClick={() => this.redirect(generatePath(this.props.app.state.serverHost, this.props.bundle.state.bundleid, "import_data", this.props.bundle.getSearchString()))}/>
-            :
-            null
-          }
-          { this.props.bundle.state.tags && this.props.bundle.state.tags.datasets && this.props.bundle.state.tags.datasets.length > 0 ?
-            <ToolbarButton iconClassNames="fas fa-download" title="Export data from parameter(s)" onClick={() => this.redirect(generatePath(this.props.app.state.serverHost, this.props.bundle.state.bundleid, "export_data", this.props.bundle.getSearchString()))}/>
-            :
-            null
-          }
           { nPollingJobs > 0 ?
             <ToolbarButton iconClassNames="fas fa-tasks" counter={nPollingJobs} title="access running tasks" onClick={this.redirectJobs}/>
             :
