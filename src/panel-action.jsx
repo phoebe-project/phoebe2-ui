@@ -649,7 +649,7 @@ export class ActionPanel extends Component {
 
 
 
-    if (['add', 'run'].indexOf(this.props.action.split('_')[0]) !== -1 || ['import_model'].indexOf(this.props.action) !== -1) {
+    if (['add', 'run'].indexOf(this.props.action.split('_')[0]) !== -1 || ['import_model', 'import_solution'].indexOf(this.props.action) !== -1) {
       // then we go to another screen once we receive tmpFilter
       var toastID = toast.info(this.props.action+" submitted... waiting for response", { autoClose: false, closeButton: false });
       this.props.bundle.setState({pendingBundleMethod: toastID});

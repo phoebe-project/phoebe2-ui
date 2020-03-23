@@ -357,7 +357,7 @@ class Parameter extends Component {
     }
 
     var statusBarStyle = {}
-    if (this.props.paramOverview.qualifier == 'detached_job' && this.props.paramOverview.valuestr.indexOf("progress:")!==-1) {
+    if (['detached_job', 'imported_job'].indexOf(this.props.paramOverview.qualifier) !== -1 && this.props.paramOverview.valuestr.indexOf("progress:")!==-1) {
       var progress = this.props.paramOverview.valuestr.split("progress:")[1]
       statusBarStyle.backgroundImage = "linear-gradient(90deg, rgba(43, 113, 177, 0.3) "+progress+", #FFFFFF "+progress+")"
     }
