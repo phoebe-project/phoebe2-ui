@@ -66,7 +66,12 @@ class ActionContentImport extends Component {
   render() {
     var addType = this.props.context;
 
-    var labelChoices = this.props.bundle.state.tags.models || [];
+    var labelChoices = [];
+    if (addType === 'model') {
+      var labelChoices = this.props.bundle.state.tags.models || [];
+    } else if (addType === 'solution') {
+      var labelChoices = this.props.bundle.state.tags.solutions || [];
+    }
     var labelChoicesList = labelChoices.map((choice) => ({value: choice, label: choice +' (overwrite)'}))
 
     return (
@@ -88,7 +93,7 @@ class ActionContentImport extends Component {
           <label id={addType} style={{width: "50%", textAlign: "right", paddingRight: "10px"}}>{addType}</label>
 
           <span style={{width: "50%", lineHeight: "1.0", display: "inline-block", verticalAlign: "sub"}}>
-            <CreatableSelect isClearable={true} onChange={this.onChangeLabel} options={labelChoicesList} placeholder={"(automatically generate)"}/>
+            <CreatableSelect isClearable={true} onChange={this.onChangeLabel} options={labelChoicesList} placeholder={"(use value provided on export)"}/>
           </span>
         </div>
       </div>
