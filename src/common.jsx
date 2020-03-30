@@ -293,7 +293,8 @@ export class FileReader extends React.Component {
       return null
     }
 
-    const ignore = ['ld_coeffs', 'ld_coeffs_bol', 'xlim', 'ylim', 'zlim', 'compute_times', 'compute_phases'];
+    // do we want to ignore sample_periods@bls_period@solver?
+    const ignore = ['ld_coeffs', 'ld_coeffs_bol', 'xlim', 'ylim', 'zlim', 'compute_times', 'compute_phases', 'mask_phases'];
     var availableParams = []
     mapObject(this.props.bundle.state.params, (uniqueid, param) => {
       if (param.class === 'FloatArrayParameter' && !param.readonly && param.component !== '_default' && ignore.indexOf(param.qualifier) === -1) {
