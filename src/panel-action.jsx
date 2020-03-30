@@ -680,12 +680,16 @@ export class ActionPanel extends Component {
   gotoAction = (newAction) => {
     this.props.bundle.setQueryParams({tmp: []})
     var url = generatePath(this.props.app.state.serverHost, this.props.bundle.state.bundleid, newAction, this.props.bundle.getSearchString())
+    if (Object.keys(this.state.packet).length) {
+      this.setState({packet: {}})
+    }
     this.setState({redirect: url})
   }
   componentDidUpdate() {
     if (this.state.redirect) {
       this.setState({redirect: null})
     }
+
   }
   render() {
     if (this.state.redirect) {
