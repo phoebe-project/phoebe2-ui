@@ -962,7 +962,7 @@ class InputFloatArray extends Component {
               <span className={this.state.inputType=='array' ? 'btn btn-primary btn-primary-active' : 'btn btn-primary'} style={btnStyle} onClick={()=>{this.onChangeType('array')}}>array</span>
               <span className={this.state.inputType=='linspace' ? 'btn btn-primary btn-primary-active' : 'btn btn-primary'} style={btnStyle} onClick={()=>{this.onChangeType('linspace')}}>linspace</span>
               <span className={this.state.inputType=='arange' ? 'btn btn-primary btn-primary-active' : 'btn btn-primary'} style={btnStyle} onClick={()=>{this.onChangeType('arange')}}>arange</span>
-              <span className={this.state.inputType=='file' ? 'btn btn-primary btn-primary-active' : 'btn btn-primary'} style={btnStyle} onClick={()=>{this.gotoAction('import_data')}}>file import</span>
+              <span className={this.state.inputType=='file' ? 'btn btn-primary btn-primary-active' : 'btn btn-primary'} style={btnStyle} onClick={()=>{this.gotoAction('import_data', {'datasets': [this.props.parameter.props.paramOverview.dataset]})}}>file import</span>
             </div>
           </React.Fragment>
           :

@@ -3,6 +3,9 @@ import {Link as RouterLink, Router as RouterRouter, HashRouter as RouterHashRout
 import 'babel-polyfill';
 
 import Select from 'react-select'; // https://react-select.com/home
+import makeAnimated from 'react-select/animated';
+const animatedComponents = makeAnimated();
+
 const Papa = require('papaparse'); // https://www.npmjs.com/package/papaparse
 
 import isElectron from 'is-electron'; // https://github.com/cheton/is-electron
@@ -242,8 +245,11 @@ export class FileReader extends React.Component {
       parsedData: null,
       parsedColumns: null,
       selectedColumns: {}, // keys: column key, values: uniqueid
+      datasets: [],
     };
   }
+
+  onChangeDatasets
 
   handleChange = event => {
     const file =  event.target.files[0];
@@ -254,10 +260,20 @@ export class FileReader extends React.Component {
       dynamicTyping: true,
       delimitersToGuess: [',', '\t', '|', ';', ' ', Papa.RECORD_SEP, Papa.UNIT_SEP],
       complete: this.updateData,
-      header: true
+      header: true,
     });
   };
+  componentDidMount() {
+    this.setState({datasets: this.props.bundle.state.redirectArgs.datasets || []})
+  }
 
+  onChangeDatasets = (e) => {
+    var value = []
+    if (e) {
+      value = e.map((item) => item.value)
+    }
+    this.setState({datasets: value})
+  }
   updateData = (result) => {
     var data = result.data;
     this.setState({parsedData: data, parsedColumns: Object.keys(data[0]), selectedColumns: {}});
@@ -293,45 +309,63 @@ export class FileReader extends React.Component {
       return null
     }
 
+    var datasetChoices = []
+    if (this.props.bundle.state.tags) {
+      datasetChoices = this.props.bundle.state.tags.datasets || [];
+    }
+    var datasetChoicesList = datasetChoices.map((choice) => ({value: choice, label: choice}))
+    var datasetList = this.state.datasets.map((choice) => ({value: choice, label: choice}))
+
     // do we want to ignore sample_periods@bls_period@solver?
     const ignore = ['ld_coeffs', 'ld_coeffs_bol', 'xlim', 'ylim', 'zlim', 'compute_times', 'compute_phases', 'mask_phases'];
     var availableParams = []
     mapObject(this.props.bundle.state.params, (uniqueid, param) => {
-      if (param.class === 'FloatArrayParameter' && !param.readonly && param.component !== '_default' && ignore.indexOf(param.qualifier) === -1) {
+      if (param.class === 'FloatArrayParameter' && !param.readonly && param.component !== '_default' && ignore.indexOf(param.qualifier) === -1 && (this.state.datasets.length == 0 || this.state.datasets.indexOf(param.dataset) !== -1)) {
         availableParams.push({value: uniqueid, label: param.uniquetwig})
       }
     })
 
-
     return (
       <div>
-        <input
-          className="csv-input"
-          type="file"
-          ref={input => {
-            this.filesInput = input;
-          }}
-          name="file"
-          placeholder={null}
-          onChange={this.handleChange}
-        />
-        <p />
+        <div className="form-group">
+          <label id={"file"} style={{width: "50%", textAlign: "right", paddingRight: "10px"}}>import from file</label>
+
+          <input
+            className="csv-input"
+            type="file"
+            ref={input => {
+              this.filesInput = input;
+            }}
+            name="file"
+            placeholder={null}
+            onChange={this.handleChange}
+          />
+        </div>
 
         {this.state.parsedData ?
-          <div className="csv-parsed-columns" style={{}}>
-            {this.state.parsedColumns.map( column => {
-              return <div style={{display: "inline-block", padding: "0px", margin: "20px", width: "calc(33% - 40px)"}}>
-                        <Select isClearable={true} options={availableParams}  onChange={(e, d) => this.selectColumn(e, d, column)}/>
-                        {/*  TODO: add units Select based on chosen parameter */}
-                        {/* TODO: allow common conversions to_time and mag_to_flux? */}
+          <React.Fragment>
+            <div className="form-group">
+              <label id={"datasets"} style={{width: "50%", textAlign: "right", paddingRight: "10px"}}>filter choices by datasets</label>
+              <span style={{width: "50%", lineHeight: "1.0", display: "inline-block", verticalAlign: "sub"}}>
+                <Select options={datasetChoicesList} value={datasetList} onChange={this.onChangeDatasets} defaultMenuIsOpen={false} isMulti={true} isClearable={true} closeMenuOnSelect={false} components={animatedComponents}/>
+              </span>
+            </div>
 
-                        <div style={{overflowX: "scroll"}}>
-                          <div><b>{column}</b></div>
-                          {this.state.parsedData.slice(0,10).map(dataRow => <div>{dataRow[column]}</div>)}
-                        </div>
-                    </div>
-            })}
-          </div>
+            <div className="csv-parsed-columns" style={{}}>
+              {this.state.parsedColumns.map( column => {
+                return <div style={{display: "inline-block", padding: "0px", margin: "20px", width: "calc(33% - 40px)"}}>
+                          <Select isClearable={true} options={availableParams}  onChange={(e, d) => this.selectColumn(e, d, column)}/>
+                          {/*  TODO: add units Select based on chosen parameter */}
+                          {/* TODO: allow common conversions to_time and mag_to_flux? */}
+
+                          <div style={{overflowX: "scroll"}}>
+                            <div><b>{column}</b></div>
+                            {this.state.parsedData.slice(0,10).map(dataRow => <div>{dataRow[column]}</div>)}
+                          </div>
+                      </div>
+              })}
+            </div>
+          </React.Fragment>
           :
           null
         }

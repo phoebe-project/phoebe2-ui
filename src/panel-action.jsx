@@ -864,9 +864,15 @@ export class ActionPanel extends Component {
 
     var buttons = null
     if (this.props.action === 'import_data') {
+      var hasPopulatedColumns = false
+      for (const packet of this.state.packets) {
+        if (packet.uniqueid !== null) {
+          hasPopulatedColumns = true
+        }
+      }
       buttons = <div style={{float: "right"}}>
                   <span onClick={this.closePanel} className="btn btn-primary" style={{margin: "5px"}} title={"cancel "+this.props.action+" and return to filtered parameters"}><span className="fas fa-fw fa-times"></span> cancel</span>
-                  <span onClick={this.submitAction} className="btn btn-primary" style={{margin: "5px"}} title="set selected parameters from columns"><span className="fas fa-fw fa-chevron-right"></span> continue</span>
+                  <span onClick={hasPopulatedColumns ? this.submitAction : ()=>{alert("must select at least one column from file to continue")}} className={hasPopulatedColumns ? "btn btn-primary" : "btn btn-disabled"} style={{margin: "5px"}} title="set selected parameters from columns"><span className="fas fa-fw fa-chevron-right"></span> continue</span>
               </div>
     } else if (this.props.action === 'export_data') {
       buttons = <div style={{float: "right"}}>
@@ -895,7 +901,7 @@ export class ActionPanel extends Component {
                       null
                     }
                     {this.props.action == 'add_dataset' ?
-                      <span onClick={()=>this.gotoAction('import_data')} className="btn btn-primary" style={{margin: "5px"}} title="accept changes and import data from a file"><span className="fas fa-fw fa-upload"></span> import data</span>
+                      <span onClick={()=>this.gotoAction('import_data', {datasets: [this.props.bundle.queryParams.tmp.split(':')[1].replace('%22', '')]})} className="btn btn-primary" style={{margin: "5px"}} title="accept changes and import data from a file"><span className="fas fa-fw fa-upload"></span> import data</span>
                       :
                       null
                     }
