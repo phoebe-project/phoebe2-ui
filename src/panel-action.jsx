@@ -12,7 +12,7 @@ import makeAnimated from 'react-select/animated';
 const animatedComponents = makeAnimated();
 
 import {FigurePanelWidth} from './panel-figures';
-import {PSPanel} from './panel-ps';
+import {PSPanel, PSGroup} from './panel-ps';
 import {LogoSpinner} from './logo';
 
 // import FlipMove from 'react-flip-move'; // https://github.com/joshwcomeau/react-flip-move
@@ -90,7 +90,7 @@ class ActionContentImport extends Component {
             onChange={this.onChangeFile}
           />
 
-          <label id={addType} style={{width: "50%", textAlign: "right", paddingRight: "10px"}}>{addType}</label>
+          <label id={addType} style={{width: "50%", textAlign: "right", paddingRight: "10px"}}>tag as {addType}</label>
 
           <span style={{width: "50%", lineHeight: "1.0", display: "inline-block", verticalAlign: "sub"}}>
             <CreatableSelect isClearable={true} onChange={this.onChangeLabel} options={labelChoicesList} placeholder={"(use value provided on export)"}/>
@@ -217,10 +217,17 @@ class ActionContentAdd extends Component {
         }
 
         <div className="form-group">
-          <label id={addType} style={{width: "50%", textAlign: "right", paddingRight: "10px"}}>{addType}</label>
+          <label id={addType} style={{width: "50%", textAlign: "right", paddingRight: "10px"}}>tag as {addType}</label>
           {/* <input type="text" id={addType} placeholder="automatically generated if empty" onChange={this.onChangeLabel} style={{width: "50%"}}></input> */}
           <span style={{width: "50%", lineHeight: "1.0", display: "inline-block", verticalAlign: "sub"}}>
             <CreatableSelect isClearable={true} onChange={this.onChangeLabel} options={labelChoicesList} placeholder={"(automatically generate)"}/>
+          </span>
+        </div>
+
+        <div className="form-group">
+          <label style={{width: "50%", textAlign: "right", paddingRight: "10px"}}></label>
+          <span style={{width: "50%", lineHeight: "1.0", display: "inline-block", verticalAlign: "sub"}}>
+            {/* <p>parameter values will be able to set after clicking {this.props.action}</p> */}
           </span>
         </div>
 
@@ -454,6 +461,12 @@ class ActionContentRun extends Component {
     }
     var labelNewChoicesList = labelNewChoices.map((choice) => ({value: choice, label: choice +' (overwrite)'}))
 
+
+    var paramsFiltered = false
+    if (this.props.bundle.state.params !== null && this.state.label !== null) {
+      paramsFiltered = this.props.bundle.filter(this.props.bundle.state.params, {context: [runType], [runType]: [this.state.label]}, [])
+    }
+
     // console.log(availableLabelsList)
 
     return (
@@ -467,12 +480,18 @@ class ActionContentRun extends Component {
         </div>
 
         <div className="form-group">
-          <label id={newType} style={{width: "50%", textAlign: "right", paddingRight: "10px"}}>{newType}</label>
+          <label id={newType} style={{width: "50%", textAlign: "right", paddingRight: "10px"}}>tag as {newType}</label>
           {/* <input type="text" id={newType} placeholder="automatically generated if empty" onChange={this.onChangeLabelNew} style={{width: "50%"}}></input> */}
           <span style={{width: "50%", lineHeight: "1.0", display: "inline-block", verticalAlign: "sub"}}>
             <CreatableSelect isClearable={false} onChange={this.onChangeLabelNew} options={labelNewChoicesList} value={labelNewValue}/>
           </span>
         </div>
+
+        {paramsFiltered ?
+          <PSPanel app={this.props.app} bundleid={this.props.bundle.state.bundleid} bundle={this.props.bundle} paramsFiltered={paramsFiltered[0]} orderBy={runType} PSPanelOnly={true} disableFiltering={true} showPopoutButton={false}/>
+          :
+          null
+        }
 
       </div>
     )
@@ -497,6 +516,14 @@ class ActionContentAdopt extends Component {
     this.setState({remove: !value})
     this.props.onUpdatePacket({['remove_'+this.props.action.split('_')[1]]: !value})
   }
+  onChangeDistribution = (inputValue, actionMeta) => {
+    var value = null
+    if (inputValue !== null) {
+      value = inputValue.value
+    }
+    console.log("onChangeDistribution: "+value)
+    this.props.onUpdatePacket({distribution: value})
+  }
   render() {
     var runType = this.props.action.split('_')[1]
     var availableLabels = this.props.bundle.state.tags[runType+'s'] || [];
@@ -508,6 +535,25 @@ class ActionContentAdopt extends Component {
       this.props.onUpdatePacket({[runType]: availableLabels[0]})
     }
 
+    var paramsFiltered = false
+    var adoptDistributions = true;
+    if (this.props.bundle.state.params !== null && this.state.label !== null) {
+      paramsFiltered = this.props.bundle.filter(this.props.bundle.state.params, {context: ['solution'], solution: [this.state.label]}, [])
+
+      // determine if adopt_distributions parameter is True or False
+      var paramsAdoptDistributions = this.props.bundle.filter(this.props.bundle.state.params, {context: ['solution'], solution: [this.state.label], qualifier: ['adopt_distributions']}, [])[0]
+      if (paramsAdoptDistributions.length) {
+        adoptDistributions = this.props.bundle.state.params[paramsAdoptDistributions[0]].valuestr === 'True'
+      }
+    }
+
+    var distributionChoices = this.props.bundle.state.tags.distributions || [];
+    var distributionChoicesList = distributionChoices.map((choice) => ({value: choice, label: choice +' (overwrite)'}))
+
+
+
+
+
     return (
       <div>
         <div className="form-group">
@@ -515,6 +561,16 @@ class ActionContentAdopt extends Component {
           <span style={{width: "50%", lineHeight: "1.0", display: "inline-block", verticalAlign: "sub"}}>
             <Select options={availableLabelsList} value={{value: this.state.label, label: this.state.label}} onChange={this.onChangeLabel}/>
           </span>
+        </div>
+
+        <div className="form-group">
+          <label id='distribution' style={{width: "50%", textAlign: "right", paddingRight: "10px"}}>tag as distribution</label>
+          <span style={{width: "50%", lineHeight: "1.0", display: "inline-block", verticalAlign: "sub"}}>
+            <CreatableSelect isDisabled={!adoptDistributions} isClearable={true} onChange={this.onChangeDistribution} options={distributionChoicesList} placeholder={adoptDistributions ? "(automatically generate)" : "N/A: adopt_distributions=False"}/>
+          </span>
+        </div>
+
+        <div className="form-group">
           <label id={'remove_'+runType} style={{width: "50%", textAlign: "right", paddingRight: "10px"}}>{'remove_'+runType}</label>
           <span style={{width: "50%", lineHeight: "1.0", display: "inline-block"}}>
             <ToggleButton
@@ -526,6 +582,15 @@ class ActionContentAdopt extends Component {
           </span>
 
         </div>
+
+        {paramsFiltered ?
+          <PSPanel app={this.props.app} bundleid={this.props.bundle.state.bundleid} bundle={this.props.bundle} paramsFiltered={paramsFiltered[0]} orderBy={'solution'} PSPanelOnly={true} disableFiltering={true} showPopoutButton={false}/>
+          :
+          null
+        }
+
+
+
       </div>
     )
   }
@@ -654,7 +719,7 @@ export class ActionPanel extends Component {
 
 
 
-    if (['add', 'run'].indexOf(this.props.action.split('_')[0]) !== -1 || ['import_model', 'import_solution'].indexOf(this.props.action) !== -1) {
+    if (['add', 'run'].indexOf(this.props.action.split('_')[0]) !== -1 || ['import_model', 'import_solution', 'adopt_solution'].indexOf(this.props.action) !== -1) {
       // then we go to another screen once we receive tmpFilter
       var toastID = toast.info(this.props.action+" submitted... waiting for response", { autoClose: false, closeButton: false });
       this.props.bundle.setState({pendingBundleMethod: toastID});
@@ -818,7 +883,11 @@ export class ActionPanel extends Component {
     } else if (!this.state.waiting) {
       if (tmpFilter) {
         buttons = <div style={{float: "right"}}>
-                    <span onClick={this.removeAction} className="btn btn-primary" style={{margin: "5px"}} title="remove any added parameters and cancel"><span className="fas fa-fw fa-minus"></span> remove</span>
+                    {this.props.action !== 'adopt_solution' ?
+                      <span onClick={this.removeAction} className="btn btn-primary" style={{margin: "5px"}} title="remove any added parameters and cancel"><span className="fas fa-fw fa-minus"></span> remove</span>
+                      :
+                      null
+                    }
                     {this.props.action == 'add_compute' ?
                       <span onClick={()=>this.gotoAction('run_compute')} className="btn btn-primary" style={{margin: "5px"}} title="accept changes and go to run_compute"><span className="fas fa-fw fa-play"></span> run</span>
                       :

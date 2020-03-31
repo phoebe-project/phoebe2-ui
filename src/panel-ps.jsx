@@ -1295,7 +1295,7 @@ export class PSPanel extends Component {
     var params = this.props.bundle.state.params || {}
     var tags = this.props.bundle.state.tags || {}
 
-    var paramsFiltered = filterObjectByKeys(params, this.props.bundle.state.paramsfilteredids)
+    var paramsFiltered = filterObjectByKeys(params, this.props.paramsFiltered || this.props.bundle.state.paramsfilteredids)
     // animations can be laggy, and not even that effective, when there are a
     // lot of changes.  So we'll check the change in length as well as the
     // length itself (in the case of changing orderBy)

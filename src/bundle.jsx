@@ -382,7 +382,7 @@ export class Bundle extends ReactQueryParams {
         })
 
         mapObject(filterTmp, (tmpFilterTag, tmpFilterValues) => {
-          if (tmpFilterValues.indexOf(param[tmpFilterTag]) === -1) {
+          if ((tmpFilterTag==='uniqueid' && tmpFilterValues.indexOf(uniqueid) === -1) || (tmpFilterTag!=='uniqueid' && tmpFilterValues.indexOf(param[tmpFilterTag]) === -1)) {
             includeThisParam = false
           }
         })
