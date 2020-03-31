@@ -47,6 +47,7 @@ export class Bundle extends ReactQueryParams {
       nparams: 0,
       pendingBundleMethod: null,
       pollingJobs: {}, // uniqueid: interval
+      redirectArgs: {},
     };
     this.childrenWindows = [];
   }

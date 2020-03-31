@@ -241,7 +241,6 @@ class ActionContentAddDistribution extends Component {
     super(props);
     this.state = {
       parameters: [],
-      alreadyLoadedLastActive: false
     }
   }
   onChangeLabel = (inputValue, actionMeta) => {
@@ -277,10 +276,9 @@ class ActionContentAddDistribution extends Component {
     }
 
     var valueParamsList = this.state.parameters
-    if (valueParamsList.length === 0 && !this.state.alreadyLoadedLastActive && this.props.bundle.queryParams['lastActive']) {
-      var uniqueid = this.props.bundle.queryParams['lastActive']
-      this.onChangeParameters([{value: uniqueid, label: this.props.bundle.state.paramsAllowDist[uniqueid]}])
-      this.setState({alreadyLoadedLastActive: true})
+    if (valueParamsList.length === 0) {
+      var defaultUniqueids = this.props.bundle.state.redirectArgs['uniqueids'] || [];
+      this.onChangeParameters(defaultUniqueids.map((uniqueid) => ({value: uniqueid, label: this.props.bundle.state.paramsAllowDist[uniqueid]})))
     }
     return (
       <div>
@@ -374,10 +372,10 @@ class ActionContentRemove extends Component {
 
     if (this.state.label===null) {
       // then defaults based on kind
-      this.setState({label: availableLabels[0]})
-      this.props.onUpdatePacket({[removeType]: availableLabels[0]})
+      var defaultLabel = this.props.bundle.state.redirectArgs[removeType] || availableLabels[0]
+      this.setState({label: defaultLabel})
+      this.props.onUpdatePacket({[removeType]: defaultLabel})
     }
-
 
     return (
       <div>
@@ -437,8 +435,9 @@ class ActionContentRun extends Component {
 
     if (this.state.label===null) {
       // then defaults based on kind
-      this.setState({label: availableLabels[0]})
-      this.props.onUpdatePacket({[runType]: availableLabels[0]})
+      var defaultLabel = this.props.bundle.state.redirectArgs[runType] || availableLabels[0]
+      this.setState({label: defaultLabel})
+      this.props.onUpdatePacket({[runType]: defaultLabel})
     }
 
     var newType = this.getNewType();
@@ -531,8 +530,9 @@ class ActionContentAdopt extends Component {
 
     if (this.state.label===null) {
       // then defaults based on kind
-      this.setState({label: availableLabels[0]})
-      this.props.onUpdatePacket({[runType]: availableLabels[0]})
+      var defaultLabel = this.props.bundle.state.redirectArgs[runType] || availableLabels[0]
+      this.setState({label: defaultLabel})
+      this.props.onUpdatePacket({[runType]: defaultLabel})
     }
 
     var paramsFiltered = false
@@ -742,8 +742,9 @@ export class ActionPanel extends Component {
 
     this.closePanel();
   }
-  gotoAction = (newAction) => {
+  gotoAction = (newAction, newRedirectArgs={}) => {
     this.props.bundle.setQueryParams({tmp: []})
+    this.props.bundle.setState({redirectArgs: newRedirectArgs})
     var url = generatePath(this.props.app.state.serverHost, this.props.bundle.state.bundleid, newAction, this.props.bundle.getSearchString())
     if (Object.keys(this.state.packet).length) {
       this.setState({packet: {}})
@@ -889,7 +890,7 @@ export class ActionPanel extends Component {
                       null
                     }
                     {this.props.action == 'add_compute' ?
-                      <span onClick={()=>this.gotoAction('run_compute')} className="btn btn-primary" style={{margin: "5px"}} title="accept changes and go to run_compute"><span className="fas fa-fw fa-play"></span> run</span>
+                      <span onClick={()=>this.gotoAction('run_compute', {compute: this.props.bundle.queryParams.tmp.split(':')[1].replace('%22', '')})} className="btn btn-primary" style={{margin: "5px"}} title="accept changes and go to run_compute"><span className="fas fa-fw fa-play"></span> run</span>
                       :
                       null
                     }
@@ -899,12 +900,12 @@ export class ActionPanel extends Component {
                       null
                     }
                     {this.props.action == 'add_solver' ?
-                      <span onClick={()=>this.gotoAction('run_solver')} className="btn btn-primary" style={{margin: "5px"}} title="accept changes and go to run_solver"><span className="fas fa-fw fa-play"></span> run</span>
+                      <span onClick={()=>this.gotoAction('run_solver', {solver: this.props.bundle.queryParams.tmp.split(':')[1].replace('%22', '')})} className="btn btn-primary" style={{margin: "5px"}} title="accept changes and go to run_solver"><span className="fas fa-fw fa-play"></span> run</span>
                       :
                       null
                     }
                     {this.props.action == 'run_solver' ?
-                      <span onClick={()=>this.gotoAction('adopt_solution')} className="btn btn-primary" style={{margin: "5px"}} title="accept changes and go to adopt_solution"><span className="fas fa-fw fa-check-double"></span> adopt</span>
+                      <span onClick={()=>this.gotoAction('adopt_solution', {solution: this.props.bundle.queryParams.tmp.split(':')[1].replace('%22', '')})} className="btn btn-primary" style={{margin: "5px"}} title="accept changes and go to adopt_solution"><span className="fas fa-fw fa-check-double"></span> adopt</span>
                       :
                       null
                     }

@@ -73,6 +73,7 @@ class Parameter extends Component {
       expandedUnit: false,
       userValue: null, // value the user is requesting to be changed
       userUnit: null, // unit the user is requesting to be changed
+      redirect: null,
     };
     this.abortGetDetailsController = null;
     this.ref = React.createRef();
@@ -177,6 +178,12 @@ class Parameter extends Component {
       this.addToPinned();
     }
   }
+  gotoAction = (newAction, newRedirectArgs={}) => {
+    this.props.bundle.setQueryParams({tmp: []})
+    this.props.bundle.setState({redirectArgs: newRedirectArgs})
+    var url = generatePath(this.props.app.state.serverHost, this.props.bundle.state.bundleid, newAction, this.props.bundle.getSearchString())
+    this.setState({redirect: url})
+  }
   componentDidMount() {
     this.componentDidUpdate();
   }
@@ -226,6 +233,10 @@ class Parameter extends Component {
   //   return false;
   // }
   render() {
+    if (this.state.redirect) {
+      return (<Redirect to={this.state.redirect}/>)
+    }
+
     if (['SelectParameter', 'SelectTwigParameter', 'FloatArrayParameter', 'DistributionParameter', 'ConstraintParameter'].indexOf(this.props.paramOverview.class)!==-1 && !this.state.expandedValue && !this.state.expandedUnit &&!this.state.expandedDetails && this.state.receivedDetails) {
       // reset so that we force a new refresh next time - this is only needed for parameters where we rely on state.details.value vs props.valuestr
       this.setState({receivedDetails: false, details: {}})
@@ -352,10 +363,6 @@ class Parameter extends Component {
                           </span>
     }
 
-    if (this.state.expandedDetails && this.props.bundle.queryParams['lastActive'] != this.props.uniqueid) {
-      this.props.bundle.setQueryParams({lastActive: this.props.uniqueid})
-    }
-
     var statusBarStyle = {}
     if (['detached_job', 'imported_job'].indexOf(this.props.paramOverview.qualifier) !== -1 && this.props.paramOverview.valuestr.indexOf("progress:")!==-1) {
       var progress = this.props.paramOverview.valuestr.split("progress:")[1]
@@ -463,7 +470,10 @@ class Parameter extends Component {
                   {mapObject(this.state.details.distributions || {} , (uniqueid, twig) => {
                     return <ParameterDetailsItemPin key={uniqueid} app={this.props.app} bundle={this.props.bundle} PSPanel={this.props.PSPanel} param={this} uniqueid={uniqueid} twig={twig} disableFiltering={this.props.disableFiltering} isDistribution={true}/>
                   })}
-                  <Link to={generatePath(this.props.app.state.serverHost, this.props.bundle.state.bundleid, 'add_distribution', this.props.bundle.getSearchString())}><span className="fas fa-fw fa-plus" style={{paddingLeft: "49px", paddingRight: "22px"}}></span><span style={{color: "#000000"}}>add distribution</span></Link>
+                  {/* <Link to={generatePath(this.props.app.state.serverHost, this.props.bundle.state.bundleid, 'add_distribution', this.props.bundle.getSearchString())}><span className="fas fa-fw fa-plus" style={{paddingLeft: "49px", paddingRight: "22px"}}></span><span style={{color: "#000000"}}>add distribution</span></Link> */}
+                  {/* <Link to={generatePath(this.props.app.state.serverHost, this.props.bundle.state.bundleid, 'add_distribution', this.props.bundle.getSearchString())}><span className="fas fa-fw fa-plus" style={{paddingLeft: "49px", paddingRight: "22px"}}></span><span style={{color: "#000000"}}>add distribution</span></Link> */}
+                  <span onClick={()=>this.gotoAction('add_distribution', {uniqueids: [this.props.uniqueid]})} style={{cursor: "pointer"}}><span className="fas fa-fw fa-plus" style={{paddingLeft: "49px", paddingRight: "22px", color: "rgb(43, 113, 177)"}}></span><span style={{color: "#000000"}}>add distribution</span></span>
+
                 </div>
               </ParameterDetailsItem>
             :
@@ -854,8 +864,9 @@ class InputFloatArray extends Component {
   componentWillUnmount() {
     this.setState({inputType: null})
   }
-  gotoAction = (newAction) => {
+  gotoAction = (newAction, newRedirectArgs={}) => {
     this.props.bundle.setQueryParams({tmp: []})
+    this.props.bundle.setState({redirectArgs: newRedirectArgs})
     var url = generatePath(this.props.app.state.serverHost, this.props.bundle.state.bundleid, newAction, this.props.bundle.getSearchString())
     this.setState({redirect: url})
   }
