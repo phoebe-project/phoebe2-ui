@@ -401,11 +401,48 @@ class ActionContentRun extends Component {
     super(props);
     this.state = {
       label: null,
-      labelNew: null
+      labelNew: null,
+      checksStatus: "UNKNOWN",
+      checksReport: [],
     }
+    this.abortGetChecksReportController = null
+  }
+  updateChecksReport = (label) => {
+    if (label === null || label === undefined) {
+      return
+    }
+    var context = this.props.action.split('_')[1]
+
+    console.log("requesting update to checksReport run_checks_"+context+"("+label+")")
+
+    this.abortGetChecksReportController = new window.AbortController();
+    abortableFetch("http://"+this.props.app.state.serverHost+"/run_checks/"+this.props.bundle.state.bundleid+"/"+"run_checks_"+context+"/"+label, {signal: this.abortGetChecksReportController.signal})
+      .then(res => res.json())
+      .then(json => {
+        if (json.data.success) {
+          console.log("received RunChecksReport")
+          this.setState({checksStatus: json.data.checks_status, checksReport: json.data.checks_report})
+        } else {
+          alert("server error: "+json.data.error);
+          this.setState({checksStatus: "UNKNOWN", checksReport: []})
+        }
+      }, err=> {
+        console.log("received abort signal")
+      })
+      .catch(err => {
+        if (err.name === 'AbortError') {
+          console.log("received abort signal")
+        } else {
+          alert("server error, try again")
+          this.setState({checksStatus: "UNKNOWN", checksReport: []})
+        }
+
+      });
   }
 
   onChangeLabel = (e) => {
+    this.updateChecksReport(e.value)
+
     this.setState({label: e.value});
 
     this.props.onUpdatePacket({[this.props.action.split('_')[1]]: e.value})
@@ -420,9 +457,6 @@ class ActionContentRun extends Component {
     return null
   }
 
-  // onChangeLabelNew = (e) => {
-  //   this.props.onUpdatePacket({[this.getNewType()]: e.target.value})
-  // }
   onChangeLabelNew = (inputValue, actionMeta) => {
     var value = null
     if (inputValue !== null) {
@@ -430,6 +464,12 @@ class ActionContentRun extends Component {
     }
     this.setState({labelNew: value})
     this.props.onUpdatePacket({[this.getNewType()]: value})
+  }
+
+  componentDidMount() {
+    this.props.app.socket.on(this.props.bundle.state.bundleid+':changes:react', (data) => {
+      this.updateChecksReport(this.state.label)
+    })
   }
 
   render() {
@@ -440,8 +480,7 @@ class ActionContentRun extends Component {
     if (this.state.label===null) {
       // then defaults based on kind
       var defaultLabel = this.props.bundle.state.redirectArgs[runType] || availableLabels[0]
-      this.setState({label: defaultLabel})
-      this.props.onUpdatePacket({[runType]: defaultLabel})
+      this.onChangeLabel({value: defaultLabel})
     }
 
     var newType = this.getNewType();
@@ -491,7 +530,7 @@ class ActionContentRun extends Component {
         </div>
 
         {paramsFiltered ?
-          <PSPanel app={this.props.app} bundleid={this.props.bundle.state.bundleid} bundle={this.props.bundle} paramsFiltered={paramsFiltered[0]} orderBy={runType} PSPanelOnly={true} disableFiltering={true} showPopoutButton={false}/>
+          <PSPanel showChecks={true} checksStatus={this.state.checksStatus} checksReport={this.state.checksReport} app={this.props.app} bundleid={this.props.bundle.state.bundleid} bundle={this.props.bundle} paramsFiltered={paramsFiltered[0]} orderBy={runType} PSPanelOnly={true} disableFiltering={true} showPopoutButton={false}/>
           :
           null
         }
@@ -507,10 +546,48 @@ class ActionContentAdopt extends Component {
     this.state = {
       label: null,
       remove: false,
+      checksStatus: "UNKNOWN",
+      checksReport: [],
     }
+    this.abortGetChecksReportController = null
+  }
+
+  updateChecksReport = (label) => {
+    if (label === null || label === undefined) {
+      return
+    }
+    var context = this.props.action.split('_')[1]
+
+    console.log("requesting update to checksReport run_checks_"+context+"("+label+")")
+
+    this.abortGetChecksReportController = new window.AbortController();
+    abortableFetch("http://"+this.props.app.state.serverHost+"/run_checks/"+this.props.bundle.state.bundleid+"/"+"run_checks_"+context+"/"+label, {signal: this.abortGetChecksReportController.signal})
+      .then(res => res.json())
+      .then(json => {
+        if (json.data.success) {
+          console.log("received RunChecksReport")
+          this.setState({checksStatus: json.data.checks_status, checksReport: json.data.checks_report})
+        } else {
+          alert("server error: "+json.data.error);
+          this.setState({checksStatus: "UNKNOWN", checksReport: []})
+        }
+      }, err=> {
+        console.log("received abort signal")
+      })
+      .catch(err => {
+        if (err.name === 'AbortError') {
+          console.log("received abort signal")
+        } else {
+          alert("server error, try again")
+          this.setState({checksStatus: "UNKNOWN", checksReport: []})
+        }
+
+      });
   }
 
   onChangeLabel = (e) => {
+    this.updateChecksReport(e.value)
+
     this.setState({label: e.value});
 
     this.props.onUpdatePacket({[this.props.action.split('_')[1]]: e.value})
@@ -527,6 +604,11 @@ class ActionContentAdopt extends Component {
     console.log("onChangeDistribution: "+value)
     this.props.onUpdatePacket({distribution: value})
   }
+  componentDidMount() {
+    this.props.app.socket.on(this.props.bundle.state.bundleid+':changes:react', (data) => {
+      this.updateChecksReport(this.state.label)
+    })
+  }
   render() {
     var runType = this.props.action.split('_')[1]
     var availableLabels = this.props.bundle.state.tags[runType+'s'] || [];
@@ -535,8 +617,7 @@ class ActionContentAdopt extends Component {
     if (this.state.label===null) {
       // then defaults based on kind
       var defaultLabel = this.props.bundle.state.redirectArgs[runType] || availableLabels[0]
-      this.setState({label: defaultLabel})
-      this.props.onUpdatePacket({[runType]: defaultLabel})
+      this.onChangeLabel({value: defaultLabel})
     }
 
     var paramsFiltered = false
@@ -588,7 +669,7 @@ class ActionContentAdopt extends Component {
         </div>
 
         {paramsFiltered ?
-          <PSPanel app={this.props.app} bundleid={this.props.bundle.state.bundleid} bundle={this.props.bundle} paramsFiltered={paramsFiltered[0]} orderBy={'solution'} PSPanelOnly={true} disableFiltering={true} showPopoutButton={false}/>
+          <PSPanel showChecks={true} checksReport={this.state.checksReport} app={this.props.app} bundleid={this.props.bundle.state.bundleid} bundle={this.props.bundle} paramsFiltered={paramsFiltered[0]} orderBy={'solution'} PSPanelOnly={true} disableFiltering={true} showPopoutButton={false}/>
           :
           null
         }

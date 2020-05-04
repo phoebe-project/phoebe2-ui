@@ -1249,6 +1249,26 @@ class InputConstraint extends Component {
   }
 }
 
+class ChecksReport extends Component {
+  render() {
+    return (
+      <div className="phoebe-parameter" style={{padding: "10px"}}>
+        {this.props.checksReport.length == 0 ?
+          <span style={{borderLeft: "4px solid rgba(0,255,0,0.6)", padding: "10px", marginBottom: "5px"}}><b>PASSING</b>: no errors or warnings to show</span>
+          :
+          null
+        }
+
+        <FlipMove appearAnimation={false} enterAnimation="fade" leaveAnimation="fade" maintainContainerHeight={true}>
+          {this.props.checksReport.map((report,i) => {
+            return <ChecksReportItem report={report} reportKey={i} bundle={this.props.bundle} PSPanel={this.props.PSPanel} app={this.props.app}/>
+          })}
+        </FlipMove>
+      </div>
+    )
+  }
+}
+
 class ChecksReportItem extends Component {
   render() {
 
@@ -1342,25 +1362,11 @@ export class PSPanel extends Component {
     return (
       <Panel backgroundColor="#e4e4e4" minHeight={this.props.minHeight}>
 
-        {this.props.showChecks && this.props.bundle.state.checksStatus !== 'UNKNOWN' ?
-          <div className="phoebe-parameter" style={{padding: "10px"}}>
-            {this.props.bundle.state.checksReport.length == 0 ?
-              <span style={{borderLeft: "4px solid rgba(0,255,0,0.6)", padding: "10px", marginBottom: "5px"}}><b>PASSING</b>: no errors or warnings to show</span>
-              :
-              null
-            }
-
-            <FlipMove appearAnimation={false} enterAnimation="fade" leaveAnimation="fade" maintainContainerHeight={true}>
-              {this.props.bundle.state.checksReport.map((report,i) => {
-                return <ChecksReportItem report={report} reportKey={i} bundle={this.props.bundle} PSPanel={this} app={this.props.app}/>
-              })}
-            </FlipMove>
-          </div>
+        {this.props.showChecks && (this.props.checksStatus || null) !== 'UNKNOWN' ?
+          <ChecksReport checksReport={this.props.checksReport || []} PSPanel={this} bundle={this.props.bundle} app={this.props.app}/>
           :
           null
         }
-
-
 
         {this.props.showPopoutButton ?
           <div style={{float: "right", marginTop: "6px", paddingRight: "10px"}}>

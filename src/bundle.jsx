@@ -530,7 +530,7 @@ export class Bundle extends ReactQueryParams {
             {this.props.match.params.action ?
               <ActionPanel app={this.props.app} bundleid={this.state.bundleid} bundle={this} action={this.props.match.params.action}/>
               :
-              <PSPanel app={this.props.app} bundleid={this.state.bundleid} bundle={this} showPopoutButton={true} showChecks={!this.queryParams.hideChecks}/>
+              <PSPanel app={this.props.app} bundleid={this.state.bundleid} bundle={this} showPopoutButton={true} showChecks={!this.queryParams.hideChecks} checksReport={this.state.checksReport} checksStatus={this.state.checksStatus}/>
             }
             <FigurePanel app={this.props.app} bundleid={this.state.bundleid} bundle={this} showPopoutButton={true} inactive={this.props.match.params.action}/>
           </PanelGroup>
