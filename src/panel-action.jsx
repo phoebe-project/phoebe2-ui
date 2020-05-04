@@ -257,7 +257,7 @@ class ActionContentAddDistribution extends Component {
       this.setState({parameters: e})
 
     } else {
-      this.props.onUpdatePacket({uniqueid: ""})
+      this.props.onUpdatePacket({uniqueid: []})
       this.setState({parameters: []})
     }
   }
@@ -277,9 +277,13 @@ class ActionContentAddDistribution extends Component {
 
     var valueParamsList = this.state.parameters
     if (valueParamsList.length === 0) {
-      var defaultUniqueids = this.props.bundle.state.redirectArgs['uniqueids'] || [];
-      this.onChangeParameters(defaultUniqueids.map((uniqueid) => ({value: uniqueid, label: this.props.bundle.state.paramsAllowDist[uniqueid]})))
+      var defaultUniqueids = this.props.bundle.state.redirectArgs['uniqueids'] || null;
+      if (defaultUniqueids !== null) {
+        this.onChangeParameters(defaultUniqueids.map((uniqueid) => ({value: uniqueid, label: this.props.bundle.state.paramsAllowDist[uniqueid]})))
+        this.props.bundle.setState({redirectArgs: {}})
+      }
     }
+
     return (
       <div>
         <div className="form-group">
