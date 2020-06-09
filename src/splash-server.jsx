@@ -1,11 +1,12 @@
 import React, { Component } from 'react';
 import {Redirect} from 'react-router-dom';
 
-import {Link, generatePath, abortableFetch} from './common';
+import {Link, generatePath, abortableFetch, clientVersion, serverMinVersion, serverMaxVersion} from './common';
 
 // import {history} from './history';
 import {LogoSplash} from './logo';
 
+var versionCompare = require('semver-compare');  // function that returns -1, 0, 1
 
 export class SplashServer extends Component {
   constructor(props) {
@@ -173,10 +174,28 @@ class ServerVersionSpan extends Component {
   render() {
     let text, title
     var style = {display: "inline-block", float: "left", width: "60px", marginLeft: "5px", marginRight: "15px", textAlign: "center"}
+
     if (this.props.phoebeVersion) {
       style.border = "1px dotted #a1a1a1"
       text = this.props.phoebeVersion
-      title = "this server is running PHOEBE "+this.props.phoebeVersion
+      if (this.props.clientNeedsUpdate) {
+        style.color = 'red'
+        title = "this server is running PHOEBE "+this.props.phoebeVersion+" but requires an update to UI version "+this.props.clientMinVersion+"+"
+      } else if (this.props.serverNeedsUpdate) {
+        style.color = 'red'
+        title = "this server is running PHOEBE "+this.props.phoebeVersion+" which is incompatible with UI version "+clientVersion+".  Update the server or downgrade to an older version of the client."
+      } else if (this.props.clientNotTested || this.props.serverNotTested) {
+        style.color = 'orange'
+        title = "this server is running PHOEBE "+this.props.phoebeVersion+" which was not originally tested with UI version "+clientVersion+"."
+        if (this.props.clientNotTested) {
+          title += "  Consider updating the server to at least "+serverMinVersion+"."
+        }
+        if (this.props.serverNotTested) {
+          title += "  Consider updating the client to at least "+this.props.clientMinVersion+"."
+        }
+      } else {
+        title = "this server is running PHOEBE "+this.props.phoebeVersion
+      }
     } else if (this.props.autoconnect) {
       style.opacity = "0.5"
       text = "autoconnect"
@@ -203,6 +222,8 @@ class ServerButton extends Component {
     super(props);
     this.state = {
       phoebeVersion: null,
+      clientMinVersion: null,
+      clientMaxVersion: null,
       parentId: null,
       hover: false,
       removeConfirmed: false,
@@ -234,7 +255,10 @@ class ServerButton extends Component {
       abortableFetch(location+"/info")
         .then(res => res.json())
         .then(json => {
-          this.setState({phoebeVersion: json.data.phoebe_version, parentId: json.data.parentid})
+          this.setState({phoebeVersion: json.data.phoebe_version,
+                         clientMinVersion: json.data.client_min_version || null,
+                         clientMaxVersion: json.data.client_max_version || null,
+                         parentId: json.data.parentid})
           this.getInfo(5000)
         })
         .catch(err => {
@@ -242,7 +266,7 @@ class ServerButton extends Component {
           //   this.cancelConnect();
           //   history.goBack();
           // }
-          this.setState({phoebeVersion: null, parentId: null});
+          this.setState({phoebeVersion: null, clientMinVersion: null, clientMaxVersion: null, parentId: null});
           this.getInfo(scanTimeout + 500)
         });
     }, scanTimeout);
@@ -367,12 +391,55 @@ class ServerButton extends Component {
       }
     }
 
+
+    var clientNeedsUpdate = false
+    var serverNeedsUpdate = false
+    if (this.state.clientMinVersion !== null) {
+      clientNeedsUpdate = versionCompare(clientVersion, this.state.clientMinVersion) < 0
+    }
+    if (this.state.phoebeVersion !== null && this.state.phoebeVersion !== 'devel') {
+      serverNeedsUpdate = versionCompare(this.state.phoebeVersion, serverMinVersion) < 0
+    }
+    var clientNotTested = false
+    var serverNotTested = false
+    if (this.state.clientMaxVersion !== null) {
+      clientNotTested = versionCompare(clientVersion, this.state.clientMaxVersion) > 0
+    }
+    if (this.state.phoebeVersion !== null && this.state.phoebeVersion !== 'devel') {
+      serverNotTested = versionCompare(this.state.phoebeVersion, serverMaxVersion) > 0
+    }
+    // if (this.state.phoebeVersion === 'devel') {
+      // serverNotTested = true
+    // }
+
+    var href = null
+    var target = null
+    if (serverNeedsUpdate) {
+      to = null
+      href = "http://phoebe-project.org/install"
+      title = "server requires update to at least "+serverMinVersion
+      target = "_blank"
+    } else if (clientNeedsUpdate) {
+      to = null
+      href = "http://phoebe-project.org/clients"
+      title = "client needs update to at least "+this.state.clientMinVersion+" (currently "+clientVersion+") to connect to this server"
+      target = "_blank"
+    }
+
     return (
       // NOTE: we use onMouseOver instead of onMouseEnter here so that it is triggered when a server above is removed
       <div onMouseOver={this.hoverOn} onMouseLeave={this.hoverOff} className="splash-scrollable-btn-div" style={style}>
-        <Link className={btnClassName} to={to} title={title}>
+        <Link className={btnClassName} to={to} href={href} target={target} title={title}>
           <ServerStatusIcon app={this.props.app} phoebeVersion={this.state.phoebeVersion} status={this.state.status} autoconnect={this.props.autoconnect} serverButton={this}/>
-          <ServerVersionSpan phoebeVersion={this.state.phoebeVersion} status={this.state.status} autoconnect={this.props.autoconnect}/>
+          <ServerVersionSpan phoebeVersion={this.state.phoebeVersion}
+                             clientMinVersion={this.state.clientMinVersion}
+                             clientMaxVersion={this.state.clientMaxVersion}
+                             clientNeedsUpdate={clientNeedsUpdate}
+                             serverNeedsUpdate={serverNeedsUpdate}
+                             clientNotTested={clientNotTested}
+                             serverNotTested={serverNotTested}
+                             status={this.state.status}
+                             autoconnect={this.props.autoconnect}/>
           {locationSpan}
           {this.props.isSpawned || this.state.status ?
             null

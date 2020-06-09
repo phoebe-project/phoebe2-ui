@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import {Redirect} from 'react-router-dom';
 
-import {Link, generatePath} from './common';
+import {Link, generatePath, clientVersion} from './common';
 
 export class Panel extends Component {
   render() {
@@ -202,7 +202,7 @@ export class Statusbar extends Component {
         </Link>
 
 
-        <span style={{float: "right", marginRight: "10px"}}>clientid: {this.props.app.state.clientid}</span>
+        <span style={{float: "right", marginRight: "10px"}}>client id: {this.props.app.state.clientid} (v{clientVersion})</span>
 
         {this.props.bundleid ?
           <div className="d-none d-lg-inline" style={{float: "right"}}>

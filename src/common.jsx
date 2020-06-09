@@ -15,6 +15,10 @@ import 'abortcontroller-polyfill';
 import {fetch} from 'whatwg-fetch';
 export const abortableFetch = ('signal' in new Request('')) ? window.fetch : fetch
 
+export var clientVersion = '0.1.0'
+export var serverMinVersion = '2.3.0'  // will not allow connecting to earlier versions
+export var serverMaxVersion = '2.3.0'  // will attempt to connect to newer versions, with warning
+
 
 let BrowserWindow;
 if (isElectron()) {
