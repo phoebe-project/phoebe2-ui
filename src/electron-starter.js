@@ -24,7 +24,8 @@ function createWindow() {
       minWidth: 1000,
       height: 800,
       minHeight: 500,
-      icon: __dirname + '/icons/phoebe.png'
+      icon: __dirname + '/icons/phoebe.png',
+      webPreferences: { nodeIntegration: true }
     });
 
     // and load the index.html of the app.
