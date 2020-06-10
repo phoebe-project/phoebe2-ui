@@ -1,5 +1,7 @@
 {
   "name": "PHOEBE",
+  "author": "PHOEBE development team",
+  "contributors": "Kyle Conroy",
   "description": "Eclipsing Binary Modeling Software",
   "version": "0.1.0",
   "private": true,
@@ -8,9 +10,11 @@
     "electron-installer-debian": "^1.0.0",
     "electron-installer-dmg": "^2.0.0",
     "electron-installer-redhat": "^0.5.0",
+    "electron-installer-windows": "^3.0.0",
     "electron-packager": "13.0.0",
     "foreman": "3.0.0",
-    "react-scripts": "0.8.5"
+    "react-scripts": "0.8.5",
+    "replace-in-file": "^6.1.0"
   },
   "dependencies": {
     "abortcontroller-polyfill": "1.2.1",
@@ -35,19 +39,21 @@
     "whatwg-fetch": "3.0.0"
   },
   "homepage": "http://ui.phoebe-project.org",
-  "main": "src/electron-starter.js",
+  "main": "build/electron-starter.js",
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
     "electron": "electron .",
     "dev": "nf start -p 3000",
-    "package:all": "npm run build && electron-packager . --all --out=dist --overwrite --ignore=dist",
-    "package": "npm run build && electron-packager . --out=dist --overwrite --ignore=dist",
-    "package:installer:all": "npm run package:installer:deb64 && npm run package:installer:rpm64 && npm run package:installer:dmg && npm run package:installer:exe",
-    "package:installer:deb64": "electron-installer-debian --src dist/PHOEBE-linux-x64/ --dest dist/installers/ --arch amd64 --icon=/public/logos/phoebe2.svg",
-    "package:installer:rpm64": "electron-installer-redhat --src dist/PHOEBE-linux-x64/ --dest dist/installers/ --arch x86_64 --icon=/public/logos/phoebe2.svg",
-    "package:installer:dmg": "electron-installer-dmg ./dist/PHOEBE-darwin-x64/PHOEBE.app FooBar --out dist/installers/ --icon=/public/logos/phoebe2.svg --overwrite",
-    "package:installer:exe": "electron-installer-windows --src dist/PHOEBE-win32-x64/ --dest dist/installers/"
+    "build:electron": "npm run build && replace-in-file '/href=\"//g' 'href=\"./' build/index.html --isRegex && replace-in-file '/src=\"//g' 'src=\"./' build/index.html --isRegex && cp ./src/electron*.js ./build/",
+    "package:all": "npm run build:electron && electron-packager . --all --out=dist --overwrite --ignore=dist --ignore=src --ignore=public",
+    "package": "npm run build:electron && electron-packager . --out=dist --overwrite --ignore=dist --ignore=src --ignore=public",
+    "package:installer:all": "npm run package:installer:deb64 && npm run package:installer:rpm64 && npm run package:installer:dmg64 && npm run package:installer:exe64 && npm run package:installer:exe32",
+    "package:installer:deb64": "electron-installer-debian --src dist/PHOEBE-linux-x64/ --dest dist/installers/ --arch amd64 --icon=public/logos/phoebe2.svg",
+    "package:installer:rpm64": "electron-installer-redhat --src dist/PHOEBE-linux-x64/ --dest dist/installers/ --arch x86_64 --icon=public/logos/phoebe2.svg",
+    "package:installer:dmg64": "electron-installer-dmg ./dist/PHOEBE-darwin-x64/PHOEBE.app FooBar --out dist/installers/ --icon=public/logos/phoebe2.svg --overwrite",
+    "package:installer:exe64": "electron-installer-windows --src dist/PHOEBE-win32-x64/ --dest dist/installers/",
+    "package:installer:exe32": "electron-installer-windows --src dist/PHOEBE-win32-ia32/ --dest dist/installers/"
   }
 }

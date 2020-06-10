@@ -7,6 +7,10 @@ const electron = require('electron');
 // Module to control application life.
 const app = electron.app;
 // Module to create native browser window.
+
+// make sure the packaged version of chromium can display the built index.html file
+//app.commandLine.appendSwitch('allow-file-access');
+
 const BrowserWindow = electron.BrowserWindow;
 
 const path = require('path');
@@ -25,7 +29,7 @@ function createWindow() {
       height: 800,
       minHeight: 500,
       icon: __dirname + '/icons/phoebe.png',
-      webPreferences: { nodeIntegration: true }
+      // webPreferences: { nodeIntegration: true }
     });
 
     // and load the index.html of the app.
