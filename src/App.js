@@ -41,7 +41,7 @@ class App extends Component {
       serverStartingChildProcess: isElectron(),
       settingsServerHosts: [],
       settingsDismissedTips: [],
-      clientVersion: '0.1.0', // UPDATE ON NEW RELEASE
+      clientVersion: '0.1.0', // UPDATE ON NEW RELEASE, also update package.json.version to match
       serverMinVersion: '2.3.0',  // UPDATE ON NEW RELEASE
       latestClientVersion: null, // leave at null, updated by getLatestClientVersion
       latestServerVersion: null, // leave at null, updated by getLatestServerVersion

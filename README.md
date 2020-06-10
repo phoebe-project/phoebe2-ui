@@ -19,7 +19,7 @@ see [installing node and npm on Ubuntu](https://tecadmin.net/install-latest-node
 
   * node
   * npm
-  * [phoebe2](https://www.github.com/phoebe-project/phoebe2) (currently needs the latest version of the `client` branch installed which requires `pip install flask flask-sqlalchemy flask-socketio gevent-websocket socketIO-client`, eventually phoebe will only be required for running the server locally).
+  * [phoebe2](https://www.github.com/phoebe-project/phoebe2) (currently needs the latest version of the `development` or `fitting` branch installed which requires `pip install flask flask-sqlalchemy flask-socketio gevent-websocket socketIO-client`, once released, PHOEBE 2.3+ will only be required for running the server locally).
 
 while in top-level directory, install all local dependencies into the `node_modules` directory (not under version-control):
 
@@ -47,7 +47,7 @@ npm run build
 
 Dependencies:
 * `wine` (if using Linux and trying to build for windows)
-* `rpm` (if using Debian-based system and trying to create rmp installer)
+* `rpm` (if using Debian-based system and trying to create rpm installer)
 
 ```bash
 npm run package
@@ -74,7 +74,7 @@ To create installers for all supported distributions (currently includes .deb, .
 npm run package:installer:all
 ```
 
-will create installers in the `dist/installers` directory (not under version-control).
+will create installers in the `dist/installers` directory (not under version-control) from the latest created package versions (call `npm run package:all` first, if necessary).
 
 Alternatively, you can call `npm run package:installer:deb64`, `npm run package:installer:rpm64`, `npm run package:installer:dmg`, and `npm run package:installer:exe` separately.  
 
