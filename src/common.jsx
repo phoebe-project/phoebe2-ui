@@ -15,10 +15,6 @@ import 'abortcontroller-polyfill';
 import {fetch} from 'whatwg-fetch';
 export const abortableFetch = ('signal' in new Request('')) ? window.fetch : fetch
 
-export var clientVersion = '0.1.0'
-export var serverMinVersion = '2.3.0'  // will not allow connecting to earlier versions
-
-
 let BrowserWindow;
 if (isElectron()) {
   BrowserWindow = window.require('electron').remote.BrowserWindow

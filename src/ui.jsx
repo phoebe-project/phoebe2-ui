@@ -1,7 +1,9 @@
 import React, { Component } from 'react';
 import {Redirect} from 'react-router-dom';
 
-import {Link, generatePath, clientVersion} from './common';
+import {Link, generatePath} from './common';
+
+var versionCompare = require('semver-compare');  // function that returns -1, 0, 1
 
 export class Panel extends Component {
   render() {
@@ -161,6 +163,47 @@ export class Toolbar extends Component {
   }
 }
 
+class UpdateButton extends Component {
+  render() {
+    return (
+      <Link href={this.props.href} target="_blank" title={this.props.title} style={{marginLeft: "5px", marginRight: "5px", paddingLeft: "5px", paddingRight: "5px", border: "2px solid white", borderRadius: "4px", fontWeight: "normal", fontVariant: "all-small-caps", paddingBottom: "4px", paddingTop: "2px"}}>{this.props.children}</Link>
+    )
+  }
+}
+
+class ServerUpdateButton extends Component {
+  render() {
+    if (this.props.latestServerVersion === null || this.props.serverVersion === null) {
+      return (null)
+    }
+    const updateAvailable = versionCompare(this.props.serverVersion, this.props.latestServerVersion) == -1
+    if (!updateAvailable) { // || this.props.serverVersion === 'devel'
+      return (null)
+    }
+
+    return (
+      <UpdateButton href={"http://phoebe-project.org/releases/"+this.props.latestServerVersion.slice(0, this.props.latestServerVersion.lastIndexOf("."))} title={"install instructions for PHOEBE v"+this.props.latestServerVersion}>server v{this.props.latestServerVersion} available</UpdateButton>
+    )
+  }
+}
+
+class ClientUpdateButton extends Component {
+  render() {
+    if (this.props.latestClientVersion === null || this. props.clientVersion === null) {
+      return (null)
+    }
+    const updateAvailable = versionCompare(this.props.clientVersion, this.props.latestClientVersion) == -1
+    if (!updateAvailable) {
+      return (null)
+    }
+
+
+    return (
+      <UpdateButton href="http://phoebe-project.org/clients" title={"download client v"+this.props.latestClientVersion}>client v{this.props.latestClientVersion} available</UpdateButton>
+    )
+  }
+}
+
 
 export class Statusbar extends Component {
   changeServerWarning = (e) => {
@@ -192,25 +235,41 @@ export class Statusbar extends Component {
       serverPath = generatePath()
     }
 
+    var clientType = "web"
+    if (this.props.app.state.isElectron) {
+      clientType = "desktop"
+    }
+
 
     return (
       <div style={divStyle} className="statusbar">
-        <Link style={{fontWeight: "inherit", fontSize: "inherit"}} title="choose different server" onClick={this.changeServerWarning} to={serverPath}>
-          <span className="fa-md fas fa-fw fa-broadcast-tower" style={{margin: "4px"}}/>
-          <span style={{margin: "4px", border: "1px dotted #a1a1a1", paddingLeft: "2px", paddingRight: "2px"}}>{this.props.app.state.serverPhoebeVersion}</span>
-          <span style={{margin: "4px"}}>{this.props.app.state.serverHost}</span>
-        </Link>
-
-
-        <span style={{float: "right", marginRight: "10px"}}>client id: {this.props.app.state.clientid} (v{clientVersion})</span>
-
-        {this.props.bundleid ?
-          <div className="d-none d-lg-inline" style={{float: "right"}}>
-            <span style={{marginRight: "20px"}}>bundleid: {this.props.bundleid}</span>
-          </div>
+        {this.props.app.state.serverHost !== null && this.props.app.state.serverHost.indexOf('phoebe-project.org') === -1 ?
+          <ServerUpdateButton serverVersion={this.props.app.state.serverPhoebeVersion} latestServerVersion={this.props.app.state.latestServerVersion}/>
           :
           null
         }
+        {this.props.app.state.serverHost !== null ?
+          <Link style={{fontWeight: "inherit", fontSize: "inherit"}} title="choose different server" onClick={this.changeServerWarning} to={serverPath}>
+            <span className="fa-md fas fa-fw fa-broadcast-tower" style={{margin: "4px"}}/>
+            <span style={{margin: "4px", border: "1px dotted #a1a1a1", paddingLeft: "2px", paddingRight: "2px"}}>{this.props.app.state.serverPhoebeVersion}</span>
+            <span style={{margin: "4px"}}>{this.props.app.state.serverHost}</span>
+          </Link>
+        :
+        null
+      }
+
+
+        <span style={{float: "right", marginRight: "10px"}} title={clientType+" client v"+this.props.app.state.clientVersion+" with id: "+this.props.app.state.clientid}>
+          <span className={this.props.app.state.isElectron ? "fa-md fas fa-fw fa-desktop" : "fa-md fas fa-fw fa-window-maximize"} style={{margin: "4px"}}/>
+          <span style={{margin: "4px", border: "1px dotted #a1a1a1", paddingLeft: "2px", paddingRight: "2px"}}>{this.props.app.state.clientVersion}</span> {this.props.app.state.clientid}
+          {this.props.app.state.isElectron ?
+            <ClientUpdateButton clientVersion={this.props.app.state.clientVersion} latestClientVersion={this.props.app.state.latestClientVersion} />
+            :
+            null
+            // <ClientUpdateButton clientVersion={this.props.app.state.clientVersion} latestClientVersion={this.props.app.state.latestClientVersion} />
+          }
+        </span>
+
 
       </div>
     )

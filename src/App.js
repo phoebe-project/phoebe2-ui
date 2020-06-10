@@ -40,7 +40,11 @@ class App extends Component {
       serverAllowAutoconnect: true,
       serverStartingChildProcess: isElectron(),
       settingsServerHosts: [],
-      settingsDismissedTips: []
+      settingsDismissedTips: [],
+      clientVersion: '0.1.0', // UPDATE ON NEW RELEASE
+      serverMinVersion: '2.3.0',  // UPDATE ON NEW RELEASE
+      latestClientVersion: null, // leave at null, updated by getLatestClientVersion
+      latestServerVersion: null, // leave at null, updated by getLatestServerVersion
     };
     this.router = React.createRef();
     this.socket = null;
@@ -79,9 +83,32 @@ class App extends Component {
 
     window.addEventListener("beforeunload", (event) => {this.serverDisconnect();});
 
+    this.getLatestServerVersion();
+    this.getLatestClientVersion();
+
   }
   componentWillUnmount() {
     this.serverDisconnect();
+  }
+  getLatestServerVersion = () => {
+    console.log('attempting to get latest server version from github releases')
+    fetch("https://api.github.com/repos/phoebe-project/phoebe2/releases")
+      .then(res => res.json())
+      .then(json => this.setState({latestServerVersion: json[0]['tag_name'] || null}))
+      .catch(err => {
+        console.log("failed to fetch latestServerVersion")
+        this.setState({latestServerVersion: null})
+      })
+  }
+  getLatestClientVersion = () => {
+    console.log('attempting to get latest client version from github releases')
+    fetch("https://api.github.com/repos/phoebe-project/phoebe2-ui/releases")
+      .then(res => res.json())
+      .then(json => this.setState({latestClientVersion: json[0]['tag_name'] || null}))
+      .catch(err => {
+        console.log("failed to fetch latestClientVersion")
+        this.setState({latestClientVersion: null})
+      })
   }
   getServerPhoebeVersion = (serverHost) => {
     fetch("http://"+serverHost+"/info")
@@ -93,7 +120,7 @@ class App extends Component {
         alert("server may no longer be available.  Cancel connetion to rescan.")
         this.setState({serverPhoebeVersion: null, serverAvailableKinds: null});
       });
-  }
+    }
   serverConnect = (server) => {
     var serverHost = server || this.props.match.params.server
 

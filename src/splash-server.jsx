@@ -1,10 +1,12 @@
 import React, { Component } from 'react';
 import {Redirect} from 'react-router-dom';
 
-import {Link, generatePath, abortableFetch, clientVersion, serverMinVersion, serverMaxVersion} from './common';
+import {Link, generatePath, abortableFetch} from './common';
 
 // import {history} from './history';
 import {LogoSplash} from './logo';
+import {Statusbar} from './ui';
+
 
 var versionCompare = require('semver-compare');  // function that returns -1, 0, 1
 
@@ -79,6 +81,7 @@ export class SplashServer extends Component {
 
     return(
       <div className="App content-dark">
+        <Statusbar app={this.props.app} bundleid={null} dark={true}/>
         <LogoSplash animationEffect="animateShimmer"/>
 
         <div className="splash-scrollable-header">
@@ -183,7 +186,7 @@ class ServerVersionSpan extends Component {
         title = "this server is running PHOEBE "+this.props.phoebeVersion+" but requires an update to UI version "+this.props.clientMinVersion+"+"
       } else if (this.props.serverNeedsUpdate) {
         style.color = 'red'
-        title = "this server is running PHOEBE "+this.props.phoebeVersion+" which is incompatible with UI version "+clientVersion+".  Update the server or downgrade to an older version of the client."
+        title = "this server is running PHOEBE "+this.props.phoebeVersion+" which is incompatible with UI version "+this.props.app.state.clientVersion+".  Update the server or downgrade to an older version of the client."
       } else {
         title = "this server is running PHOEBE "+this.props.phoebeVersion
       }
@@ -248,7 +251,6 @@ class ServerButton extends Component {
         .then(json => {
           this.setState({phoebeVersion: json.data.phoebe_version,
                          clientMinVersion: json.data.client_min_version || null,
-                         clientMaxVersion: json.data.client_max_version || null,
                          parentId: json.data.parentid})
           this.getInfo(5000)
         })
@@ -386,10 +388,10 @@ class ServerButton extends Component {
     var clientNeedsUpdate = false
     var serverNeedsUpdate = false
     if (this.state.clientMinVersion !== null) {
-      clientNeedsUpdate = versionCompare(clientVersion, this.state.clientMinVersion) < 0
+      clientNeedsUpdate = versionCompare(this.props.app.state.clientVersion, this.state.clientMinVersion) < 0
     }
     if (this.state.phoebeVersion !== null && this.state.phoebeVersion !== 'devel') {
-      serverNeedsUpdate = versionCompare(this.state.phoebeVersion, serverMinVersion) < 0
+      serverNeedsUpdate = versionCompare(this.state.phoebeVersion, this.props.app.state.serverMinVersion) < 0
     }
 
     var href = null
@@ -397,12 +399,12 @@ class ServerButton extends Component {
     if (serverNeedsUpdate) {
       to = null
       href = "http://phoebe-project.org/install"
-      title = "server requires update to at least "+serverMinVersion
+      title = "server requires update to at least "+this.props.app.state.serverMinVersion
       target = "_blank"
     } else if (clientNeedsUpdate) {
       to = null
       href = "http://phoebe-project.org/clients"
-      title = "client needs update to at least "+this.state.clientMinVersion+" (currently "+clientVersion+") to connect to this server"
+      title = "client needs update to at least "+this.state.clientMinVersion+" (currently "+this.props.app.state.clientVersion+") to connect to this server"
       target = "_blank"
     }
 
@@ -411,7 +413,8 @@ class ServerButton extends Component {
       <div onMouseOver={this.hoverOn} onMouseLeave={this.hoverOff} className="splash-scrollable-btn-div" style={style}>
         <Link className={btnClassName} to={to} href={href} target={target} title={title}>
           <ServerStatusIcon app={this.props.app} phoebeVersion={this.state.phoebeVersion} status={this.state.status} autoconnect={this.props.autoconnect} serverButton={this}/>
-          <ServerVersionSpan phoebeVersion={this.state.phoebeVersion}
+          <ServerVersionSpan app={this.props.app}
+                             phoebeVersion={this.state.phoebeVersion}
                              clientMinVersion={this.state.clientMinVersion}
                              clientNeedsUpdate={clientNeedsUpdate}
                              serverNeedsUpdate={serverNeedsUpdate}
