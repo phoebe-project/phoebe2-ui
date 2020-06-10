@@ -184,15 +184,6 @@ class ServerVersionSpan extends Component {
       } else if (this.props.serverNeedsUpdate) {
         style.color = 'red'
         title = "this server is running PHOEBE "+this.props.phoebeVersion+" which is incompatible with UI version "+clientVersion+".  Update the server or downgrade to an older version of the client."
-      } else if (this.props.clientNotTested || this.props.serverNotTested) {
-        style.color = 'orange'
-        title = "this server is running PHOEBE "+this.props.phoebeVersion+" which was not originally tested with UI version "+clientVersion+"."
-        if (this.props.clientNotTested) {
-          title += "  Consider updating the server to at least "+serverMinVersion+"."
-        }
-        if (this.props.serverNotTested) {
-          title += "  Consider updating the client to at least "+this.props.clientMinVersion+"."
-        }
       } else {
         title = "this server is running PHOEBE "+this.props.phoebeVersion
       }
@@ -400,17 +391,6 @@ class ServerButton extends Component {
     if (this.state.phoebeVersion !== null && this.state.phoebeVersion !== 'devel') {
       serverNeedsUpdate = versionCompare(this.state.phoebeVersion, serverMinVersion) < 0
     }
-    var clientNotTested = false
-    var serverNotTested = false
-    if (this.state.clientMaxVersion !== null) {
-      clientNotTested = versionCompare(clientVersion, this.state.clientMaxVersion) > 0
-    }
-    if (this.state.phoebeVersion !== null && this.state.phoebeVersion !== 'devel') {
-      serverNotTested = versionCompare(this.state.phoebeVersion, serverMaxVersion) > 0
-    }
-    // if (this.state.phoebeVersion === 'devel') {
-      // serverNotTested = true
-    // }
 
     var href = null
     var target = null
@@ -433,11 +413,8 @@ class ServerButton extends Component {
           <ServerStatusIcon app={this.props.app} phoebeVersion={this.state.phoebeVersion} status={this.state.status} autoconnect={this.props.autoconnect} serverButton={this}/>
           <ServerVersionSpan phoebeVersion={this.state.phoebeVersion}
                              clientMinVersion={this.state.clientMinVersion}
-                             clientMaxVersion={this.state.clientMaxVersion}
                              clientNeedsUpdate={clientNeedsUpdate}
                              serverNeedsUpdate={serverNeedsUpdate}
-                             clientNotTested={clientNotTested}
-                             serverNotTested={serverNotTested}
                              status={this.state.status}
                              autoconnect={this.props.autoconnect}/>
           {locationSpan}
