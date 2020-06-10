@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import {Link as RouterLink, Router as RouterRouter, HashRouter as RouterHashRouter} from 'react-router-dom';
+import {Link as RouterLink, Router as BrowserRouter, HashRouter as RouterHashRouter} from 'react-router-dom';
 import 'babel-polyfill';
 
 import Select from 'react-select'; // https://react-select.com/home
@@ -144,13 +144,13 @@ export function filterObjectByKeys (object, keys) {
 
 export class Router extends Component {
   render() {
-    if (isStaticFile()) {
+    if (isStaticFile() || isElectron()) {
       return (
         <RouterHashRouter {...this.props}>{this.props.children}</RouterHashRouter>
       )
     } else {
       return (
-        <RouterRouter {...this.props}>{this.props.children}</RouterRouter>
+        <BrowserRouter {...this.props}>{this.props.children}</BrowserRouter>
       )
     }
 
