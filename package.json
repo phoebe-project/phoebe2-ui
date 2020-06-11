@@ -50,7 +50,7 @@
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
     "electron": "electron .",
-    "dev": "nf start -p 3000",
+    "dev": "npm run build:electron && nf start -p 3000",
     "build:electron": "npm run build && replace-in-file '/href=\"//g' 'href=\"./' build/index.html --isRegex && replace-in-file '/src=\"//g' 'src=\"./' build/index.html --isRegex && cp ./src/electron*.js ./build/ && cp -R ./src/icons ./build/",
     "package:all": "npm run build:electron && electron-packager . --all --out=dist --overwrite --ignore=dist --ignore=src --ignore=public",
     "package": "npm run build:electron && electron-packager . --out=dist --overwrite --ignore=dist --ignore=src --ignore=public",
