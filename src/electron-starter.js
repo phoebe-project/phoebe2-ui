@@ -161,6 +161,12 @@ const selectPort = () => {
   return '5000';
 }
 
+const testAutofigInstalled = () => {
+  ret = child_process.spawnSync('autofig');
+  return ret.stdout!==null;
+}
+global.testAutofigInstalled = testAutofigInstalled;
+
 const launchChildProcessServer = () => {
   if (!pyPort) {
     pyPort = selectPort();

@@ -233,7 +233,11 @@ class FigureMPLButton extends React.Component {
     console.log("FigureMPLButton.onClick")
     var code = 'autofig '+url;
     if (this.props.app.state.isElectron) {
-      window.require('electron').remote.getGlobal('launchCommand')(code);
+      if (window.require('electron').remote.getGlobal('testAutofigInstalled')()) {
+        window.require('electron').remote.getGlobal('launchCommand')(code);
+      } else {
+        alert("Install PHOEBE or autofig locally in order to launch interactive figures.")
+      }
     } else {
       prompt("Install the dedicated desktop application to automatically launch an interactive matplotlib window.  If you have PHOEBE or autofig installed, paste the following into a terminal: ", code);
     }
