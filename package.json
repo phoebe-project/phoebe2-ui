@@ -6,8 +6,8 @@
   "version": "0.1.0",
   "license": "GPL v3",
   "repository": {
-  "type" : "git",
-  "url" : "https://github.com/phoebe-project/phoebe2-ui.git"
+    "type": "git",
+    "url": "https://github.com/phoebe-project/phoebe2-ui.git"
   },
   "private": true,
   "devDependencies": {

@@ -46,7 +46,7 @@ npm run build
 ## Packaging Electron App
 
 Dependencies:
-* `wine`, `mono-runtime` (if using Linux and trying to build for windows)
+* `wine`, `mono-develop` (if using Linux and trying to build for windows)
 * `rpm` (if using Debian-based system and trying to create rpm installer)
 
 ```bash
@@ -76,7 +76,7 @@ npm run package:installer:all
 
 will create installers in the `dist/installers` directory (not under version-control) from the latest created package versions (call `npm run package:all` first, if necessary).
 
-Alternatively, you can call `npm run package:installer:deb64`, `npm run package:installer:rpm64`, `npm run package:installer:dmg`, `npm run package:installer:exe32`, `npm run package:installer:exe64` separately.  See the dependencies secton above for possible packages that may need to be installed in order to generate installers.
+Alternatively, you can call `npm run package:installer:deb64`, `npm run package:installer:rpm64`, `npm run package:installer:dmg`, `npm run package:installer:exe32`, `npm run package:installer:exe64` separately.  See the dependencies section above for possible packages that may need to be installed in order to generate installers.
 
 To include other installers, see the available list [here](https://github.com/electron-userland/electron-packager#distributable-creators) and edit the scripts entry in [package.json](package.json) (make sure to include a link from the package:installer:all entry as well).
 
