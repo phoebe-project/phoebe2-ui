@@ -745,11 +745,52 @@ class ActionContentJobs extends Component {
     // this.props.bundle.state.pollingJobs {uniqueid: intervaleObject}
     // this.props.bundle.state.params {uniqueid: parameter}
 
+
     return (
       <div>
         <span>{Object.keys(this.props.bundle.state.pollingJobs).length} running jobs currently being polled</span>
         {/* {Object.keys(this.props.bundle.state.pollingJobs).map( (uniqueid) => <p>{uniqueid}</p>)} */}
         <ActionContentNewParameters app={this.props.app} bundle={this.props.bundle} orderBy={'context'}/>
+      </div>
+    )
+  }
+}
+
+class ActionContentSettings extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      pythonCmd: null
+    }
+  }
+  onChangePythonCmd = (inputValue, actionMeta) => {
+    var value = null
+    if (inputValue !== null) {
+      value = inputValue.value
+    }
+    this.setState({pythonCmd: value})
+    this.props.app.updateSetting('python_cmd', value)
+  }
+  componentDidMount () {
+    var python_cmd = this.props.app.getSettingFromStorage('python_cmd') || null
+    if (python_cmd === null) {
+      python_cmd = 'python3'
+      this.props.app.updateSetting('python_cmd', 'python3')
+    }
+    this.setState({pythonCmd: python_cmd})
+  }
+  render() {
+    var pythonCmdOptions = ['python', 'python2', 'python3'].map((choice) => ({value: choice, label: choice}))
+
+    return (
+      <div>
+        <div className="form-group">
+          <label style={{width: "50%", textAlign: "right", paddingRight: "10px"}} title="executable command when launching python client">Python:</label>
+          <span style={{width: "50%", lineHeight: "1.0", display: "inline-block", verticalAlign: "sub"}}>
+            <CreatableSelect options={pythonCmdOptions} value={{value: this.state.pythonCmd, label: this.state.pythonCmd}} onChange={this.onChangePythonCmd} isMulti={false} />
+          </span>
+
+        </div>
       </div>
     )
   }
@@ -938,6 +979,9 @@ export class ActionPanel extends Component {
       actionContent = <ActionContentExportArrays app={this.props.app} bundle={this.props.bundle} action={this.props.action} onUpdatePacket={this.onUpdatePacket}/>
     } else if (action == 'jobs') {
       actionContent = <ActionContentJobs app={this.props.app} bundle={this.props.bundle}/>
+    } else if (action == 'settings') {
+      actionIcon = null;
+      actionContent = <ActionContentSettings app={this.props.app} bundle={this.props.bundle}/>
     }
 
     var actionStyle = {margin: '5px'}
@@ -968,7 +1012,7 @@ export class ActionPanel extends Component {
       buttons = <div style={{float: "right"}}>
                   <span onClick={this.closePanel} className="btn btn-primary" style={{margin: "5px"}} title={"close and return to filtered parameters"}><span className="fas fa-fw fa-times"></span> close</span>
               </div>
-    } else if (['view_figure'].indexOf(this.props.action) !== -1) {
+    } else if (['view_figure', 'settings'].indexOf(this.props.action) !== -1) {
       buttons = <div style={{float: "right"}}>
                   <span onClick={this.closePanel} className="btn btn-primary" style={{margin: "5px"}} title={"close and return to filtered parameters"}><span className="fas fa-fw fa-times"></span> close</span>
               </div>

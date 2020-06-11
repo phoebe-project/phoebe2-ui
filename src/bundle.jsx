@@ -491,6 +491,7 @@ export class Bundle extends ReactQueryParams {
       return (<Redirect to={this.state.redirect}/>)
     }
 
+
     if (this.props.PSPanelOnly) {
       return (<PSPanel app={this.props.app} bundleid={this.state.bundleid} bundle={this} PSPanelOnly={this.props.PSPanelOnly}/>)
     } else if (this.props.FigurePanelOnly) {

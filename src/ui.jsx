@@ -101,13 +101,25 @@ export class Toolbar extends Component {
     this.props.bundle.setQueryParams({tmp: '"qualifier:detached_job"'})
     this.redirect(generatePath(this.props.app.state.serverHost, this.props.bundle.state.bundleid, "jobs", this.props.bundle.getSearchString()))
   }
+  redirectSettings = () => {
+    this.redirect(generatePath(this.props.app.state.serverHost, this.props.bundle.state.bundleid, "settings", this.props.bundle.getSearchString()))
+  }
   launchPythonClient = () => {
     console.log("Bundle.launchPythonClient")
+
     var code = 'import phoebe; logger=phoebe.logger(\'info\'); b=phoebe.Bundle.from_server(\''+this.props.bundleid+'\', \''+this.props.app.state.serverHost+'\');'
+    console.log("python_cmd: "+python_cmd)
+    console.log("code: "+code)
     if (this.props.app.state.isElectron) {
-      window.require('electron').remote.getGlobal('launchPythonClient')(code+'print(\\"'+code+'\\")');
+      var python_cmd = this.props.app.getSettingFromStorage('python_cmd') || null;
+      if (python_cmd === null) {
+        alert("must first confirm or choose the command to launch python shell from settings")
+        return this.redirectSettings();
+      }
+
+      window.require('electron').remote.getGlobal('launchPythonClient')(python_cmd, code+'print(\\"'+code+'\\")');
     } else {
-      prompt("Install the dedicated desktop application to automatically launch an interactive python console.  From the web app, you can load this bundle in a Python console by copy and pasting the following: ", code);
+      prompt("Install the dedicated desktop application to automatically launch an interactive Python console.  From the web app, you can load this bundle in a Python console by copy and pasting the following: ", code);
     }
   }
   componentDidUpdate() {
@@ -154,7 +166,8 @@ export class Toolbar extends Component {
           </span> */}
         </div>
         <div style={{float: "right", marginRight: "10px"}}>
-          <ToolbarButton iconClassNames="fas fa-question" title="help" onClick={this.notImplementedAlert}/>
+          {/*<ToolbarButton iconClassNames="fas fa-question" title="help" onClick={this.notImplementedAlert}/>*/}
+          <ToolbarButton iconClassNames="fas fa-sliders-h" title="open settings" onClick={this.redirectSettings}/>
           <ToolbarButton iconClassNames="fas fa-terminal" title="open bundle in terminal client" onClick={this.launchPythonClient}/>
         </div>
       </div>
