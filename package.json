@@ -1,5 +1,5 @@
 {
-  "name": "PHOEBE",
+  "name": "phoebe",
   "author": "PHOEBE development team",
   "contributors": "Kyle Conroy",
   "description": "Eclipsing Binary Modeling Software",
@@ -52,7 +52,7 @@
     "electron": "electron .",
     "dev": "npm run build:electron && nf start -p 3000",
     "build:electron": "npm run build && replace-in-file '/href=\"//g' 'href=\"./' build/index.html --isRegex && replace-in-file '/src=\"//g' 'src=\"./' build/index.html --isRegex && cp ./src/electron*.js ./build/ && cp -R ./src/icons ./build/",
-    "package:all": "npm run build:electron && electron-packager . --all --out=dist --overwrite --ignore=dist --ignore=src --ignore=public && cd dist && tar -cJf PHOEBE-linux-x64.tar.xz PHOEBE-linux-x64 && tar -cJf PHOEBE-darwin-x64.tar.xz PHOEBE-darwin-x64 && zip -r PHOEBE-win32-x64.zip PHOEBE-win32-x64",
+    "package:all": "npm run build:electron && electron-packager . --all --out=dist --overwrite --ignore=dist --ignore=src --ignore=public && cd dist && tar -cJf phoebe-linux-x64.tar.xz phoebe-linux-x64 && tar -cJf phoebe-darwin-x64.tar.xz phoebe-darwin-x64 && zip -r phoebe-win32-x64.zip phoebe-win32-x64",
     "package": "npm run build:electron && electron-packager . --out=dist --overwrite --ignore=dist --ignore=src --ignore=public",
     "package:installer:all": "npm run package:installer:deb64 && npm run package:installer:rpm64 && npm run package:installer:dmg64 && npm run package:installer:exe64 && npm run package:installer:exe32",
     "package:installer:deb64": "electron-installer-debian --src dist/PHOEBE-linux-x64/ --dest dist/installers/ --arch amd64 --icon=public/logos/phoebe2.svg",
