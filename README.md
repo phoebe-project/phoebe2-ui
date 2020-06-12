@@ -60,7 +60,7 @@ will package PHOEBE2-UI for your system.
 npm run package:all
 ```
 
-will package PHOEBE2-UI for all systems.
+will package PHOEBE2-UI for all systems and also create appropriate archives.
 
 These commands will create a directory for each distribution type in the `dist` directory (not under version-control).
 
