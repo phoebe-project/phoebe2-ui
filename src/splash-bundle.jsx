@@ -68,6 +68,7 @@ export class SplashBundle extends Component {
               <NewBundleButton type='binary:contact' title="Contact" style={{width: "calc(33.33% - 2px)", marginLeft: "2px"}} app={this.props.app} splashBundle={this} logoSplash={this.logoSplash}/>
             </NewBundleButton>
 
+            {/*
             <NewBundleButton type='triple:21:detached' title="Default Triple" app={this.props.app} splashBundle={this} logoSplash={this.logoSplash}>
               <NewBundleButton type='triple:12:detached' title="Third Comp. as Primary" style={{width: "calc(50% - 2px)", marginRight: "2px"}} app={this.props.app} splashBundle={this} logoSplash={this.logoSplash}>
                 <NewBundleButton type='triple:12:detached' title="Detached" style={{width: "calc(50% - 2px)", marginRight: "2px"}} app={this.props.app} splashBundle={this} logoSplash={this.logoSplash}/>
@@ -78,6 +79,7 @@ export class SplashBundle extends Component {
                 <NewBundleButton type='triple:21:contact' title="Contact" style={{width: "calc(50% - 2px)", marginLeft: "2px"}} app={this.props.app} splashBundle={this} logoSplash={this.logoSplash}/>
               </NewBundleButton>
             </NewBundleButton>
+            */}
 
             {/* <NewBundleButton type='other' title="Custom Hierarchy" app={this.props.app} splashBundle={this} logoSplash={this.logoSplash}/> */}
           </div>
