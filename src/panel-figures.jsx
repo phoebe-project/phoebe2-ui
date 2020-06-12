@@ -231,15 +231,15 @@ class FigureMPLButton extends React.Component {
     var url = 'http://'+this.props.app.state.serverHost+'/'+this.props.bundle.state.bundleid+'/figure_afig/'+this.props.figure
 
     console.log("FigureMPLButton.onClick")
-    var code = 'autofig '+url;
     if (this.props.app.state.isElectron) {
-      if (window.require('electron').remote.getGlobal('testAutofigInstalled')()) {
-        window.require('electron').remote.getGlobal('launchCommand')(code);
+      var autofigCmd = window.require('electron').remote.getGlobal('testAutofigInstalled')()
+      if (autofigCmd !== null) {
+        window.require('electron').remote.getGlobal('launchCommand')(autofigCmd+' '+url);
       } else {
         alert("Install PHOEBE or autofig locally in order to launch interactive figures.")
       }
     } else {
-      prompt("Install the dedicated desktop application to automatically launch an interactive matplotlib window.  If you have PHOEBE or autofig installed, paste the following into a terminal: ", code);
+      prompt("Install the dedicated desktop application to automatically launch an interactive matplotlib window.  If you have PHOEBE installed, paste the following into a terminal (if you have autofig installed but not PHOEBE, replace 'phoebe-autofig' with 'autofig'): ", 'phoebe-autofig '+url);
     }
     // var spawn = require('child_process').spawn('mplshow', [url]);
     // spawn.on('error', function(err) {

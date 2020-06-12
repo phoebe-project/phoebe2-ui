@@ -162,8 +162,16 @@ const selectPort = () => {
 }
 
 const testAutofigInstalled = () => {
+  ret = child_process.spawnSync('phoebe-autofig');
+  if (ret.stdout!==null) {
+    return 'phoebe-autofig';
+  };
   ret = child_process.spawnSync('autofig');
-  return ret.stdout!==null;
+  if (ret.stdout!==null) {
+    return 'autofig';
+  } else {
+    return null;
+  }
 }
 global.testAutofigInstalled = testAutofigInstalled;
 
