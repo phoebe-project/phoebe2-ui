@@ -92,7 +92,7 @@ const SortableFigureItem = SortableElement(({figure, app, bundle, FigurePanelOnl
               :
               <FigureExpandButton app={app} bundle={bundle} figure={figure} />
             }
-            <FigurePopoutButton app={app} bundle={bundle} figure={figure} />
+            {/*<FigurePopoutButton app={app} bundle={bundle} figure={figure} /> */}
           </React.Fragment>
           :
           <div style={{border: "1px dotted black", borderRadius: "6px", height: "80px", marginTop: "6px", marginBottom: "6px"}}>

@@ -99,11 +99,7 @@ export function popUpWindow(url, search) {
   let win;
   if (isElectron()) {
     // set frame: false?
-    if (isStaticFile()) {
-      url = window.location.origin + window.location.pathname + search + "#" + url
-    } else {
-      url = window.location.origin + url + search;
-    }
+    url = window.location.origin + window.location.pathname + search + "#" + url
     win = new BrowserWindow({width: 600, height: 400, minWidth: 325, minHeight: 200});
     win.on('close', () => {win = null});
     win.loadURL(url);
