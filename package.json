@@ -41,7 +41,8 @@
     "react-toggle-button": "2.2.0",
     "semver-compare": "1.0.0",
     "socket.io-client": "2.2.0",
-    "whatwg-fetch": "3.0.0"
+    "whatwg-fetch": "3.0.0",
+    "yargs": "12.0.0"
   },
   "homepage": "http://ui.phoebe-project.org",
   "main": "build/electron-starter.js",

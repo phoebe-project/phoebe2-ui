@@ -253,7 +253,7 @@ export class Bundle extends ReactQueryParams {
 
           this.updatePollingJobs(json.data.parameters);
           this.props.app.socket.emit('rerun_all_figures', {bundleid: this.state.bundleid});
-        } else {
+        } else if (!window.require('electron').remote.getGlobal('args').w) {
           alert("server error: "+json.data.error);
           this.setState({params: null, tags: null, figures: [], failedConstraints: [], checksStatus: "UNKNOWN", checksReport: null, nparams: null});
           this.clearQueryParams();

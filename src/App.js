@@ -6,7 +6,7 @@ import isElectron from 'is-electron'; // https://github.com/cheton/is-electron
 import SocketIO from 'socket.io-client'; // https://www.npmjs.com/package/socket.io-client
 
 import {history} from './history'
-import {Router, isStaticFile, randomstr} from './common'
+import {Router, isStaticFile, randomstr, generatePath} from './common'
 import {SplashBundle} from './splash-bundle';
 import {SplashServer} from './splash-server';
 // import {SettingsServers, SettingsBundles} from './settings';
@@ -61,6 +61,16 @@ class App extends Component {
   getElectronChildProcessPort = () => {
     this.setState({electronChildProcessPort: window.require('electron').remote.getGlobal('pyPort')})
   }
+  redirectFromArgs = (server, bundleid, action, filter) => {
+    // alert("redirectFromArgs "+server+" "+bundleid+" "+action+" "+filter)
+    if (server !== null) {
+      // then we need to do a redirect based on command line arguments
+      // NOTE: we can assume a static file in electron at this point
+      const url = window.location.origin + window.location.pathname + "?" + filter + "#" + generatePath(server, bundleid, action, null)
+      // alert("redirecting to "+url)
+      window.location.href = url
+    }
+  }
   componentDidMount() {
     var stateisElectron = isElectron();
     this.setState({isElectron: stateisElectron})
@@ -86,6 +96,45 @@ class App extends Component {
     this.getLatestServerVersion();
     this.getLatestClientVersion();
 
+    if (stateisElectron) {
+      // TODO: allow passing json for bundle (and server defaulting to subprocess if not provided)
+      if (!window.require('electron').remote.getGlobal('ignoreArgs')) {
+        // this will set ignoreArgs to true so that we don't try processing again (on a reload, redirect, new window, etc)
+        window.require('electron').remote.getGlobal('setIgnoreArgs')(true);
+        const args = window.require('electron').remote.getGlobal('args');
+        var server = args['s'] || null;
+        var bundleid = args['b'] || null;
+        var jfile = args['j'] || null;
+        var filter = args['f'] || '';
+        var action = args['a'] || null;
+        var port = args['p'] || 5000
+
+        if (server === null) {
+          server = 'localhost:'+port
+        }
+
+        if (jfile !== null) {
+
+          var json = window.require('fs').readFileSync(jfile, "utf8")
+          var data = JSON.stringify({json: json, bundleid: bundleid})
+
+          fetch("http://"+server+"/open_bundle/load:phoebe2", {method: 'POST', body: data})
+            .then(res => res.json())
+            .then(json => {
+              if (json.data.success) {
+                this.redirectFromArgs(server, json.data.bundleid, action, filter)
+              } else {
+                alert("error from server: "+json.data.error)}
+              })
+            .catch(err => {
+              alert("failed to open bundle from json with error: "+err)
+            })
+
+        } else if (args['s'] || args['p']) {
+          this.redirectFromArgs(server, bundleid, action, filter)
+        }
+      }
+    }
   }
   componentWillUnmount() {
     this.serverDisconnect();
@@ -117,7 +166,9 @@ class App extends Component {
         this.setState({serverPhoebeVersion: json.data.phoebe_version, serverAvailableKinds: json.data.available_kinds})
       })
       .catch(err => {
-        alert("server may no longer be available.  Cancel connetion to rescan.")
+        if (!window.require('electron').remote.getGlobal('args').w) {
+          alert("server may no longer be available.  Cancel connetion to rescan.")
+        }
         this.setState({serverPhoebeVersion: null, serverAvailableKinds: null});
       });
     }

@@ -79,6 +79,8 @@ export class SplashServer extends Component {
 
     autoconnect = autoconnect && this.props.app.state.serverAllowAutoconnect && !bundleid
 
+    const skipChildServer = window.require('electron').remote.getGlobal('pyPort') === null && window.require('electron').remote.getGlobal('args').n
+
     return(
       <div className="App content-dark">
         <Statusbar app={this.props.app} bundleid={null} dark={true}/>
@@ -103,10 +105,10 @@ export class SplashServer extends Component {
 
           <div ref={this.splashScrollable} className="splash-scrollable">
             { this.props.app.state.isElectron ?
-              this.props.app.state.electronChildProcessPort !== null ?
+              this.props.app.state.electronChildProcessPort !== null && !skipChildServer ?
                 <ServerButton key={"localhost:"+this.props.app.state.electronChildProcessPort} location={"localhost:"+this.props.app.state.electronChildProcessPort} autoconnect={autoconnect} switchServer={bundleid != null} isSpawned={true} app={this.props.app} splash={this} match={this.props.match}/>
                 :
-                <ServerInstallButton key={"server-not-installed"} app={this.props.app} splash={this} match={this.props.match}/>
+                <ServerInstallButton key={"server-not-installed"} app={this.props.app} splash={this} match={this.props.match} skipChildServer={skipChildServer}/>
               :
               null
             }
@@ -454,14 +456,14 @@ class ServerInstallButton extends Component {
   }
   render() {
     let onClick, title, text
-    if (!this.state.openedInstallLink) {
+    if (this.state.openedInstallLink || this.props.skipChildServer) {
+      onClick = this.restartChildProcess
+      title = "Launch phoebe-server locally"
+      text = "Launch PHOEBE Server Locally"
+    } else {
       onClick = this.openInstallLink
       title = "Install phoebe-server locally or add an external server below"
       text = "Install PHOEBE Server Locally"
-    } else {
-      onClick = this.restartChildProcess
-      title = "Relaunch phoebe-server locally"
-      text = "Relaunch PHOEBE Server Locally"
     }
 
     return (

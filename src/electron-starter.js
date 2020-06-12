@@ -2,11 +2,64 @@
 
 const fetch = require('electron-fetch').default;
 const child_process = require('child_process');
+yargs = require('yargs');
 
 const electron = require('electron');
 // Module to control application life.
 const app = electron.app;
 // Module to create native browser window.
+
+// parse commandline arguments
+version = app.getVersion()
+options = yargs(process.argv.slice(1))
+options.alias('h', 'help').boolean('help').describe('h', 'show this help and exit')
+options.alias('v', 'version').boolean('v').describe('v', 'show the UI version and exit')
+options.alias('s', 'server').string('s').describe('s', 'host of the phoebe-server instance (i.e. server.phoebe-project.org, localhost:5000)')
+options.alias('b', 'bundle').string('b').describe('b', 'bundleid (must either be already available OR pass j), will be ignored if server not provided')
+options.alias('j', 'file').string('j').describe('j', 'json representation of bundle.  If server is not provided, will use the child process.')
+options.alias('w', 'wait').boolean('w').describe('w', 'wait until bundleid is available on the server.')
+options.alias('f', 'filter').string('f').describe('f', 'filter to apply, will be ignored if server and bundle not provided')
+options.alias('a', 'action').string('a').describe('a', 'launch at a given "action" (i.e. ps, figures, run_compute), will be ignore if server and bundle not provided')
+options.alias('p', 'portChildServer').number('p').describe('p', 'port to launch child server (defaults to 5000)')
+options.alias('n', 'skipChildServer').boolean('n').boolean('skip-child-server').describe('n', 'do not launch a server as a child process')
+options.alias('c', 'noWarnOnClose').boolean('c').describe('c', 'do not warn about killing a child server or unsaved changes on close')
+
+global.args = options.argv
+
+if (options.argv.help) {
+  process.stdout.write(options.help())
+  process.exit(0)
+}
+
+if (options.argv.version) {
+  process.stdout.write("#"+version+"\n")
+  process.exit(0)
+}
+
+// if (options.argv.j!==undefined && (options.argv.s===undefined && options.argv.n)) {
+//   process.stderr.write("must provide server if choosing to skip child server")
+//   process.exit(1)
+// }
+
+if (options.argv.p && (options.argv.p < 1000 || options.argv.p > 9999)) {
+  process.stderr.write("port must be in range 1000-9999")
+  process.exit(1)
+}
+
+// if args.help
+//   process.stdout.write(options.help())
+//   process.exit(0)
+//
+// if args.version
+//   process.stdout.write("#{version}\n")
+//   process.exit(0)
+
+global.ignoreArgs = false;
+const setIgnoreArgs = (v) => {
+  global.ignoreArgs = v
+}
+global.setIgnoreArgs = setIgnoreArgs;
+
 
 // make sure the packaged version of chromium can display the built index.html file
 //app.commandLine.appendSwitch('allow-file-access');
@@ -54,7 +107,7 @@ function createWindow() {
             .then(json => {
               var choice = 0
               var connectedClients = json.data.clients.filter(client => client !== global.clientid)
-              if (connectedClients.length > 0) {
+              if (connectedClients.length > 0 && !options.argv.c) {
                 // TODO: only show this if there are clients connected to the server.  Will need to have all clients subscribe and then have the server return the clientids in this fetch.
                 choice = electron.dialog.showMessageBox(
                   {
@@ -175,9 +228,11 @@ const testAutofigInstalled = () => {
 }
 global.testAutofigInstalled = testAutofigInstalled;
 
+global.pyPort = null;
 const launchChildProcessServer = () => {
+  // TODO: can we detect if phoebe-server is already running on this port and if so skip?  If something else is on this port, we should raise an error and exit or choose a new port
   if (!pyPort) {
-    pyPort = selectPort();
+    pyPort = options.argv.p || 5000;
     pyProc = child_process.spawn('phoebe-server', [pyPort, global.clientid]);
     pyProc.on('error', () => {killChildProcessServer()});
   }
@@ -190,14 +245,20 @@ global.launchChildProcessServer = launchChildProcessServer;
 const killChildProcessServer = () => {
   if (pyProc) {
     pyProc.kill();
-    console.log('phoebe-server killed on port: '+pyPort);
+    // console.log('phoebe-server killed on port: '+global.pyPort);
   }
   pyProc = null;
   pyPort = null;
   global.pyPort = pyPort;
 }
 
-
-app.on('ready', launchChildProcessServer);
+if (!options.argv.n) {
+  app.on('ready', launchChildProcessServer);
+}
 
 app.on('will-quit', killChildProcessServer);
+
+// if (!app.isDefaultProtocolClient('phoebe')) {
+//   console.log('setting as protocolclient for phoebe')
+//   app.setAsDefaultProtocolClient('phoebe')
+// }
