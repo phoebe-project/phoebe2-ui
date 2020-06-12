@@ -26,7 +26,7 @@ export class Panel extends Component {
 class ToolbarButton extends Component {
   render() {
     return (
-      <a className="btn btn-phoebe-toolbar" style={{height: "50px", minWidth: "50px", paddingLeft: 0, paddingRight: 0, marginLeft: "3px", marginRight: "3px"}} href={this.props.to} download={this.props.download} title={this.props.title} onClick={this.props.onClick}>
+      <a className="btn btn-phoebe-toolbar" style={{height: "50px", minWidth: "50px", paddingLeft: 0, paddingRight: 0, marginLeft: "3px", marginRight: "3px"}} href={this.props.to} download={this.props.download} title={this.props.title} onClick={this.props.onClick} target={this.props.target}>
         <span className="fa-layers">
           <i className={"fas fa-fw fa-lg "+this.props.iconClassNames} style={{minWidth: "50px", textAlign: "center", marginTop: "10px"}}></i>
           {/* {this.props.counter ?
@@ -89,11 +89,6 @@ export class Toolbar extends Component {
       // TODO: need to tell server that we're disconnecting from the bundle.
     }
   }
-  saveBundle = () => {
-    // alert("downloading bundleid "+this.props.bundleid)
-    var saveURL = "http://" + this.props.app.state.serverHost + "/save_bundle/" + this.props.bundleid
-    window.location.href = saveURL
-  }
   redirect = (path) => {
     this.setState({redirect: path})
   }
@@ -149,7 +144,7 @@ export class Toolbar extends Component {
         <div style={{float: "left", marginLeft: "0px"}}>
           <ToolbarButton iconClassNames="fas fa-file" title="new bundle" onClick={this.newBundle}/>
           <ToolbarButton iconClassNames="fas fa-folder-open" title="load/import bundle from file" onClick={this.openBundle}/>
-          <ToolbarButton iconClassNames="fas fa-save" title="save bundle" to={"http://" + this.props.app.state.serverHost + "/save_bundle/" + this.props.bundleid} download={this.props.bundleid+".bundle"}/>
+          <ToolbarButton iconClassNames="fas fa-save" title="save bundle" to={"http://" + this.props.app.state.serverHost + "/save_bundle/" + this.props.bundleid} download={this.props.bundleid+".bundle"} target={this.props.app.state.isElectron ? null : "_blank"}/>
           {/* <ToolbarButton iconClassNames="fas fa-undo" title="undo" onClick={this.notImplementedAlert}/>
           <ToolbarButton iconClassNames="fas fa-redo" title="redo" onClick={this.notImplementedAlert}/> */}
           { nPollingJobs > 0 ?

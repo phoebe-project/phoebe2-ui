@@ -1006,7 +1006,7 @@ export class ActionPanel extends Component {
     } else if (this.props.action === 'export_data') {
       buttons = <div style={{float: "right"}}>
                   <span onClick={this.closePanel} className="btn btn-primary" style={{margin: "5px"}} title={"cancel "+this.props.action+" and return to filtered parameters"}><span className="fas fa-fw fa-times"></span> cancel</span>
-                  <Link onClick={this.closePanel} href={"http://"+this.props.app.state.serverHost+'/export_arrays/'+this.props.bundle.state.bundleid+'/'+this.state.packet.uniqueids} target="_blank" className="btn btn-primary" style={{actionStyle}} title="Download file containing exported arrays"><span className="fas fa-fw fa-download"></span> export arrays</Link>
+                  <Link onClick={this.closePanel} href={"http://"+this.props.app.state.serverHost+'/export_arrays/'+this.props.bundle.state.bundleid+'/'+this.state.packet.uniqueids} download={this.props.bundle.state.bundleid+"_export_arrays.csv"} target={this.props.app.state.isElectron ? null : "_blank"} className="btn btn-primary" style={{actionStyle}} title="Download file containing exported arrays"><span className="fas fa-fw fa-download"></span> export arrays</Link>
               </div>
     } else if (['edit_figure', 'edit_figure_times', 'jobs'].indexOf(this.props.action) !== -1) {
       buttons = <div style={{float: "right"}}>
@@ -1050,12 +1050,12 @@ export class ActionPanel extends Component {
         buttons = <div style={{float: "right"}}>
                     <span onClick={this.closePanel} className="btn btn-primary" style={{margin: "5px"}} title={"cancel "+this.props.action+" and return to filtered parameters"}><span className="fas fa-fw fa-times"></span> cancel</span>
                     { this.props.action === 'run_compute' ?
-                      <Link onClick={this.closePanel} href={"http://"+this.props.app.state.serverHost+'/export_compute/'+this.props.bundle.state.bundleid+'/'+this.state.packet.compute+'/'+this.state.packet.model} target="_blank" className="btn btn-primary" style={{actionStyle}} title="Download script to run on an external machine.  Once executed, use 'import_model' to import the results."><span className="fas fa-fw fa-download"></span> download script</Link>
+                      <Link onClick={this.closePanel} href={"http://"+this.props.app.state.serverHost+'/export_compute/'+this.props.bundle.state.bundleid+'/'+this.state.packet.compute+'/'+this.state.packet.model} download={this.props.bundle.state.bundleid+"_run_compute_"+this.state.packet.compute+".py"} target={this.props.app.state.isElectron ? null : "_blank"} className="btn btn-primary" style={{actionStyle}} title="Download script to run on an external machine.  Once executed, use 'import_model' to import the results."><span className="fas fa-fw fa-download"></span> download script</Link>
                       :
                       null
                     }
                     { this.props.action === 'run_solver' ?
-                      <Link onClick={this.closePanel} href={"http://"+this.props.app.state.serverHost+'/export_solver/'+this.props.bundle.state.bundleid+'/'+this.state.packet.solver+'/'+this.state.packet.solution} target="_blank" className="btn btn-primary" style={{actionStyle}} title="Download script to run on an external machine.  Once executed, use 'import_solution' to import the results."><span className="fas fa-fw fa-download"></span> download script</Link>
+                      <Link onClick={this.closePanel} href={"http://"+this.props.app.state.serverHost+'/export_solver/'+this.props.bundle.state.bundleid+'/'+this.state.packet.solver+'/'+this.state.packet.solution} download={this.props.bundle.state.bundleid+"_run_solver_"+this.state.packet.solver+".py"} target={this.props.app.state.isElectron ? null : "_blank"} className="btn btn-primary" style={{actionStyle}} title="Download script to run on an external machine.  Once executed, use 'import_solution' to import the results."><span className="fas fa-fw fa-download"></span> download script</Link>
                       :
                       null
                     }
