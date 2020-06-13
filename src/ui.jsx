@@ -102,7 +102,13 @@ export class Toolbar extends Component {
   launchPythonClient = () => {
     console.log("Bundle.launchPythonClient")
 
-    var code = 'import phoebe; logger=phoebe.logger(\'info\'); b=phoebe.Bundle.from_server(\''+this.props.bundleid+'\', \''+this.props.app.state.serverHost+'\');'
+    var code = 'import phoebe;'
+
+    const loglevel = this.props.app.getSettingFromStorage('python_loglevel') || 'warning'
+    if (loglevel !== 'none') {
+      code += ' logger=phoebe.logger(\''+loglevel+'\');'
+    }
+    code += ' b=phoebe.Bundle.from_server(\''+this.props.bundleid+'\', \''+this.props.app.state.serverHost+'\');'
     console.log("python_cmd: "+python_cmd)
     console.log("code: "+code)
     if (this.props.app.state.isElectron) {

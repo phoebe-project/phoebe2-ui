@@ -760,7 +760,8 @@ class ActionContentSettings extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      pythonCmd: null
+      pythonCmd: null,
+      pythonLoglevel: null
     }
   }
   onChangePythonCmd = (inputValue, actionMeta) => {
@@ -771,6 +772,14 @@ class ActionContentSettings extends Component {
     this.setState({pythonCmd: value})
     this.props.app.updateSetting('python_cmd', value)
   }
+  onChangePythonLoglevel = (inputValue, actionMeta) => {
+    var value = null
+    if (inputValue !== null) {
+      value = inputValue.value
+    }
+    this.setState({pythonLoglevel: value})
+    this.props.app.updateSetting('python_loglevel', value)
+  }
   componentDidMount () {
     var python_cmd = this.props.app.getSettingFromStorage('python_cmd') || null
     if (python_cmd === null) {
@@ -778,9 +787,13 @@ class ActionContentSettings extends Component {
       this.props.app.updateSetting('python_cmd', 'python3')
     }
     this.setState({pythonCmd: python_cmd})
+
+    var python_loglevel = this.props.app.getSettingFromStorage('python_loglevel') || 'warning'
+    this.setState({pythonLoglevel: python_loglevel})
   }
   render() {
     var pythonCmdOptions = ['python', 'python2', 'python3'].map((choice) => ({value: choice, label: choice}))
+    var pythonLoglevelOptions = ['none', 'error', 'warning', 'info', 'debug'].map((choice) => ({value: choice, label: choice}))
 
     return (
       <div>
@@ -788,6 +801,10 @@ class ActionContentSettings extends Component {
           <label style={{width: "50%", textAlign: "right", paddingRight: "10px"}} title="executable command when launching python client">Python:</label>
           <span style={{width: "50%", lineHeight: "1.0", display: "inline-block", verticalAlign: "sub"}}>
             <CreatableSelect options={pythonCmdOptions} value={{value: this.state.pythonCmd, label: this.state.pythonCmd}} onChange={this.onChangePythonCmd} isMulti={false} />
+          </span>
+          <label style={{width: "50%", textAlign: "right", paddingRight: "10px"}} title="log-level to set in python clients">Python log-level:</label>
+          <span style={{width: "50%", lineHeight: "1.0", display: "inline-block", verticalAlign: "sub"}}>
+            <Select options={pythonLoglevelOptions} value={{value: this.state.pythonLoglevel, label: this.state.pythonLoglevel}} onChange={this.onChangePythonLoglevel} isMulti={false} />
           </span>
 
         </div>
