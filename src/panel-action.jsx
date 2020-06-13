@@ -792,7 +792,7 @@ class ActionContentSettings extends Component {
     this.setState({pythonLoglevel: python_loglevel})
   }
   render() {
-    var pythonCmdOptions = ['python', 'python2', 'python3'].map((choice) => ({value: choice, label: choice}))
+    var pythonCmdOptions = ['python', 'python2', 'python3', 'ipython', 'ipython2', 'ipython3'].map((choice) => ({value: choice, label: choice}))
     var pythonLoglevelOptions = ['none', 'error', 'warning', 'info', 'debug'].map((choice) => ({value: choice, label: choice}))
 
     return (
