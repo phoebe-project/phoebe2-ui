@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import {Redirect} from 'react-router-dom';
 
-import {Link, generatePath} from './common';
+import {Link, generatePath, getServerWarning} from './common';
 
 var versionCompare = require('semver-compare');  // function that returns -1, 0, 1
 
@@ -265,6 +265,25 @@ export class Statusbar extends Component {
       clientType = "desktop"
     }
 
+    var serverTitle = "The server is running PHOEBE "+this.props.app.state.serverPhoebeVersion+"."
+    var serverVersionStyle = {margin: "4px", border: "1px dotted #a1a1a1", paddingLeft: "2px", paddingRight: "2px"}
+    var serverWarning = getServerWarning(this.props.app.state.serverPhoebeVersion)
+    if (serverWarning) {
+      serverVersionStyle.color = 'orange'
+      serverTitle += '  The client v'+this.props.app.state.clientVersion+' provides the following compatibility warning: '+serverWarning+". "
+    }
+    serverTitle += "(click to choose a different server)"
+
+
+    var clientTitle = clientType+" client v"+this.props.app.state.clientVersion+" with id: "+this.props.app.state.clientid
+    var clientVersionStyle = {margin: "4px", border: "1px dotted #a1a1a1", paddingLeft: "2px", paddingRight: "2px"}
+    var clientWarning = this.props.app.state.clientWarning
+    if (clientWarning) {
+      clientVersionStyle.color = 'orange'
+      clientTitle += '.  The current server provides the following compatibility warning: '+clientWarning
+    }
+
+
 
     return (
       <div style={divStyle} className="statusbar">
@@ -274,9 +293,9 @@ export class Statusbar extends Component {
           null
         }
         {this.props.app.state.serverHost !== null ?
-          <Link style={{fontWeight: "inherit", fontSize: "inherit"}} title="choose different server" onClick={this.changeServerWarning} to={serverPath}>
+          <Link style={{fontWeight: "inherit", fontSize: "inherit"}} title={serverTitle} onClick={this.changeServerWarning} to={serverPath}>
             <span className="fa-md fas fa-fw fa-broadcast-tower" style={{margin: "4px"}}/>
-            <span style={{margin: "4px", border: "1px dotted #a1a1a1", paddingLeft: "2px", paddingRight: "2px"}}>{this.props.app.state.serverPhoebeVersion}</span>
+            <span style={serverVersionStyle}>{this.props.app.state.serverPhoebeVersion}</span>
             <span style={{margin: "4px"}}>{this.props.app.state.serverHost}</span>
           </Link>
         :
@@ -284,9 +303,9 @@ export class Statusbar extends Component {
       }
 
 
-        <span style={{float: "right", marginRight: "10px"}} title={clientType+" client v"+this.props.app.state.clientVersion+" with id: "+this.props.app.state.clientid}>
+        <span style={{float: "right", marginRight: "10px"}} title={clientTitle}>
           <span className={this.props.app.state.isElectron ? "fa-md fas fa-fw fa-desktop" : "fa-md fas fa-fw fa-window-maximize"} style={{margin: "4px"}}/>
-          <span style={{margin: "4px", border: "1px dotted #a1a1a1", paddingLeft: "2px", paddingRight: "2px"}}>{this.props.app.state.clientVersion}</span> {this.props.app.state.clientid}
+          <span style={clientVersionStyle}>{this.props.app.state.clientVersion}</span> {this.props.app.state.clientid}
           {this.props.app.state.isElectron ?
             <ClientUpdateButton clientVersion={this.props.app.state.clientVersion} latestClientVersion={this.props.app.state.latestClientVersion} />
             :

@@ -123,10 +123,10 @@ class Parameter extends Component {
     if (this.props.paramOverview.class==='ConstraintParameter') {
       console.log('ConstraintParameter submit value'+this.state.userValue)
       if (this.state.userValue) {
-        this.props.app.socket.emit('bundle_method', {'method': 'flip_constraint', 'bundleid': this.props.bundle.state.bundleid, 'uniqueid': this.props.uniqueid, 'solve_for': this.state.userValue})
+        this.props.bundle.emit('bundle_method', {'method': 'flip_constraint', 'uniqueid': this.props.uniqueid, 'solve_for': this.state.userValue})
       }
     } else {
-      this.props.app.socket.emit('set_value', {'bundleid': this.props.bundle.state.bundleid, 'uniqueid': this.props.uniqueid, 'value': this.state.userValue});
+    this.props.bundle.emit('set_value', {'uniqueid': this.props.uniqueid, 'value': this.state.userValue});
     }
     this.toggleExpandedValue(e)
 
@@ -151,7 +151,7 @@ class Parameter extends Component {
     this.setState({userUnit: newUnit})
   }
   submitSetUnit = (e) => {
-    this.props.app.socket.emit('set_default_unit', {'bundleid': this.props.bundle.state.bundleid, 'uniqueid': this.props.uniqueid, 'unit': this.state.userUnit});
+    this.props.bundle.emit('set_default_unit', {'uniqueid': this.props.uniqueid, 'unit': this.state.userUnit});
     this.toggleExpandedUnit(e)
   }
   addToPinned = () => {
@@ -246,7 +246,7 @@ class Parameter extends Component {
       this.setState({receivedDetails: true})
 
       this.abortGetDetailsController = new window.AbortController();
-      abortableFetch("http://"+this.props.app.state.serverHost+"/parameter/"+this.props.bundle.state.bundleid+"/"+this.props.uniqueid, {signal: this.abortGetDetailsController.signal})
+      abortableFetch("http://"+this.props.app.state.serverHost+"/parameter/"+this.props.bundle.state.bundleid+"/"+this.props.uniqueid, {signal: this.abortGetDetailsController.signal, method: 'POST', body: JSON.stringify({clientid: this.props.app.state.clientid, client_version: this.props.app.state.clientVersion})})
         .then(res => res.json())
         .then(json => {
           if (json.data.success) {
@@ -350,7 +350,7 @@ class Parameter extends Component {
 
     let inlineUnitContent
     if (this.props.paramOverview.qualifier == 'detached_job' && (this.props.paramOverview.valuestr === 'running' || this.props.paramOverview.valuestr.indexOf("progress:")!==-1)) {
-      inlineUnitContent = <span className="fas fa-fw fa-skull-crossbones" title={"terminate running job"} onClick={()=>this.props.app.socket.emit('bundle_method', {'method': 'kill_job', 'bundleid': this.props.bundle.state.bundleid, 'uniqueid': this.props.uniqueid})} style={{color: "red", display: "inline-block", width: "65px", paddingLeft: "5px", paddingBottom: "3px", overflowX: "hidden"}}></span>
+      inlineUnitContent = <span className="fas fa-fw fa-skull-crossbones" title={"terminate running job"} onClick={()=>this.props.bundle.emit('bundle_method', {'method': 'kill_job', 'uniqueid': this.props.uniqueid})} style={{color: "red", display: "inline-block", width: "65px", paddingLeft: "5px", paddingBottom: "3px", overflowX: "hidden"}}></span>
     } else if (this.state.expandedUnit) {
       inlineUnitContent = <span style={{verticalAlign: "super"}}>
                               <span onClick={this.toggleExpandedUnit} className="btn fa-fw fas fa-times" title="cancel changes"/>
@@ -581,7 +581,7 @@ class ParameterDetailsItemPin extends Component {
       this.setState({peakDistributionImgs: urls})
 
       this.abortGetDetailsController = new window.AbortController();
-      abortableFetch("http://"+this.props.app.state.serverHost+"/parameter/"+this.props.bundle.state.bundleid+"/"+this.props.uniqueid, {signal: this.abortGetDetailsController.signal})
+      abortableFetch("http://"+this.props.app.state.serverHost+"/parameter/"+this.props.bundle.state.bundleid+"/"+this.props.uniqueid, {signal: this.abortGetDetailsController.signal, method: 'POST', body: JSON.stringify({clientid: this.props.app.state.clientid, client_version: this.props.app.state.clientVersion})})
         .then(res => res.json())
         .then(json => {
           if (json.data.success) {
@@ -789,7 +789,7 @@ class InputFloatArray extends Component {
     this.abortGetArgsForType = new window.AbortController();
 
     console.log("requesting conversion of nparray: "+JSON.stringify(value))
-    abortableFetch("http://"+this.props.app.state.serverHost+"/nparray/"+JSON.stringify(value), {signal: this.abortGetArgsForType.signal})
+    abortableFetch("http://"+this.props.app.state.serverHost+"/nparray/"+JSON.stringify(value), {signal: this.abortGetArgsForType.signal, method: 'POST', body: JSON.stringify({clientid: this.props.app.state.clientid, client_version: this.props.app.state.clientVersion})})
       .then(res => res.json())
       .then(json => {
         console.log(json)
@@ -1010,7 +1010,7 @@ class InputDistribution extends Component {
     this.abortGetArgsForType = new window.AbortController();
 
     console.log("requesting conversion of distl object: "+JSON.stringify(value)+ " current face value: "+this.state.current_face_value)
-    abortableFetch("http://"+this.props.app.state.serverHost+"/distl/"+JSON.stringify(value)+"/"+this.state.current_face_value, {signal: this.abortGetArgsForType.signal})
+    abortableFetch("http://"+this.props.app.state.serverHost+"/distl/"+JSON.stringify(value)+"/"+this.state.current_face_value, {signal: this.abortGetArgsForType.signal, method: 'POST', body: JSON.stringify({clientid: this.props.app.state.clientid, client_version: this.props.app.state.clientVersion})})
       .then(res => res.json())
       .then(json => {
         // console.log(json)

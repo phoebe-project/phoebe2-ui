@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import {Redirect} from 'react-router-dom';
 
-import {Link, generatePath, abortableFetch} from './common';
+import {Link, generatePath, abortableFetch, getServerWarning} from './common';
 
 // import {history} from './history';
 import {LogoSplash} from './logo';
@@ -40,7 +40,7 @@ export class SplashServer extends Component {
       console.log("saving bundle from "+saveURL)
 
       this.abortSaveTransferController = new window.AbortController();
-      abortableFetch(saveURL, {signal: this.abortSaveTransferController.signal})
+      abortableFetch(saveURL, {signal: this.abortSaveTransferController.signal, method: 'POST', body: JSON.stringify({client_version: this.props.app.state.clientVersion, clientid: this.props.app.state.clientid})})
         .then(res => res.text())
         .then(json => {
           this.props.app.setState({bundleTransferJson: json})
@@ -192,6 +192,17 @@ class ServerVersionSpan extends Component {
       } else if (this.props.serverNeedsUpdate) {
         style.color = 'red'
         title = "this server is running PHOEBE "+this.props.phoebeVersion+" which is incompatible with UI version "+this.props.app.state.clientVersion+".  Update the server or downgrade to an older version of the client."
+      } else if (this.props.clientWarning || this.props.serverWarning) {
+        style.color = 'orange'
+        title = "this server is running PHOEBE "+this.props.phoebeVersion
+        if (this.props.clientWarning) {
+          title += " and provides a warning about client v"+this.props.app.state.clientVersion+": "+this.props.clientWarning+". "
+        } else {
+          title += ". "
+        }
+        if (this.props.serverWarning) {
+          title += "The client with v"+this.props.app.state.clientVersion+" provides the following warning: "+this.props.serverWarning
+        }
       } else {
         title = "this server is running PHOEBE "+this.props.phoebeVersion
       }
@@ -222,7 +233,7 @@ class ServerButton extends Component {
     this.state = {
       phoebeVersion: null,
       clientMinVersion: null,
-      clientMaxVersion: null,
+      clientWarning: null,
       parentId: null,
       hover: false,
       removeConfirmed: false,
@@ -251,11 +262,12 @@ class ServerButton extends Component {
       // if any of this fails, we'll enter the catch section and ignore this matching
       // if the test succeeds, update the entry in component.state
       // this will then automatically queue a re-render of the underlying component
-      abortableFetch(location+"/info")
+      abortableFetch(location+"/info", {method: 'POST', body: JSON.stringify({client_version: this.props.app.state.clientVersion, clientid: this.props.app.state.clientid})})
         .then(res => res.json())
         .then(json => {
           this.setState({phoebeVersion: json.data.phoebe_version,
                          clientMinVersion: json.data.client_min_version || null,
+                         clientWarning: json.data.client_warning || null,
                          parentId: json.data.parentid})
           this.getInfo(5000)
         })
@@ -264,7 +276,7 @@ class ServerButton extends Component {
           //   this.cancelConnect();
           //   history.goBack();
           // }
-          this.setState({phoebeVersion: null, clientMinVersion: null, clientMaxVersion: null, parentId: null});
+          this.setState({phoebeVersion: null, clientMinVersion: null, clientWarning: null, parentId: null});
           this.getInfo(scanTimeout + 500)
         });
     }, scanTimeout);
@@ -413,6 +425,8 @@ class ServerButton extends Component {
       target = "_blank"
     }
 
+    var serverWarning = getServerWarning(this.state.phoebeVersion);
+
     return (
       // NOTE: we use onMouseOver instead of onMouseEnter here so that it is triggered when a server above is removed
       <div onMouseOver={this.hoverOn} onMouseLeave={this.hoverOff} className="splash-scrollable-btn-div" style={style}>
@@ -421,8 +435,10 @@ class ServerButton extends Component {
           <ServerVersionSpan app={this.props.app}
                              phoebeVersion={this.state.phoebeVersion}
                              clientMinVersion={this.state.clientMinVersion}
+                             clientWarning={this.state.clientWarning}
                              clientNeedsUpdate={clientNeedsUpdate}
                              serverNeedsUpdate={serverNeedsUpdate}
+                             serverWarning={serverWarning}
                              status={this.state.status}
                              autoconnect={this.props.autoconnect}/>
           {locationSpan}

@@ -66,7 +66,7 @@ export class Bundle extends ReactQueryParams {
   // }
   registerBundle = () => {
     console.log("registerBundle")
-    this.props.app.socket.emit('register client', {'clientid': this.props.app.state.clientid, 'bundleid': this.state.bundleid});
+    this.emit('register client', {});
 
     this.props.app.socket.on(this.state.bundleid+':errors:react', (data) => {
       if (this.state.pendingBundleMethod) {
@@ -221,7 +221,7 @@ export class Bundle extends ReactQueryParams {
       clearInterval(interval)
     })
     this.setState({pollingJobs: {}})
-    this.props.app.socket.emit('deregister client', {'clientid': this.props.app.state.clientid, 'bundleid': this.state.bundleid});
+    this.emit('deregister client', {});
   }
   componentDidMount() {
     window.addEventListener("beforeunload", (event) => {this.closePopUps()});
@@ -230,7 +230,8 @@ export class Bundle extends ReactQueryParams {
     this.props.app.setState({bundleTransferJson: null})
 
     this.abortGetParamsController = new window.AbortController();
-    abortableFetch("http://"+this.props.app.state.serverHost+"/bundle/"+this.state.bundleid, {signal: this.abortGetParamsController.signal})
+
+    abortableFetch("http://"+this.props.app.state.serverHost+"/bundle/"+this.state.bundleid, {signal: this.abortGetParamsController.signal, method: 'POST', body: JSON.stringify({clientid: this.props.app.state.clientid, client_version: this.props.app.state.clientVersion})})
       .then(res => res.json())
       .then(json => {
         if (json.data.success) {
@@ -252,7 +253,7 @@ export class Bundle extends ReactQueryParams {
                          nparams: Object.keys(json.data.parameters).length})
 
           this.updatePollingJobs(json.data.parameters);
-          this.props.app.socket.emit('rerun_all_figures', {bundleid: this.state.bundleid});
+          this.emit('rerun_all_figures', {});
         } else if (!window.require('electron').remote.getGlobal('args').w) {
           alert("server error: "+json.data.error);
           this.setState({params: null, tags: null, figures: [], failedConstraints: [], checksStatus: "UNKNOWN", checksReport: null, nparams: null});
@@ -309,8 +310,7 @@ export class Bundle extends ReactQueryParams {
   pollJob = (uniqueid) => {
     console.log("polling for "+uniqueid)
 
-    var packet = {bundleid: this.state.bundleid, method: 'attach_job', uniqueid: uniqueid}
-    this.props.app.socket.emit('bundle_method', packet);
+    this.emit('bundle_method', {method: 'attach_job', uniqueid: uniqueid});
   }
   updatePollingJobs = (params) => {
     var pollingJobs = [];
@@ -485,6 +485,10 @@ export class Bundle extends ReactQueryParams {
       }
     }
 
+  }
+  emit = (channel, packet) => {
+    packet['bundleid'] = this.state.bundleid;
+    return this.props.app.emit(channel, packet);
   }
   render() {
     if (this.state.redirect) {

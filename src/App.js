@@ -42,9 +42,10 @@ class App extends Component {
       settingsServerHosts: [],
       settingsDismissedTips: [],
       clientVersion: '0.1.0', // UPDATE ON NEW RELEASE, also update package.json.version to match
-      serverMinVersion: '2.3.0',  // UPDATE ON NEW RELEASE
+      serverMinVersion: '2.3.0',  // UPDATE ON NEW RELEASE - any warnings need to go in common.getServerWarning
       latestClientVersion: null, // leave at null, updated by getLatestClientVersion
       latestServerVersion: null, // leave at null, updated by getLatestServerVersion
+      clientWarning: null, // leave at null, will be set when connected to a server, serverWarning can be checked on the fly via common.getServerWarning(serverPhoebeVersion)
     };
     this.router = React.createRef();
     this.socket = null;
@@ -116,9 +117,7 @@ class App extends Component {
         if (jfile !== null) {
 
           var json = window.require('fs').readFileSync(jfile, "utf8")
-          var data = JSON.stringify({json: json, bundleid: bundleid})
-
-          fetch("http://"+server+"/open_bundle/load:phoebe2", {method: 'POST', body: data})
+          fetch("http://"+server+"/open_bundle/load:phoebe2", {method: 'POST', body: JSON.stringify({json: json, bundleid: bundleid})})
             .then(res => res.json())
             .then(json => {
               if (json.data.success) {
@@ -160,10 +159,10 @@ class App extends Component {
       })
   }
   getServerPhoebeVersion = (serverHost) => {
-    fetch("http://"+serverHost+"/info")
+    fetch("http://"+serverHost+"/info", {method: 'POST', body: JSON.stringify({client_version: this.state.clientVersion, clientid: this.state.clientid})})
       .then(res => res.json())
       .then(json => {
-        this.setState({serverPhoebeVersion: json.data.phoebe_version, serverAvailableKinds: json.data.available_kinds})
+        this.setState({serverPhoebeVersion: json.data.phoebe_version, serverAvailableKinds: json.data.available_kinds, clientWarning: json.data.client_warning || null})
       })
       .catch(err => {
         if (!window.require('electron').remote.getGlobal('args').w) {
@@ -191,13 +190,13 @@ class App extends Component {
 
     this.socket.on('connect', (data) => {
       this.setState({serverStatus: "connected", serverStartingChildProcess: false, serverAllowAutoconnect: false});
-      this.socket.emit('register client', {'clientid': this.state.clientid});
+      this.emit('register client', {});
     });
 
     this.socket.on('reconnect', (data) => {
       this.getServerPhoebeVersion(serverHost);
       this.setState({serverStatus: "reconnecting", serverAllowAutoconnect: true});
-      this.socket.emit('register client', {'clientid': this.state.clientid});
+      this.emit('register client', {});
     })
 
     this.socket.on('disconnect', (data) => {
@@ -209,13 +208,18 @@ class App extends Component {
 
     if (this.socket) {
       console.log("deregistering client")
-      this.socket.emit('deregister client', {'clientid': this.state.clientid})
+      this.emit('deregister client', {})
       console.log("closing socket")
       this.socket.close();
       this.socket = null;
     }
 
-    this.setState({serverStatus: "disconnected", serverHost: null, serverPhoebeVersion: null});
+    this.setState({serverStatus: "disconnected", serverHost: null, serverPhoebeVersion: null, clientWarning: null});
+  }
+  emit = (channel, packet) => {
+    packet['clientid'] = this.state.clientid;
+    packet['client_version'] = this.state.clientVersion;
+    this.socket.emit(channel, packet);
   }
   render() {
     let public_url

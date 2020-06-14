@@ -15,6 +15,8 @@ import 'abortcontroller-polyfill';
 import {fetch} from 'whatwg-fetch';
 export const abortableFetch = ('signal' in new Request('')) ? window.fetch : fetch
 
+var versionCompare = require('semver-compare');  // function that returns -1, 0, 1
+
 let BrowserWindow;
 if (isElectron()) {
   BrowserWindow = window.require('electron').remote.BrowserWindow
@@ -34,6 +36,20 @@ export function randomstr(N) {
     text += possible.charAt(Math.floor(Math.random() * possible.length));
 
   return text;
+}
+
+export function getServerWarning(phoebeVersion) {
+  var serverWarning = null
+  // if a client ever needs to raise a warning for an old version of the server
+  // but doesn't quite justify raising serverMinVersion, that logic should go
+  // here, based on this.state.phoebeVersion
+  if (phoebeVersion === null || versionCompare(phoebeVersion, '2.3.0') < 0) {
+    serverWarning = 'phoebe-server with version '+phoebeVersion+' is before initial UI release'
+  } else if (phoebeVersion === 'devel') {
+    serverWarning = 'phoebe-server running a development version of PHOEBE, use with caution'
+  }
+
+  return serverWarning
 }
 
 export function generatePath(serverHost, bundleid, action, search) {

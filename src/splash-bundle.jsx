@@ -114,7 +114,7 @@ class NewBundleButton extends Component {
     console.log("NewBundleButton.loadBundle");
 
     var doFetch = true
-    let fetchURL, fetchMethod, fetchBody
+    let fetchURL, fetchBody
 
     if (['load:phoebe2', 'load:legacy'].indexOf(this.props.type)!==-1) {
       if (this.fileInput.current.files.length===0) {
@@ -125,21 +125,20 @@ class NewBundleButton extends Component {
       } else {
         // then coming from the onChange of the input
         fetchURL = "http://"+this.props.app.state.serverHost+"/open_bundle/"+this.props.type
-        fetchMethod = 'POST'
 
         var data = new FormData()
         data.append('file', this.fileInput.current.files[0])
+        data.append('clientid', this.props.app.state.clientid)
+        data.append('client_version', this.props.app.state.clientVersion)
         fetchBody = data
       }
     } else if (this.props.type === 'transfer') {
       fetchURL = "http://"+this.props.match.params.server+"/open_bundle"
-      fetchMethod = 'POST'
-      var data = {json: this.props.app.state.bundleTransferJson, bundleid: this.props.match.params.bundleid}
+      var data = {json: this.props.app.state.bundleTransferJson, bundleid: this.props.match.params.bundleid, clientid: this.props.app.state.clientid, client_version: this.props.app.state.clientVersion}
       fetchBody = JSON.stringify(data)
     } else {
       fetchURL = "http://"+this.props.app.state.serverHost+"/new_bundle/"+this.props.type
-      fetchMethod = 'GET'
-      fetchBody = null
+      fetchBody = JSON.stringify({clientid: this.props.app.state.clientid, client_version: this.props.app.state.clientVersion})
     }
 
     if (doFetch) {
@@ -147,7 +146,7 @@ class NewBundleButton extends Component {
       this.props.splashBundle.setState({bundleLoading: true});
 
       this.abortLoadBundleController = new window.AbortController();
-      abortableFetch(fetchURL, {method: fetchMethod, body: fetchBody, signal: this.abortLoadBundleController.signal})
+      abortableFetch(fetchURL, {method: 'POST', body: fetchBody, signal: this.abortLoadBundleController.signal})
         .then(res => res.json())
         .then(json => {
           if (json.data.success) {
