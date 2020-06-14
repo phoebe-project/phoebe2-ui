@@ -272,8 +272,11 @@ export class Statusbar extends Component {
       serverVersionStyle.color = 'orange'
       serverTitle += '  The client v'+this.props.app.state.clientVersion+' provides the following compatibility warning: '+serverWarning+". "
     }
-    serverTitle += "(click to choose a different server)"
-
+    if (!this.props.bundleid) {
+      serverTitle += "(click to choose a different server)"
+    } else {
+      serverTitle += "(close bundle then click here to choose a different server)"
+    }
 
     var clientTitle = clientType+" client v"+this.props.app.state.clientVersion+" with id: "+this.props.app.state.clientid
     var clientVersionStyle = {margin: "4px", border: "1px dotted #a1a1a1", paddingLeft: "2px", paddingRight: "2px"}
@@ -293,11 +296,18 @@ export class Statusbar extends Component {
           null
         }
         {this.props.app.state.serverHost !== null ?
-          <Link style={{fontWeight: "inherit", fontSize: "inherit"}} title={serverTitle} onClick={this.changeServerWarning} to={serverPath}>
-            <span className="fa-md fas fa-fw fa-broadcast-tower" style={{margin: "4px"}}/>
-            <span style={serverVersionStyle}>{this.props.app.state.serverPhoebeVersion}</span>
-            <span style={{margin: "4px"}}>{this.props.app.state.serverHost}</span>
-          </Link>
+          this.props.bundleid ?
+            <span title={serverTitle}>
+              <span className="fa-md fas fa-fw fa-broadcast-tower" style={{margin: "4px"}}/>
+              <span style={serverVersionStyle}>{this.props.app.state.serverPhoebeVersion}</span>
+              <span style={{margin: "4px"}}>{this.props.app.state.serverHost}</span>
+            </span>
+            :
+            <Link style={{fontWeight: "inherit", fontSize: "inherit"}} title={serverTitle} onClick={this.changeServerWarning} to={serverPath}>
+              <span className="fa-md fas fa-fw fa-broadcast-tower" style={{margin: "4px"}}/>
+              <span style={serverVersionStyle}>{this.props.app.state.serverPhoebeVersion}</span>
+              <span style={{margin: "4px"}}>{this.props.app.state.serverHost}</span>
+            </Link>
         :
         null
       }
