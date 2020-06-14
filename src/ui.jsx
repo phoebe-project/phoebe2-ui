@@ -111,16 +111,27 @@ export class Toolbar extends Component {
     code += ' b=phoebe.Bundle.from_server(\''+this.props.bundleid+'\', \''+this.props.app.state.serverHost+'\');'
     console.log("python_cmd: "+python_cmd)
     console.log("code: "+code)
+    var terminal_cmd = this.props.app.getSettingFromStorage('terminal_cmd') || 'xterm -e'
     if (this.props.app.state.isElectron) {
-      var python_cmd = this.props.app.getSettingFromStorage('python_cmd') || null;
-      if (python_cmd === null) {
-        alert("must first confirm or choose the command to launch python shell from settings")
-        return this.redirectSettings();
+      if (terminal_cmd === 'alert') {
+        window.require('electron').remote.getGlobal('electronPrompt')('Manually launch Python client', 'Paste the following into your favorite Python console<br/>(or go to settings to configure automatic options): ', code, 450)
+      } else {
+        var python_cmd = this.props.app.getSettingFromStorage('python_cmd') || null;
+        if (python_cmd === null) {
+          alert("must first confirm or choose the command to launch python shell from settings")
+          return this.redirectSettings();
+        }
+        const s = terminal_cmd.indexOf(' ')
+        var terminal_args = []
+        if (s!==-1) {
+          terminal_args = terminal_cmd.slice(s+1).split(' ')
+        }
+        console.log("terminal_cmd "+terminal_cmd.slice(0,s))
+        console.log("terminal_args "+terminal_args)
+        window.require('electron').remote.getGlobal('launchPythonClient')(terminal_cmd.slice(0, s), terminal_args, python_cmd, code+'print(\\"'+code+'\\")');
       }
-
-      window.require('electron').remote.getGlobal('launchPythonClient')(python_cmd, code+'print(\\"'+code+'\\")');
     } else {
-      prompt("Install the dedicated desktop application to automatically launch an interactive Python console.  From the web app, you can load this bundle in a Python console by copy and pasting the following: ", code);
+      prompt("Install the dedicated desktop application to automatically launch an interactive Python console.  From the web app, you can load this bundle in a Python console by manually pasting the following: ", code);
     }
   }
   componentDidUpdate() {
@@ -169,7 +180,7 @@ export class Toolbar extends Component {
         <div style={{float: "right", marginRight: "10px"}}>
           {/*<ToolbarButton iconClassNames="fas fa-question" title="help" onClick={this.notImplementedAlert}/>*/}
           <ToolbarButton iconClassNames="fas fa-sliders-h" title="open settings" onClick={this.redirectSettings}/>
-          <ToolbarButton iconClassNames="fas fa-terminal" title="open bundle in terminal client" onClick={this.launchPythonClient}/>
+          <ToolbarButton iconClassNames="fas fa-terminal" title="open bundle in python client" onClick={this.launchPythonClient}/>
         </div>
       </div>
 

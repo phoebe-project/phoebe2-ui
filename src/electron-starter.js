@@ -4,6 +4,8 @@ const fetch = require('electron-fetch').default;
 const child_process = require('child_process');
 yargs = require('yargs');
 
+const prompt = require('electron-prompt');
+
 const electron = require('electron');
 // Module to control application life.
 const app = electron.app;
@@ -176,10 +178,34 @@ app.on('activate', function () {
 // const electronStorage = require('electron-json-storage')
 // global.electronStorage = electronStorage
 
-const launchPythonClient = (python_cmd, cmd) => {
-  return child_process.spawn('gnome-terminal', ['-e', python_cmd+' -i -c \"'+cmd+'\"']);
+const launchPythonClient = (terminal_cmd, terminal_execute_args, python_cmd, cmd) => {
+  return child_process.spawn(terminal_cmd, terminal_execute_args.concat([python_cmd+' -i -c \"'+cmd+'\"']));
 }
 global.launchPythonClient = launchPythonClient;
+
+const electronPrompt = (title, label, value, width) => {
+  prompt({
+      title: title,
+      label: "<p>"+label+"</p>",
+      value:  value,
+      width: width,
+      useHtmlLabel: true,
+      resizable: true,
+      inputAttrs: {
+          type: 'text'
+      },
+      type: 'input'
+  })
+  // .then((r) => {
+  //     if(r === null) {
+  //         console.log('user cancelled');
+  //     } else {
+  //         console.log('result', r);
+  //     }
+  // })
+  .catch(console.error);
+}
+global.electronPrompt = electronPrompt;
 
 const launchCommand = (cmd) => {
   cmd0 = cmd.split(' ')[0];

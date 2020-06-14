@@ -760,9 +760,18 @@ class ActionContentSettings extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      terminalCmd: null,
       pythonCmd: null,
       pythonLoglevel: null
     }
+  }
+  onChangeTerminalCmd = (inputValue, actionMeta) => {
+    var value = null
+    if (inputValue !== null) {
+      value = inputValue.value
+    }
+    this.setState({terminalCmd: value})
+    this.props.app.updateSetting('terminal_cmd', value)
   }
   onChangePythonCmd = (inputValue, actionMeta) => {
     var value = null
@@ -781,10 +790,17 @@ class ActionContentSettings extends Component {
     this.props.app.updateSetting('python_loglevel', value)
   }
   componentDidMount () {
+    var terminal_cmd = this.props.app.getSettingFromStorage('terminal_cmd') || null
+    if (terminal_cmd === null) {
+      terminal_cmd = 'xterm -T PHOEBE -e'
+      this.props.app.updateSetting('terminal_cmd', terminal_cmd)
+    }
+    this.setState({terminalCmd: terminal_cmd})
+
     var python_cmd = this.props.app.getSettingFromStorage('python_cmd') || null
     if (python_cmd === null) {
       python_cmd = 'python3'
-      this.props.app.updateSetting('python_cmd', 'python3')
+      this.props.app.updateSetting('python_cmd', python_cmd)
     }
     this.setState({pythonCmd: python_cmd})
 
@@ -792,16 +808,34 @@ class ActionContentSettings extends Component {
     this.setState({pythonLoglevel: python_loglevel})
   }
   render() {
+    var terminalCmdOptions = ['alert', 'xterm -T PHOEBE -e', 'gnome-terminal -e'].map((choice) => ({value: choice, label: choice}))
     var pythonCmdOptions = ['python', 'python2', 'python3', 'ipython', 'ipython2', 'ipython3'].map((choice) => ({value: choice, label: choice}))
     var pythonLoglevelOptions = ['none', 'error', 'warning', 'info', 'debug'].map((choice) => ({value: choice, label: choice}))
 
     return (
       <div>
+        <h3>Python Client:</h3>
         <div className="form-group">
-          <label style={{width: "50%", textAlign: "right", paddingRight: "10px"}} title="executable command when launching python client">Python:</label>
-          <span style={{width: "50%", lineHeight: "1.0", display: "inline-block", verticalAlign: "sub"}}>
-            <CreatableSelect options={pythonCmdOptions} value={{value: this.state.pythonCmd, label: this.state.pythonCmd}} onChange={this.onChangePythonCmd} isMulti={false} />
-          </span>
+          {this.props.app.state.isElectron ?
+            <React.Fragment>
+              <label style={{width: "50%", textAlign: "right", paddingRight: "10px"}} title="executable command when launching terminal for python client">Terminal:</label>
+              <span style={{width: "50%", lineHeight: "1.0", display: "inline-block", verticalAlign: "sub"}}>
+                <CreatableSelect options={terminalCmdOptions} value={{value: this.state.temrinalCmd, label: this.state.terminalCmd}} onChange={this.onChangeTerminalCmd} isMulti={false} />
+              </span>
+            </React.Fragment>
+            :
+            null
+          }
+          {this.props.app.state.isElectron ?
+            <React.Fragment>
+              <label style={{width: "50%", textAlign: "right", paddingRight: "10px"}} title="executable command when launching python client (phoebe must be importable)">Python:</label>
+              <span style={{width: "50%", lineHeight: "1.0", display: "inline-block", verticalAlign: "sub"}}>
+                <CreatableSelect options={pythonCmdOptions} value={{value: this.state.pythonCmd, label: this.state.pythonCmd}} onChange={this.onChangePythonCmd} isMulti={false} />
+              </span>
+            </React.Fragment>
+            :
+            null
+          }
           <label style={{width: "50%", textAlign: "right", paddingRight: "10px"}} title="log-level to set in python clients">Python log-level:</label>
           <span style={{width: "50%", lineHeight: "1.0", display: "inline-block", verticalAlign: "sub"}}>
             <Select options={pythonLoglevelOptions} value={{value: this.state.pythonLoglevel, label: this.state.pythonLoglevel}} onChange={this.onChangePythonLoglevel} isMulti={false} />

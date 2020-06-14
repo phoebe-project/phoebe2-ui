@@ -79,7 +79,10 @@ export class SplashServer extends Component {
 
     autoconnect = autoconnect && this.props.app.state.serverAllowAutoconnect && !bundleid
 
-    const skipChildServer = window.require('electron').remote.getGlobal('pyPort') === null && window.require('electron').remote.getGlobal('args').n
+    var skipChildServer = false;
+    if (this.props.app.state.isElectron) {
+      skipChildServer = window.require('electron').remote.getGlobal('pyPort') === null && window.require('electron').remote.getGlobal('args').n
+    }
 
     return(
       <div className="App content-dark">
