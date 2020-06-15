@@ -259,7 +259,7 @@ const launchChildProcessServer = () => {
   // TODO: can we detect if phoebe-server is already running on this port and if so skip?  If something else is on this port, we should raise an error and exit or choose a new port
   if (!pyPort) {
     pyPort = options.argv.p || 5000;
-    pyProc = child_process.spawn('phoebe-server', [pyPort, global.clientid]);
+    pyProc = child_process.spawn('phoebe-server', ['--port', pyPort, '--parent', global.clientid]);
     pyProc.on('error', () => {killChildProcessServer()});
   }
 
