@@ -424,7 +424,14 @@ export class Bundle extends ReactQueryParams {
         }
 
         mapObject(filter, (group, tags) => {
-          if (ignoreGroupsFilter.indexOf(group)===-1 && tags.length && tags.indexOf(param[group])===-1){
+          if (group === 'uniqueid' && tags.length) {
+            // NOTE: this isn't used by the UI (pinning is instead), but is
+            // used by the python-client to request certain parameters while
+            // still obeying visibilities, etc
+            if (tags.indexOf(uniqueid) ==-1) {
+              includeThisParam = false
+            }
+          } else if (ignoreGroupsFilter.indexOf(group)===-1 && tags.length && tags.indexOf(param[group])===-1){
             includeThisParam = false
           }
         })
@@ -437,6 +444,9 @@ export class Bundle extends ReactQueryParams {
 
     if (ignoreGroups.indexOf("pinned")===-1){
       var pinned = filter.pinned || []
+      if (typeof pinned === 'string') {
+        pinned = JSON.parse(pinned.split('%27').join('"').split('%20').join(''))
+      }
       pinned.forEach(uniqueid => {
         if (paramsfilteredids.indexOf(uniqueid)===-1) {
           paramsfilteredids.push(uniqueid)
