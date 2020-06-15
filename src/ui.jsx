@@ -113,7 +113,7 @@ export class Toolbar extends Component {
     console.log("code: "+code)
     var terminal_cmd = this.props.app.getSettingFromStorage('terminal_cmd') || 'xterm -e'
     if (this.props.app.state.isElectron) {
-      if (terminal_cmd === 'alert') {
+      if (terminal_cmd === 'paste') {
         window.require('electron').remote.getGlobal('electronPrompt')('Manually launch Python client', 'Paste the following into your favorite Python console<br/>(or go to settings to configure automatic options): ', code, 450)
       } else {
         var python_cmd = this.props.app.getSettingFromStorage('python_cmd') || null;

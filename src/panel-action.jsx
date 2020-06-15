@@ -808,7 +808,7 @@ class ActionContentSettings extends Component {
     this.setState({pythonLoglevel: python_loglevel})
   }
   render() {
-    var terminalCmdOptions = ['alert', 'xterm -T PHOEBE -e', 'gnome-terminal -e'].map((choice) => ({value: choice, label: choice}))
+    var terminalCmdOptions = ['paste', 'xterm -T PHOEBE -e', 'gnome-terminal -e'].map((choice) => ({value: choice, label: choice}))
     var pythonCmdOptions = ['python', 'python2', 'python3', 'ipython', 'ipython2', 'ipython3'].map((choice) => ({value: choice, label: choice}))
     var pythonLoglevelOptions = ['none', 'error', 'warning', 'info', 'debug'].map((choice) => ({value: choice, label: choice}))
 
