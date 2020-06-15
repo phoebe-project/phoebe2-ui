@@ -272,14 +272,21 @@ export class Bundle extends ReactQueryParams {
           // then we canceled the request
           console.log("received abort signal")
           // this.cancelLoadBundleSpinners();
-          this.setState({params: null, tags: null, nparams: 0});
+          this.setState({bundleid: null, params: null, tags: null, nparams: 0});
           this.clearQueryParams();
+          this.deregisterBundle();
+          this.setState({redirect: generatePath(this.props.app.state.serverHost)})
         } else {
           alert("server error, try again")
           // this.cancelLoadBundleSpinners();
-          this.setState({params: null, tags: null, nparams: 0});
-          this.clearQueryParams();
+          // alert("redirecting to server splash")
+          this.setState({redirect: generatePath(this.props.app.state.serverHost)})
+
+          // this.setState({bundleid: null, params: null, tags: null, nparams: 0});
+          // this.clearQueryParams();
+          // this.deregisterBundle();
         }
+
 
       });
   }

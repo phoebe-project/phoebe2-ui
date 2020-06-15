@@ -165,7 +165,7 @@ class App extends Component {
         this.setState({serverPhoebeVersion: json.data.phoebe_version, serverAvailableKinds: json.data.available_kinds, clientWarning: json.data.client_warning || null})
       })
       .catch(err => {
-        if (!window.require('electron').remote.getGlobal('args').w) {
+        if (!this.state.isElectron || !window.require('electron').remote.getGlobal('args').w) {
           alert("server may no longer be available.  Cancel connetion to rescan.")
         }
         this.setState({serverPhoebeVersion: null, serverAvailableKinds: null});
@@ -217,9 +217,14 @@ class App extends Component {
     this.setState({serverStatus: "disconnected", serverHost: null, serverPhoebeVersion: null, clientWarning: null});
   }
   emit = (channel, packet) => {
-    packet['clientid'] = this.state.clientid;
-    packet['client_version'] = this.state.clientVersion;
-    this.socket.emit(channel, packet);
+    if (this.socket) {
+      packet['clientid'] = this.state.clientid;
+      packet['client_version'] = this.state.clientVersion;
+
+      this.socket.emit(channel, packet);
+    } else {
+      console.log("App.emit requested to emit packet but no socket available "+packet)
+    }
   }
   render() {
     let public_url
