@@ -434,7 +434,7 @@ export class Bundle extends ReactQueryParams {
         }
 
         mapObject(filter, (group, tags) => {
-          if (typeof tags === 'string') {
+          if (typeof tags === 'string' && tags.indexOf('[') !== -1) {
             tags = JSON.parse(tags.split('%27').join('"').split('%20').join(''))
           }
           if (group === 'uniqueid' && tags.length) {
