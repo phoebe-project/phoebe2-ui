@@ -94,7 +94,7 @@ class TipPinning extends Component {
     return this.props.alreadyDismissed.indexOf("Filter") !== -1
   }
   isVisibleEnd = () => {
-    var queryParams = this.props.bundle.queryParams || {}
+    var queryParams = this.props.app.queryParams || {}
     var pinned = queryParams.pinned || []
 
     return pinned.length > 0;
@@ -114,7 +114,7 @@ class TipFilterAdvanced extends Component {
     return this.props.alreadyDismissed.indexOf("Pinning") !== -1
   }
   isVisibleEnd = () => {
-    var queryParams = this.props.bundle.queryParams || {}
+    var queryParams = this.props.app.queryParams || {}
     var advanced = queryParams.advanced || []
 
     return advanced.length > 0;

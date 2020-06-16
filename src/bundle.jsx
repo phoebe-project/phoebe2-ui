@@ -22,11 +22,8 @@ import {FigurePanel} from './panel-figures';
 import {Link, generatePath, abortableFetch, mapObject, sameLists} from './common';
 import {Toolbar, Statusbar} from './ui';
 
-// NOTE: currently use a local version until PR is accepted, in which case we can lose the ./ and update the version requirements in package.json
-// local version now also includes a getSearchString() which we'd have to rewrite if using the dependency
-import ReactQueryParams from './react-query-params'; // https://github.com/jeff3dx/react-query-params
 
-export class Bundle extends ReactQueryParams {
+export class Bundle extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -51,17 +48,8 @@ export class Bundle extends ReactQueryParams {
     };
     this.childrenWindows = [];
   }
-  clearQueryParams = () => {
-    var newQueryParams = {}
-    Object.keys(this.queryParams).forEach( k => {
-        newQueryParams[k] = [];
-    })
-    this.setQueryParams(newQueryParams)
-
-    // window.location.search = "";
-  }
   // getUpdatedSearchString = (updates) => {
-  //   this.setQueryParams(updates)
+  //   this.props.app.setQueryParams(updates)
   //   return this.getSearchString()
   // }
   registerBundle = () => {
@@ -170,7 +158,7 @@ export class Bundle extends ReactQueryParams {
           filterstr += key+ ' = '+value
         }
 
-        var onClick = (e) => {this.clearQueryParams(); this.setQueryParams(data.add_filter)}
+        var onClick = (e) => {this.props.app.clearQueryParams(); this.props.app.setQueryParams(data.add_filter)}
 
         if (this.state.pendingBundleMethod) {
           toast.update(this.state.pendingBundleMethod, {
@@ -181,7 +169,7 @@ export class Bundle extends ReactQueryParams {
             closeOnClick: true})
 
           // we'll let the waiting panel-action clear the pendingBundleMethod once it updates the view
-          this.setQueryParams({tmp: '"'+Object.keys(data.add_filter)[0]+':'+Object.values(data.add_filter)[0]+'"'})
+          this.props.app.setQueryParams({tmp: '"'+Object.keys(data.add_filter)[0]+':'+Object.values(data.add_filter)[0]+'"'})
 
         } else {
           toast.info('New parameters.  Click to filter: '+filterstr+'.', {
@@ -216,15 +204,21 @@ export class Bundle extends ReactQueryParams {
   }
   deregisterBundle = () => {
     console.log("deregisterBundle")
+    this.emit('deregister client', {});
+
     // terminate any polling for jobs
     mapObject(this.state.pollingJobs, (jobid, interval) => {
       clearInterval(interval)
     })
     this.setState({pollingJobs: {}})
-    this.emit('deregister client', {});
+
   }
   componentDidMount() {
     window.addEventListener("beforeunload", (event) => {this.closePopUps()});
+
+    if (this.props.app.queryParams.disconnectButton && !this.props.app.state.allowDisconnectReadonly) {
+      this.props.app.setState({allowDisconnectReadonly: true})
+    }
 
     // clear any temporary transfer bundle from the app
     this.props.app.setState({bundleTransferJson: null})
@@ -257,7 +251,7 @@ export class Bundle extends ReactQueryParams {
         } else if (!window.require('electron').remote.getGlobal('args').w) {
           alert("server error: "+json.data.error);
           this.setState({params: null, tags: null, figures: [], failedConstraints: [], checksStatus: "UNKNOWN", checksReport: null, nparams: null});
-          this.clearQueryParams();
+          this.props.app.clearQueryParams();
           this.deregisterBundle();
           this.setState({redirect: generatePath(this.props.app.state.serverHost)})
           // this.cancelLoadBundleSpinners();
@@ -273,7 +267,7 @@ export class Bundle extends ReactQueryParams {
           console.log("received abort signal")
           // this.cancelLoadBundleSpinners();
           this.setState({bundleid: null, params: null, tags: null, nparams: 0});
-          this.clearQueryParams();
+          this.props.app.clearQueryParams();
           this.deregisterBundle();
           this.setState({redirect: generatePath(this.props.app.state.serverHost)})
         } else {
@@ -283,7 +277,7 @@ export class Bundle extends ReactQueryParams {
           this.setState({redirect: generatePath(this.props.app.state.serverHost)})
 
           // this.setState({bundleid: null, params: null, tags: null, nparams: 0});
-          // this.clearQueryParams();
+          // this.props.app.clearQueryParams();
           // this.deregisterBundle();
         }
 
@@ -350,7 +344,7 @@ export class Bundle extends ReactQueryParams {
     });
   }
   filter = (params, filter, ignoreGroups=[]) => {
-    var ignoreGroupsFilter = ignoreGroups.concat(["pinned", "advanced", "orderBy", "tmp", "checks", "lastActive"])
+    var ignoreGroupsFilter = ignoreGroups.concat(["pinned", "advanced", "orderBy", "tmp", "checks", "lastActive", "disconnectButton"])
 
     var nAdvancedHiddenEach = {};
     var nAdvancedHiddenTotal = 0;
@@ -471,11 +465,11 @@ export class Bundle extends ReactQueryParams {
 
   }
   componentDidUpdate() {
-    if (this.state.params && this.queryParams) {
+    if (this.state.params && this.props.app.queryParams) {
       console.log("Bundle.componentDidUpdate recomputing paramsfilteredids")
 
       // determine which parameters (by a list of uniqueids) is in the filtered PS
-      var filteredInfo = this.filter(this.state.params, this.queryParams);
+      var filteredInfo = this.filter(this.state.params, this.props.app.queryParams);
       var paramsfilteredids = filteredInfo[0];
       var nAdvancedHiddenEach = filteredInfo[1];
       var nAdvancedHiddenTotal = filteredInfo[2];
@@ -492,7 +486,7 @@ export class Bundle extends ReactQueryParams {
           // i.e. group='componnet', tags=['binary', 'primary', 'secondary']
 
           // determine filtered PS excluding this group
-          paramsfilteredids_thisgroup = this.filter(this.state.params, this.queryParams, ["advanced", "pinned", group.slice(0,-1)])[0];
+          paramsfilteredids_thisgroup = this.filter(this.state.params, this.props.app.queryParams, ["advanced", "pinned", group.slice(0,-1)])[0];
 
           // loop through all parameters in that filter and gather the tags in THIS group - this will be available, whether selected or not
           tagsAvailable[group] = []
@@ -558,7 +552,7 @@ export class Bundle extends ReactQueryParams {
             {this.props.match.params.action ?
               <ActionPanel app={this.props.app} bundleid={this.state.bundleid} bundle={this} action={this.props.match.params.action}/>
               :
-              <PSPanel app={this.props.app} bundleid={this.state.bundleid} bundle={this} showPopoutButton={true} showChecks={!this.queryParams.hideChecks} checksReport={this.state.checksReport} checksStatus={this.state.checksStatus}/>
+              <PSPanel app={this.props.app} bundleid={this.state.bundleid} bundle={this} showPopoutButton={true} showChecks={!this.props.app.queryParams.hideChecks} checksReport={this.state.checksReport} checksStatus={this.state.checksStatus}/>
             }
             <FigurePanel app={this.props.app} bundleid={this.state.bundleid} bundle={this} showPopoutButton={true} inactive={this.props.match.params.action}/>
           </PanelGroup>

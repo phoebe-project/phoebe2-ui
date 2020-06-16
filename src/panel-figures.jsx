@@ -24,7 +24,7 @@ export class FigurePanel extends Component {
   render() {
 
     return (
-      <Panel inactive={this.props.inactive} backgroundColor="#f0f0f0">
+      <Panel inactive={this.props.inactive} backgroundColor="#f0f0f0" app={this.props.app} bundle={this.props.bundle} disconnectButton={this.props.FigurePanelOnly ? this.props.app.queryParams.disconnectButton : null}>
 
         {this.props.showPopoutButton ?
           <div style={{float: "right", marginTop: "6px", paddingRight: "10px"}}>
@@ -170,8 +170,8 @@ class FigureEditButton extends React.Component {
     e.preventDefault();
     e.stopPropagation();
     // if changing the syntax here, will also need to update the logic in panel-action.jsx for finding the figure name
-    this.props.bundle.setQueryParams({tmp: '"context:figure,figure:null|'+this.props.figure+'"'})
-    this.setState({redirect: generatePath(this.props.app.state.serverHost, this.props.bundle.state.bundleid, "edit_figure", this.props.bundle.getSearchString())});
+    this.props.app.setQueryParams({tmp: '"context:figure,figure:null|'+this.props.figure+'"'})
+    this.setState({redirect: generatePath(this.props.app.state.serverHost, this.props.bundle.state.bundleid, "edit_figure", this.props.app.getSearchString())});
 
   }
   componentDidUpdate() {
@@ -201,8 +201,8 @@ class EditFigureTimeSourceButton extends React.Component {
     e.preventDefault();
     e.stopPropagation();
     // if changing the syntax here, will also need to update the logic in panel-action.jsx for finding the figure name
-    this.props.bundle.setQueryParams({tmp: '"qualifier:default_time_source|default_time|time_source|time,context:figure"'})
-    this.setState({redirect: generatePath(this.props.app.state.serverHost, this.props.bundle.state.bundleid, "edit_figure_times", this.props.bundle.getSearchString())});
+    this.props.app.setQueryParams({tmp: '"qualifier:default_time_source|default_time|time_source|time,context:figure"'})
+    this.setState({redirect: generatePath(this.props.app.state.serverHost, this.props.bundle.state.bundleid, "edit_figure_times", this.props.app.getSearchString())});
 
   }
   componentDidUpdate() {
@@ -270,8 +270,8 @@ class FigureExpandButton extends React.Component {
     e.preventDefault();
     e.stopPropagation();
     // if changing the syntax here, will also need to update the logic in panel-action.jsx for finding the figure name
-    this.props.bundle.setQueryParams({tmp: '"context:figure,figure:null|'+this.props.figure+'"'})
-    this.setState({redirect: generatePath(this.props.app.state.serverHost, this.props.bundle.state.bundleid, "view_figure", this.props.bundle.getSearchString())});
+    this.props.app.setQueryParams({tmp: '"context:figure,figure:null|'+this.props.figure+'"'})
+    this.setState({redirect: generatePath(this.props.app.state.serverHost, this.props.bundle.state.bundleid, "view_figure", this.props.app.getSearchString())});
 
   }
   componentDidUpdate() {

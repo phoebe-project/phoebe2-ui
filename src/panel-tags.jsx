@@ -21,7 +21,7 @@ class TagHeaderButton extends Component {
   followLink = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    this.setState({redirect: generatePath(this.props.app.state.serverHost, this.props.bundleid, this.props.to, this.props.bundle.getSearchString())});
+    this.setState({redirect: generatePath(this.props.app.state.serverHost, this.props.bundleid, this.props.to, this.props.app.getSearchString())});
   }
   render() {
     if (this.state.redirect) {
@@ -44,12 +44,12 @@ class TagClearFilterButton extends Component{
   }
   onClear = () => {
     if (this.props.group) {
-      this.props.bundle.setQueryParams({[this.props.group]: []})
+      this.props.app.setQueryParams({[this.props.group]: []})
     } else {
       // var currentthis.props.currentGroupFilter
-      Object.keys(this.props.bundle.queryParams).forEach(group => {
+      Object.keys(this.props.app.queryParams).forEach(group => {
         if (["pinned", "orderBy", "advanced", "hideChecks", "lastActive"].indexOf(group) === -1) {
-          this.props.bundle.setQueryParams({[group]: []})
+          this.props.app.setQueryParams({[group]: []})
         }
       })
     }
@@ -57,12 +57,12 @@ class TagClearFilterButton extends Component{
   render() {
     var showButton = false;
     if (this.props.group) {
-      if (this.props.bundle.queryParams[this.props.group] && this.props.bundle.queryParams[this.props.group].length > 0) {
+      if (this.props.app.queryParams[this.props.group] && this.props.app.queryParams[this.props.group].length > 0) {
         showButton = true;
       }
     } else {
-      Object.keys(this.props.bundle.queryParams).forEach(group => {
-        if (["pinned", "orderBy", "advanced", "hideChecks", "lastActive"].indexOf(group)===-1 && this.props.bundle.queryParams[group].length > 0) {
+      Object.keys(this.props.app.queryParams).forEach(group => {
+        if (["pinned", "orderBy", "advanced", "hideChecks", "lastActive"].indexOf(group)===-1 && this.props.app.queryParams[group].length > 0) {
           showButton = true;
         }
       })
@@ -103,19 +103,19 @@ class TagOnlyPinnedButton extends Component {
     }
   }
   addToFilter = () => {
-    var currentAdvanced = this.props.bundle.queryParams.advanced || []
+    var currentAdvanced = this.props.app.queryParams.advanced || []
     var newAdvanced = currentAdvanced.concat("onlyPinned")
-    this.props.bundle.setQueryParams({advanced: newAdvanced})
+    this.props.app.setQueryParams({advanced: newAdvanced})
   }
   removeFromFilter = () => {
     let newAdvanced;
-    var currentAdvanced = this.props.bundle.queryParams.advanced || []
-    if (this.props.bundle.queryParams.length===1) {
+    var currentAdvanced = this.props.app.queryParams.advanced || []
+    if (this.props.app.queryParams.length===1) {
       newAdvanced = [ ];
     } else {
       newAdvanced = currentAdvanced.filter(v => v !== "onlyPinned")
     }
-    this.props.bundle.setQueryParams({advanced: newAdvanced})
+    this.props.app.setQueryParams({advanced: newAdvanced})
   }
   onClick = () => {
     if (this.state.selected) {
@@ -130,7 +130,7 @@ class TagOnlyPinnedButton extends Component {
     this.componentDidUpdate();
   }
   componentDidUpdate() {
-    var advanced = this.props.bundle.queryParams.advanced || []
+    var advanced = this.props.app.queryParams.advanced || []
     var selected = advanced.indexOf("onlyPinned")!==-1
     if (selected !== this.state.selected) {
       this.setState({selected: selected})
@@ -167,7 +167,7 @@ export class Tag extends Component {
   }
   addToFilter = () => {
     var newGroupFilter = this.state.currentGroupFilter.concat(this.props.tag)
-    this.props.bundle.setQueryParams({[this.props.group]: newGroupFilter})
+    this.props.app.setQueryParams({[this.props.group]: newGroupFilter})
   }
   removeFromFilter = () => {
     let newGroupFilter;
@@ -176,7 +176,7 @@ export class Tag extends Component {
     } else {
       newGroupFilter = this.state.currentGroupFilter.filter(tag => tag !== this.props.tag)
     }
-    this.props.bundle.setQueryParams({[this.props.group]: newGroupFilter})
+    this.props.app.setQueryParams({[this.props.group]: newGroupFilter})
   }
   onClick = () => {
     if (this.state.selected) {
@@ -200,7 +200,7 @@ export class Tag extends Component {
         this.setState({currentGroupFilter: this.props.currentGroupFilter})
       }
     } else {
-      var currentGroupFilter = this.props.bundle.queryParams[this.props.group.toLowerCase()] || null
+      var currentGroupFilter = this.props.app.queryParams[this.props.group.toLowerCase()] || null
       if (currentGroupFilter !== this.state.currentGroupFilter && currentGroupFilter != null) {
         this.setState({currentGroupFilter: currentGroupFilter})
       }
@@ -286,7 +286,7 @@ class TagGroup extends Component {
     this.componentDidUpdate();
   }
   componentDidUpdate() {
-    var currentGroupFilter = this.props.bundle.queryParams[this.props.title.toLowerCase()] || []
+    var currentGroupFilter = this.props.app.queryParams[this.props.title.toLowerCase()] || []
     if (currentGroupFilter.length !== this.state.currentGroupFilter.length) {
       this.setState({currentGroupFilter: currentGroupFilter})
     }
@@ -298,7 +298,7 @@ class TagGroup extends Component {
 
     var group = this.props.title.toLowerCase()
     var tags = this.props.tags || [];
-    // var currentGroupFilter = this.props.bundle.queryParams[this.props.group] || []
+    // var currentGroupFilter = this.props.app.queryParams[this.props.group] || []
 
     return (
       <React.Fragment>
@@ -349,11 +349,11 @@ class TagGroup extends Component {
         {this.state.expanded ?
           <div className='phoebe-tag-drawer'>
             {tags ?
-              tags.map(t => <Tag key={t} bundle={this.props.bundle} group={group} currentGroupFilter={this.state.currentGroupFilter} tag={t}/>)
+              tags.map(t => <Tag key={t} app={this.props.app} bundle={this.props.bundle} group={group} currentGroupFilter={this.state.currentGroupFilter} tag={t}/>)
               :
               null
             }
-            <TagClearFilterButton bundle={this.props.bundle} group={group}/>
+            <TagClearFilterButton app={this.props.app} bundle={this.props.bundle} group={group}/>
 
           </div>
           :
@@ -375,7 +375,7 @@ class FilterBox extends Component {
     this.setState({expanded: !this.state.expanded})
   }
   toggleCheckbox = (advanced, checked) => {
-    var currentAdvanced = this.props.bundle.queryParams.advanced || []
+    var currentAdvanced = this.props.app.queryParams.advanced || []
     let newAdvanced
     if (checked) {
       newAdvanced = currentAdvanced.concat(advanced)
@@ -383,7 +383,7 @@ class FilterBox extends Component {
       newAdvanced = currentAdvanced.filter(v => v !== advanced)
     }
     // console.log("toggleCheckbox "+advanced+" "+checked+" "+currentAdvanced+"->"+newAdvanced)
-    this.props.bundle.setQueryParams({advanced: newAdvanced})
+    this.props.app.setQueryParams({advanced: newAdvanced})
   }
   toggleIsConstraint = (e) => {
     this.toggleCheckbox("is_constraint", e.currentTarget.checked)
@@ -401,9 +401,9 @@ class FilterBox extends Component {
     this.toggleCheckbox("is_advanced", e.currentTarget.checked)
   }
   render() {
-    var pinned = this.props.bundle.queryParams.pinned || []
+    var pinned = this.props.app.queryParams.pinned || []
 
-    var advanced = this.props.bundle.queryParams.advanced || []
+    var advanced = this.props.app.queryParams.advanced || []
     var advancedOnlyPinned = advanced.indexOf("onlyPinned")!==-1
 
     return (
@@ -411,17 +411,17 @@ class FilterBox extends Component {
         {advancedOnlyPinned ?
           <React.Fragment>
             <span style={{width: "100px", display: "inline=-block"}}>Showing:</span><b>{pinned.length}</b> pinned parameter{pinned.length !==1  && "s"}
-              <TagOnlyPinnedButton bundle={this.props.bundle} padding="2px"/>
+              <TagOnlyPinnedButton app={this.props.app} bundle={this.props.bundle} padding="2px"/>
           </React.Fragment>
 
           :
           <React.Fragment>
             <span style={{width: "100px", display: "inline-block"}}>Showing:</span><b>{this.props.bundle.state.paramsfilteredids.length}/{this.props.bundle.state.nparams}</b> parameters<br/>
-            <TagClearFilterButton bundle={this.props.bundle} group={false} padding="2px"/>
+            <TagClearFilterButton app={this.props.app} bundle={this.props.bundle} group={false} padding="2px"/>
 
             <span style={{width: "100px", display: "inline-block"}}>Including:</span>{pinned.length} pinned parameter{pinned.length !== 1 && "s"}
-            {pinned.length > 0 && <TagOnlyPinnedButton bundle={this.props.bundle} padding="2px"/>}
-            <TagClearFilterButton bundle={this.props.bundle} group="pinned" padding="2px"/>
+            {pinned.length > 0 && <TagOnlyPinnedButton app={this.props.app} bundle={this.props.bundle} padding="2px"/>}
+            <TagClearFilterButton app={this.props.app} bundle={this.props.bundle} group="pinned" padding="2px"/>
 
             <span style={{width: "100px", display: "inline-block"}}>Excluding:</span>{this.props.bundle.state.nAdvancedHiddenTotal} advanced parameters<span style={{float: "right", color: "#2B71B1", cursor: "pointer"}} onClick={this.toggleExpanded}>{this.state.expanded ? "hide options" : "show options"}</span>
             {this.state.expanded ?
@@ -458,14 +458,14 @@ class ChecksBox extends Component {
     this.setState({expanded: !this.state.expanded})
   }
   // toggleCheckbox = (item, checked) => {
-  //   var currentChecks = this.props.bundle.queryParams.checks || []
+  //   var currentChecks = this.props.app.queryParams.checks || []
   //   let newChecks
   //   if (checked) {
   //     newChecks = currentChecks.concat(item)
   //   } else {
   //     newChecks = currentChecks.filter(v => v !== item)
   //   }
-  //   this.props.bundle.setQueryParams({checks: newChecks})
+  //   this.props.app.setQueryParams({checks: newChecks})
   // }
   // toggleErrors = (e) => {
   //   this.toggleCheckbox("errors", e.currentTarget.checked)
@@ -477,13 +477,13 @@ class ChecksBox extends Component {
   //   this.toggleCheckbox("constraints", e.currentTarget.checked)
   // }
   toggleViewMessages = (e) => {
-    var currentChecks = this.props.bundle.queryParams.hideChecks || false
-    this.props.bundle.setQueryParams({hideChecks: !currentChecks})
+    var currentChecks = this.props.app.queryParams.hideChecks || false
+    this.props.app.setQueryParams({hideChecks: !currentChecks})
   }
   render() {
     var status = this.props.bundle.state.checksStatus
 
-    var hidingChecks = this.props.bundle.queryParams.hideChecks || false
+    var hidingChecks = this.props.app.queryParams.hideChecks || false
 
     var viewingChecksToggleTitle = 'hide messages'
     if (hidingChecks) {
@@ -514,9 +514,9 @@ export class TagPanel extends Component {
   render() {
     var tags = this.props.bundle.state.tags || {}
     return (
-      <Panel inactive={this.props.inactive}>
-        <FilterBox bundle={this.props.bundle}/>
-        <ChecksBox bundle={this.props.bundle}/>
+      <Panel inactive={this.props.inactive} app={this.props.app} bundle={this.props.bundle}>
+        <FilterBox app={this.props.app} bundle={this.props.bundle}/>
+        <ChecksBox app={this.props.app} bundle={this.props.bundle}/>
 
         <TagGroup title="Context" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} expanded={true} tags={tags.contexts || null}/>
         <TagGroup title="Kind" app={this.props.app} bundle={this.props.bundle} bundleid={this.props.bundleid} tags={tags.kinds || null}></TagGroup>

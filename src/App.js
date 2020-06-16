@@ -5,6 +5,10 @@ import './App.css';
 import isElectron from 'is-electron'; // https://github.com/cheton/is-electron
 import SocketIO from 'socket.io-client'; // https://www.npmjs.com/package/socket.io-client
 
+// NOTE: currently use a local version until PR is accepted, in which case we can lose the ./ and update the version requirements in package.json
+// local version now also includes a getSearchString() which we'd have to rewrite if using the dependency
+import ReactQueryParams from './react-query-params'; // https://github.com/jeff3dx/react-query-params
+
 import {history} from './history'
 import {Router, isStaticFile, randomstr, generatePath} from './common'
 import {SplashBundle} from './splash-bundle';
@@ -25,7 +29,7 @@ const socketOptions = {
     };
 
 
-class App extends Component {
+class App extends ReactQueryParams {
   constructor(props) {
     super(props);
     this.state = {
@@ -41,6 +45,7 @@ class App extends Component {
       serverStartingChildProcess: isElectron(),
       settingsServerHosts: [],
       settingsDismissedTips: [],
+      allowDisconnectReadonly: false,
       clientVersion: '0.1.0', // UPDATE ON NEW RELEASE, also update package.json.version to match
       serverMinVersion: '2.3.0',  // UPDATE ON NEW RELEASE - any warnings need to go in common.getServerWarning
       latestClientVersion: null, // leave at null, updated by getLatestClientVersion
@@ -49,6 +54,15 @@ class App extends Component {
     };
     this.router = React.createRef();
     this.socket = null;
+  }
+  clearQueryParams = () => {
+    var newQueryParams = {}
+    Object.keys(this.queryParams).forEach( k => {
+        newQueryParams[k] = [];
+    })
+    this.setQueryParams(newQueryParams)
+
+    // window.location.search = "";
   }
   getSettingFromStorage = (k) => {
     return window.localStorage.getItem(k, null)
@@ -165,14 +179,19 @@ class App extends Component {
         this.setState({serverPhoebeVersion: json.data.phoebe_version, serverAvailableKinds: json.data.available_kinds, clientWarning: json.data.client_warning || null})
       })
       .catch(err => {
-        if (!this.state.isElectron || !window.require('electron').remote.getGlobal('args').w) {
-          alert("server may no longer be available.  Cancel connetion to rescan.")
+        if (!this.queryParams.disconnectButton && (!this.state.isElectron || !window.require('electron').remote.getGlobal('args').w)) {
+          alert("server may no longer be available.  Cancel connection to rescan.")
         }
         this.setState({serverPhoebeVersion: null, serverAvailableKinds: null});
       });
     }
   serverConnect = (server) => {
     var serverHost = server || this.props.match.params.server
+
+    if (this.queryParams.disconnect) {
+      return
+    }
+
 
     console.log("App.serverConnect to "+serverHost);
 
@@ -270,7 +289,7 @@ class Server extends Component {
   componentDidUpdate() {
     var server = this.props.match.params.server;
 
-    if (server != this.props.app.state.serverHost) {
+    if (server != this.props.app.state.serverHost && !this.props.app.state.allowDisconnectReadonly) {
       // NOTE must be !=, not !==
       if (server) {
         // this.props.app.setState({serverHost: server})
@@ -298,9 +317,17 @@ class Server extends Component {
 
   }
   render() {
-    if (this.props.app.state.serverStatus==='connected' || this.props.serverNotRequired) {
+    if (this.props.app.state.serverStatus==='connected' || this.props.serverNotRequired || this.props.app.state.allowDisconnectReadonly) {
       return (
         this.props.children
+      )
+    } else if (this.props.app.queryParams.disconnectButton) {
+      return (
+        <div style={{width: "100%", height: "100%", backgroundColor: '#e4e4e4'}}>
+          <div style={{position: 'fixed', bottom: '0px', right: '70px', padding: '20px', width: '100px'}}>
+            <span title="client was disconnected and in read-only mode" style={{padding: '10px', backgroundColor: "#6d6969", color: "white", borderRadius: "4px"}}>disconnected</span>
+          </div>
+        </div>
       )
     } else {
       return (

@@ -15,8 +15,25 @@ export class Panel extends Component {
           null
         }
         <div style={{padding: "10px", paddingTop: "20px", width: "100%", minHeight: this.props.minHeight || "100%", overflowY: "auto", backgroundColor: this.props.backgroundColor}}>
+
+
           {this.props.children}
         </div>
+        {this.props.disconnectButton && this.props.bundle.props.app.socket ?
+          <div style={{position: 'fixed', bottom: '0px', right: '70px', padding: '20px', width: '100px'}}>
+            <a title="disconnect this client from server and enter read-only mode" style={{padding: '10px', backgroundColor: "#2B71B1", color: "white", borderRadius: "4px", cursor: "pointer"}} onClick={() => {this.props.bundle.deregisterBundle(); this.props.app.setQueryParams({disconnect: true}); this.props.app.serverDisconnect();}}>{this.props.disconnectButton}</a>
+          </div>
+          :
+          null
+        }
+        {this.props.bundle && !this.props.bundle.props.app.socket ?
+          <div style={{position: 'fixed', bottom: '0px', right: '70px', padding: '20px', width: '100px'}}>
+            <span title="client was disconnected and in read-only mode" style={{padding: '10px', backgroundColor: "#6d6969", color: "white", borderRadius: "4px"}}>disconnected</span>
+          </div>
+          :
+          null
+        }
+
       </React.Fragment>
     )
   }
@@ -64,7 +81,7 @@ export class Toolbar extends Component {
     var result = confirm(text)
     if (result) {
       this.props.bundle.closePopUps();
-      this.props.bundle.clearQueryParams();
+      this.props.app.clearQueryParams();
       this.props.bundle.deregisterBundle();
       this.setState({redirect: generatePath(this.props.app.state.serverHost)})
       // TODO: need to tell server that we're disconnecting from the bundle.
@@ -83,7 +100,7 @@ export class Toolbar extends Component {
     var result = confirm(text)
     if (result) {
       this.props.bundle.closePopUps();
-      this.props.bundle.clearQueryParams();
+      this.props.app.clearQueryParams();
       this.props.bundle.deregisterBundle();
       this.setState({redirect: generatePath(this.props.app.state.serverHost, "open")})
       // TODO: need to tell server that we're disconnecting from the bundle.
@@ -93,11 +110,11 @@ export class Toolbar extends Component {
     this.setState({redirect: path})
   }
   redirectJobs = () => {
-    this.props.bundle.setQueryParams({tmp: '"qualifier:detached_job"'})
-    this.redirect(generatePath(this.props.app.state.serverHost, this.props.bundle.state.bundleid, "jobs", this.props.bundle.getSearchString()))
+    this.props.app.setQueryParams({tmp: '"qualifier:detached_job"'})
+    this.redirect(generatePath(this.props.app.state.serverHost, this.props.bundle.state.bundleid, "jobs", this.props.app.getSearchString()))
   }
   redirectSettings = () => {
-    this.redirect(generatePath(this.props.app.state.serverHost, this.props.bundle.state.bundleid, "settings", this.props.bundle.getSearchString()))
+    this.redirect(generatePath(this.props.app.state.serverHost, this.props.bundle.state.bundleid, "settings", this.props.app.getSearchString()))
   }
   launchPythonClient = () => {
     console.log("Bundle.launchPythonClient")

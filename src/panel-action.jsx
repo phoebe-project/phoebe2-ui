@@ -879,8 +879,8 @@ export class ActionPanel extends Component {
     this.setState({packets: packets})
   }
   closePanel = () => {
-    this.props.bundle.setQueryParams({tmp: []})
-    this.setState({redirect: generatePath(this.props.app.state.serverHost, this.props.bundle.state.bundleid, null, this.props.bundle.getSearchString())})
+    this.props.app.setQueryParams({tmp: []})
+    this.setState({redirect: generatePath(this.props.app.state.serverHost, this.props.bundle.state.bundleid, null, this.props.app.getSearchString())})
   }
   submitAction = () => {
     console.log("submitAction: ");
@@ -907,10 +907,10 @@ export class ActionPanel extends Component {
 
   }
   removeAction = () => {
-    var context = this.props.bundle.queryParams.tmp.split(',').slice(-1)[0].split(':')[0].replace('%22', '')
+    var context = this.props.app.queryParams.tmp.split(',').slice(-1)[0].split(':')[0].replace('%22', '')
     var packet = {method: 'remove_'+context}
     // NOTE: this makes very specific assumptions about the format of URL
-    var label = this.props.bundle.queryParams.tmp.split(':').slice(-1)[0].split('|').slice(-1)[0].replace('%22', '')
+    var label = this.props.app.queryParams.tmp.split(':').slice(-1)[0].split('|').slice(-1)[0].replace('%22', '')
     packet[context] = label.replace('%22', '')
     console.log("removeAction: ")
     console.log(packet)
@@ -919,9 +919,9 @@ export class ActionPanel extends Component {
     this.closePanel();
   }
   gotoAction = (newAction, newRedirectArgs={}) => {
-    this.props.bundle.setQueryParams({tmp: []})
+    this.props.app.setQueryParams({tmp: []})
     this.props.bundle.setState({redirectArgs: newRedirectArgs})
-    var url = generatePath(this.props.app.state.serverHost, this.props.bundle.state.bundleid, newAction, this.props.bundle.getSearchString())
+    var url = generatePath(this.props.app.state.serverHost, this.props.bundle.state.bundleid, newAction, this.props.app.getSearchString())
     if (Object.keys(this.state.packet).length) {
       this.setState({packet: {}})
     }
@@ -943,7 +943,7 @@ export class ActionPanel extends Component {
     var actionIcon = "fas fa-fw "
     var actionContent = null
 
-    var tmpFilter = this.props.bundle.queryParams.tmp !== undefined && this.props.bundle.queryParams.tmp.length;
+    var tmpFilter = this.props.app.queryParams.tmp !== undefined && this.props.app.queryParams.tmp.length;
 
     if (this.state.waiting) {
       if (tmpFilter) {
@@ -997,7 +997,7 @@ export class ActionPanel extends Component {
       // no actionIcon because we have a tmpFilter to show parameters
       if (tmpFilter) {
         // NOTE: this makes very specific assumptions about the format of URL
-        var figure = this.props.bundle.queryParams.tmp.split('|').slice(-1)[0].replace('%22', '')
+        var figure = this.props.app.queryParams.tmp.split('|').slice(-1)[0].replace('%22', '')
         // console.log(figure)
         actionContent = <React.Fragment>
                           <FigurePanelWidth app={this.props.app} bundle={this.props.bundle} figure={figure}/>
@@ -1008,7 +1008,7 @@ export class ActionPanel extends Component {
       // no actionIcon because we have a tmpFilter to show parameters
       if (tmpFilter) {
         // NOTE: this makes very specific assumptions about the format of URL
-        var figure = this.props.bundle.queryParams.tmp.split('|').slice(-1)[0].replace('%22', '')
+        var figure = this.props.app.queryParams.tmp.split('|').slice(-1)[0].replace('%22', '')
         // console.log(figure)
         actionContent = <React.Fragment>
                           <FigurePanelWidth app={this.props.app} bundle={this.props.bundle} figure={figure}/>
@@ -1075,22 +1075,22 @@ export class ActionPanel extends Component {
                       null
                     }
                     {this.props.action == 'add_compute' ?
-                      <span onClick={()=>this.gotoAction('run_compute', {compute: this.props.bundle.queryParams.tmp.split(':')[1].replace('%22', '')})} className="btn btn-primary" style={{margin: "5px"}} title="accept changes and go to run_compute"><span className="fas fa-fw fa-play"></span> run</span>
+                      <span onClick={()=>this.gotoAction('run_compute', {compute: this.props.app.queryParams.tmp.split(':')[1].replace('%22', '')})} className="btn btn-primary" style={{margin: "5px"}} title="accept changes and go to run_compute"><span className="fas fa-fw fa-play"></span> run</span>
                       :
                       null
                     }
                     {this.props.action == 'add_dataset' ?
-                      <span onClick={()=>this.gotoAction('import_data', {datasets: [this.props.bundle.queryParams.tmp.split(':')[1].replace('%22', '')]})} className="btn btn-primary" style={{margin: "5px"}} title="accept changes and import data from a file"><span className="fas fa-fw fa-upload"></span> import data</span>
+                      <span onClick={()=>this.gotoAction('import_data', {datasets: [this.props.app.queryParams.tmp.split(':')[1].replace('%22', '')]})} className="btn btn-primary" style={{margin: "5px"}} title="accept changes and import data from a file"><span className="fas fa-fw fa-upload"></span> import data</span>
                       :
                       null
                     }
                     {this.props.action == 'add_solver' ?
-                      <span onClick={()=>this.gotoAction('run_solver', {solver: this.props.bundle.queryParams.tmp.split(':')[1].replace('%22', '')})} className="btn btn-primary" style={{margin: "5px"}} title="accept changes and go to run_solver"><span className="fas fa-fw fa-play"></span> run</span>
+                      <span onClick={()=>this.gotoAction('run_solver', {solver: this.props.app.queryParams.tmp.split(':')[1].replace('%22', '')})} className="btn btn-primary" style={{margin: "5px"}} title="accept changes and go to run_solver"><span className="fas fa-fw fa-play"></span> run</span>
                       :
                       null
                     }
                     {this.props.action == 'run_solver' ?
-                      <span onClick={()=>this.gotoAction('adopt_solution', {solution: this.props.bundle.queryParams.tmp.split(':')[1].replace('%22', '')})} className="btn btn-primary" style={{margin: "5px"}} title="accept changes and go to adopt_solution"><span className="fas fa-fw fa-check-double"></span> adopt</span>
+                      <span onClick={()=>this.gotoAction('adopt_solution', {solution: this.props.app.queryParams.tmp.split(':')[1].replace('%22', '')})} className="btn btn-primary" style={{margin: "5px"}} title="accept changes and go to adopt_solution"><span className="fas fa-fw fa-check-double"></span> adopt</span>
                       :
                       null
                     }
