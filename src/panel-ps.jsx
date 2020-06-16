@@ -343,7 +343,7 @@ class Parameter extends Component {
         color = 'red'
         title += ' (not updated due to failed constraint)'
       }
-      inlineValueContent = <span onClick={this.props.paramOverview.readonly ? null : this.toggleExpandedValue} title={title} style={{display: "inline-block", color: color, textAlign: "right", width: "180px", paddingLeft: "5px", whiteSpace: "nowrap", overflowX: "hidden"}}>
+      inlineValueContent = <span onClick={this.props.paramOverview.readonly ? null : this.toggleExpandedValue} title={title} style={{display: "inline-block", color: color, textAlign: "right", width: "180px", paddingLeft: "5px", whiteSpace: "nowrap", overflowX: "hidden", textOverflow: "ellipsis"}}>
                               {this.props.paramOverview.valuestr}
                            </span>
     }
