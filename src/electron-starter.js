@@ -4,7 +4,8 @@ const fetch = require('electron-fetch').default;
 const child_process = require('child_process');
 yargs = require('yargs');
 
-const prompt = require('electron-prompt');
+const path = require('path');
+const url = require('url');
 
 const electron = require('electron');
 // Module to control application life.
@@ -25,6 +26,7 @@ options.alias('a', 'action').string('a').describe('a', 'launch at a given "actio
 options.alias('p', 'portChildServer').number('p').describe('p', 'port to launch child server (defaults to 5000)')
 options.alias('n', 'skipChildServer').boolean('n').boolean('skip-child-server').describe('n', 'do not launch a server as a child process')
 options.alias('c', 'noWarnOnClose').boolean('c').describe('c', 'do not warn about killing a child server or unsaved changes on close')
+options.alias('u', 'webClientUrl').boolean('u').describe('u', 'return the static URL to open as a web-app outside of electron and exit (does not support j)')
 
 global.args = options.argv
 
@@ -35,6 +37,24 @@ if (options.argv.help) {
 
 if (options.argv.version) {
   process.stdout.write("#"+version+"\n")
+  process.exit(0)
+}
+
+if (options.argv.u) {
+  var u = path.join(__dirname, '/../build/index_static.html')
+  if (options.argv.f) {
+    u += "?"+options.argv.f
+  }
+  if (options.argv.s) {
+    u += "\#/"+options.argv.s
+    if (options.argv.b) {
+      u += "/" + options.argv.b
+      if (options.argv.a) {
+        u += "/" +options.argv.a
+      }
+    }
+  }
+  process.stdout.write(u)
   process.exit(0)
 }
 
@@ -63,13 +83,13 @@ const setIgnoreArgs = (v) => {
 global.setIgnoreArgs = setIgnoreArgs;
 
 
+const prompt = require('electron-prompt');
+
+
 // make sure the packaged version of chromium can display the built index.html file
 //app.commandLine.appendSwitch('allow-file-access');
 
 const BrowserWindow = electron.BrowserWindow;
-
-const path = require('path');
-const url = require('url');
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.

@@ -408,6 +408,9 @@ export class Bundle extends ReactQueryParams {
     if (ignoreGroups.indexOf("advanced")!==-1 || advanced.indexOf("onlyPinned")===-1) {
       mapObject(params, (uniqueid, param) => {
         inAdvancedAll = param.advanced_filter;
+        if (typeof inAdvancedAll === 'string') {
+          inAdvancedAll = JSON.parse(inAdvancedAll.split('%27').join('"').split('%20').join(''))
+        }
 
         // include this in counts
         inAdvancedAll.forEach(advancedItem => {
@@ -431,6 +434,9 @@ export class Bundle extends ReactQueryParams {
         }
 
         mapObject(filter, (group, tags) => {
+          if (typeof tags === 'string') {
+            tags = JSON.parse(tags.split('%27').join('"').split('%20').join(''))
+          }
           if (group === 'uniqueid' && tags.length) {
             // NOTE: this isn't used by the UI (pinning is instead), but is
             // used by the python-client to request certain parameters while

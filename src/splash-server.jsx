@@ -89,38 +89,42 @@ export class SplashServer extends Component {
         <Statusbar app={this.props.app} bundleid={null} dark={true}/>
         <LogoSplash animationEffect="animateShimmer"/>
 
-        <div className="splash-scrollable-header">
-          {/* <p>Desktop application id: {remote.getGlobal('appid')}</p> */}
-          {/* <p>Current connection: {this.props.app.state.serverHost} ({this.props.app.state.serverStatus})</p> */}
+        {this.props.app.state.isElectron && window.require('electron').remote.getGlobal('args').w ?
+          null
+          :
+          <div className="splash-scrollable-header">
+            {/* <p>Desktop application id: {remote.getGlobal('appid')}</p> */}
+            {/* <p>Current connection: {this.props.app.state.serverHost} ({this.props.app.state.serverStatus})</p> */}
 
-          <p style={{textAlign: "center", marginBottom: "0px", paddingLeft: "10px", paddingRight: "10px"}}>
-            {bundleid ?
-              this.props.app.state.serverStatus==='connected' ?
-                <b>Switch to Server</b>
+            <p style={{textAlign: "center", marginBottom: "0px", paddingLeft: "10px", paddingRight: "10px"}}>
+              {bundleid ?
+                this.props.app.state.serverStatus==='connected' ?
+                  <b>Switch to Server</b>
+                  :
+                  <b>Connecting to Server...</b>
                 :
-                <b>Connecting to Server...</b>
-              :
-              <b>Connect to Server</b>
-            }
+                <b>Connect to Server</b>
+              }
 
-            {/* <Link style={{float: "right"}} title="configure server settings" to="/settings/servers"><span className="fas fa-fw fa-cog"/></Link> */}
-          </p>
+              {/* <Link style={{float: "right"}} title="configure server settings" to="/settings/servers"><span className="fas fa-fw fa-cog"/></Link> */}
+            </p>
 
-          <div ref={this.splashScrollable} className="splash-scrollable">
-            { this.props.app.state.isElectron ?
-              this.props.app.state.electronChildProcessPort !== null && !skipChildServer ?
-                <ServerButton key={"localhost:"+this.props.app.state.electronChildProcessPort} location={"localhost:"+this.props.app.state.electronChildProcessPort} autoconnect={autoconnect} switchServer={bundleid != null} isSpawned={true} app={this.props.app} splash={this} match={this.props.match}/>
+            <div ref={this.splashScrollable} className="splash-scrollable">
+              { this.props.app.state.isElectron ?
+                this.props.app.state.electronChildProcessPort !== null && !skipChildServer ?
+                  <ServerButton key={"localhost:"+this.props.app.state.electronChildProcessPort} location={"localhost:"+this.props.app.state.electronChildProcessPort} autoconnect={autoconnect} switchServer={bundleid != null} isSpawned={true} app={this.props.app} splash={this} match={this.props.match}/>
+                  :
+                  <ServerInstallButton key={"server-not-installed"} app={this.props.app} splash={this} match={this.props.match} skipChildServer={skipChildServer}/>
                 :
-                <ServerInstallButton key={"server-not-installed"} app={this.props.app} splash={this} match={this.props.match} skipChildServer={skipChildServer}/>
-              :
-              null
-            }
+                null
+              }
 
-            {this.props.app.state.settingsServerHosts.map(location => <ServerButton key={location} location={location} autoconnect={autoconnect} switchServer={bundleid != null} app={this.props.app} splash={this} match={this.props.match}/>)}
-            <ServerAddButton app={this.props.app}/>
+              {this.props.app.state.settingsServerHosts.map(location => <ServerButton key={location} location={location} autoconnect={autoconnect} switchServer={bundleid != null} app={this.props.app} splash={this} match={this.props.match}/>)}
+              <ServerAddButton app={this.props.app}/>
 
+            </div>
           </div>
-        </div>
+          }
       </div>
     );
   }
