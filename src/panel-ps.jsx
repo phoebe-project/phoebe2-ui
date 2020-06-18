@@ -1406,7 +1406,7 @@ export class PSPanel extends Component {
         }
 
 
-        <div style={{paddingTop: "10px"}}>
+        <div style={{paddingTop: "10px", paddingBottom: "100px"}}>
           {this.props.bundle.state.paramsfilteredids.length || Object.keys(this.props.app.queryParams).length ?
 
             orderByTags.map(orderByTag => {
