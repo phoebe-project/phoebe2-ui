@@ -19,7 +19,7 @@ see [installing node and npm on Ubuntu](https://tecadmin.net/install-latest-node
 
   * node
   * npm
-  * [phoebe2](https://www.github.com/phoebe-project/phoebe2) (currently needs the latest version of the `development` or `fitting` branch installed which requires `pip install flask flask-sqlalchemy flask-socketio gevent-websocket socketIO-client`, once released, PHOEBE 2.3+ will only be required for running the server locally).
+  * [phoebe2](https://www.github.com/phoebe-project/phoebe2) (currently needs the latest version of the `fitting` branch installed which requires `pip install flask flask-sqlalchemy flask-socketio gevent-websocket "python-socketio[client]"`, once released, PHOEBE 2.3+ will only be required for running the server locally).
 
 while in top-level directory, install all local dependencies into the `node_modules` directory (not under version-control):
 
@@ -82,7 +82,7 @@ To include other installers, see the available list [here](https://github.com/el
 
 ## Development notes
 
-* Most state is held in the App component in [App.js](/src/App.js), including the server connection and current Bundle.  Flux, Redux, etc are currently overkill for what we need, so this allows all state to be in one place and easily passed down to other components by passing `app` as a property.
+* Most state is held in the App component in [App.js](/src/App.js) (including the server connection) or the Bundle component in [bundle.jsx](/src/Bundle.jsx) (including information about all parameters, filtering, etc).  Flux, Redux, etc are currently overkill for what we need, so this allows all state to be in one place and easily passed down to other components by passing `app` and/or `bundle` as properties.
 
 * All Router components in [App.js](/src/App.js) should be wrapped in a Server component to handle parsing the URL and making sure the connection is correct.
 
