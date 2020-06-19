@@ -1305,8 +1305,10 @@ class ChecksReportItem extends Component {
 
         {Object.keys(this.props.report.parameters).map(twig => {
           let uniqueid = this.props.report.parameters[twig]
-          let param = this.props.bundle.state.params[uniqueid]
-          return <Parameter key={uniqueid} uniqueid={uniqueid} uniqueidkey={"checks:"+this.props.reportKey+":"+uniqueid} app={this.props.app} bundle={this.props.bundle} PSPanel={this.props.PSPanel} paramOverview={param} pinnable={true} disableFiltering={false} disableScrollTo={true} description={param.description}/>
+          let param = this.props.bundle.state.params[uniqueid] || null
+          if (param) {
+            return <Parameter key={uniqueid} uniqueid={uniqueid} uniqueidkey={"checks:"+this.props.reportKey+":"+uniqueid} app={this.props.app} bundle={this.props.bundle} PSPanel={this.props.PSPanel} paramOverview={param} pinnable={true} disableFiltering={false} disableScrollTo={true} description={param.description}/>
+          }
         })}
 
       </div>
