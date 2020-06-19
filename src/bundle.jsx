@@ -42,6 +42,8 @@ export class Bundle extends Component {
       nAdvancedHiddenEach: {},
       nAdvancedHiddenTotal: 0,
       nparams: 0,
+      undoDescription: null,
+      undoIndex: null,
       pendingBundleMethod: null,
       pollingJobs: {}, // uniqueid: interval
       redirectArgs: {},
@@ -99,6 +101,10 @@ export class Bundle extends Component {
         figureUpdateTimes[figure] = data.figure_update_times[figure]
       })
       this.setState({figureUpdateTimes: figureUpdateTimes})
+    })
+
+    this.props.app.socket.on(this.state.bundleid+':undo:react', (data) => {
+      this.setState({undoIndex: data.undo_index, undoDescription: data.undo_description})
     })
 
     this.props.app.socket.on(this.state.bundleid+':changes:react', (data) => {

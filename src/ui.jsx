@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import {Redirect} from 'react-router-dom';
 
-import {Link, generatePath, getServerWarning} from './common';
+import {Link, randomstr, generatePath, getServerWarning} from './common';
 
 var versionCompare = require('semver-compare');  // function that returns -1, 0, 1
 
@@ -106,6 +106,9 @@ export class Toolbar extends Component {
       // TODO: need to tell server that we're disconnecting from the bundle.
     }
   }
+  undo = () => {
+    this.props.bundle.emit('undo', {'undoIndex': this.props.bundle.state.undoIndex})
+  }
   redirect = (path) => {
     this.setState({redirect: path})
   }
@@ -178,9 +181,14 @@ export class Toolbar extends Component {
         <div style={{float: "left", marginLeft: "0px"}}>
           <ToolbarButton iconClassNames="fas fa-file" title="new bundle" onClick={this.newBundle}/>
           <ToolbarButton iconClassNames="fas fa-folder-open" title="load/import bundle from file" onClick={this.openBundle}/>
-          <ToolbarButton iconClassNames="fas fa-save" title="save bundle" to={"http://" + this.props.app.state.serverHost + "/save_bundle/" + this.props.bundleid} download={this.props.bundleid+".bundle"} target={this.props.app.state.isElectron ? null : "_blank"}/>
-          {/* <ToolbarButton iconClassNames="fas fa-undo" title="undo" onClick={this.notImplementedAlert}/>
-          <ToolbarButton iconClassNames="fas fa-redo" title="redo" onClick={this.notImplementedAlert}/> */}
+          <ToolbarButton iconClassNames="fas fa-save" title="save bundle" to={"http://" + this.props.app.state.serverHost + "/save_bundle/" + this.props.bundleid+"?"+randomstr(6)} download={this.props.bundleid+".bundle"} target={this.props.app.state.isElectron ? null : "_blank"}/>
+          <ToolbarButton iconClassNames="fas fa-fw fa-file-download" title="EXPERIMENTAL: export logged history as python script" to={"http://" + this.props.app.state.serverHost + "/export_script/" + this.props.bundleid+"?"+randomstr(6)} download={this.props.bundleid+".py"} target={this.props.app.state.isElectron ? null : "_blank"}/>
+          { this.props.bundle.state.undoDescription ?
+            <ToolbarButton iconClassNames="fas fa-undo" title={this.props.bundle.state.undoDescription} onClick={this.undo}/>
+            :
+            null
+          }
+
           { nPollingJobs > 0 ?
             <ToolbarButton iconClassNames="fas fa-tasks" counter={nPollingJobs} title="access running tasks" onClick={this.redirectJobs}/>
             :
