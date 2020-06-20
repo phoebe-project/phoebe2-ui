@@ -57,6 +57,7 @@
     "package:all": "npm run build:electron && electron-packager . --all --out=dist --overwrite --ignore=dist --ignore=src --ignore=public && cd dist && tar -cJf phoebe-linux-x64.tar.xz phoebe-linux-x64 && tar -cJf phoebe-darwin-x64.tar.xz phoebe-darwin-x64 && zip -r phoebe-win32-x64.zip phoebe-win32-x64",
     "package": "npm run build:electron && electron-packager . --out=dist --overwrite --ignore=dist --ignore=src --ignore=public",
     "package:installer:all": "npm run package:installer:deb64 && npm run package:installer:rpm64 && npm run package:installer:dmg64 && npm run package:installer:exe64 && npm run package:installer:exe32",
+    "package:installer:default": "npm run package:installer:deb64 && npm run package:installer:rpm64 && npm run package:installer:exe64 && rm dist/installers/RELEASES && rm dist/installers/*.nupkg",
     "package:installer:deb64": "electron-installer-debian --src dist/phoebe-linux-x64/ --dest dist/installers/ --arch amd64 --icon=public/favicon.png",
     "package:installer:rpm64": "electron-installer-redhat --src dist/phoebe-linux-x64/ --dest dist/installers/ --arch x86_64 --icon=public/favicon.png",
     "package:installer:dmg64": "electron-installer-dmg ./dist/phoebe-darwin-x64/phoebe.app FooBar --out dist/installers/ --icon=public/favicon.png --overwrite",

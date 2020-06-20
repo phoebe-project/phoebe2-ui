@@ -74,7 +74,11 @@ To create installers for all supported distributions (currently includes .deb, .
 npm run package:installer:all
 ```
 
-will create installers in the `dist/installers` directory (not under version-control) from the latest created package versions (call `npm run package:all` first, if necessary).
+will create installers in the `dist/installers` directory (not under version-control) from the latest created package versions (call `npm run package:all` first, if necessary).  Note that dmg installers can only be build on mac systems.  To create all default installers to release, instead run:
+
+```bash
+npm run package:installer:default
+```
 
 Alternatively, you can call `npm run package:installer:deb64`, `npm run package:installer:rpm64`, `npm run package:installer:dmg`, `npm run package:installer:exe32`, `npm run package:installer:exe64` separately.  See the dependencies section above for possible packages that may need to be installed in order to generate installers.
 
