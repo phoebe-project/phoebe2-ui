@@ -366,6 +366,13 @@ code {
   box-shadow: none;
 }
 
+.btn-tag-disabled {
+  /* used for constraint solve_for that are invalid */
+  color: #525252;
+  box-shadow: 0px 0 2px 0 rgba(21, 21, 22, 0.8392156862745098);
+  cursor: default !important;
+}
+
 .splash-scrollable-btn-div {
   display: inline-block;
   height: 40px;

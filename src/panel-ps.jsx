@@ -1234,14 +1234,18 @@ class InputConstraint extends Component {
       this.props.onChange(twig)
     }
   }
-  renderPart = (part) => {
+  renderPart = (part, isValid) => {
     if (part===null) {
       return null
     } else if (part.indexOf("{") === -1) {
       return <span>{part}</span>
     } else {
       var twig = part.replace(/[{}]/g, '')
-      return <span className={this.state.solve_for==twig ? 'btn btn-tag btn-tag-selected' : 'btn btn-tag btn-tag-unselected'} style={{width: 'fit-content', maxWidth: 'fit-content'}} title={'solve for '+twig} onClick={() => this.onChange(twig)}>{twig}</span>
+      if (isValid || this.props.parameter.state.details.validsolvefor.indexOf(twig) !== -1) {
+        return <span className={this.state.solve_for==twig ? 'btn btn-tag btn-tag-selected' : 'btn btn-tag btn-tag-unselected'} style={{width: 'fit-content', maxWidth: 'fit-content'}} title={'solve for '+twig} onClick={() => this.onChange(twig)}>{twig}</span>
+      } else {
+        return <span className='btn btn-tag btn-tag-disabled' style={{width: 'fit-content', maxWidth: 'fit-content'}} title={'cannot solve constraint for '+twig}>{twig}</span>
+      }
     }
   }
   render() {
@@ -1260,7 +1264,7 @@ class InputConstraint extends Component {
 
     return (
       <span style={{width: 'calc(100% - 80px)', display: 'inline-block', marginLeft: '10px', marginRight: '10px'}}>
-        {constrains ? <span>{this.renderPart('{'+constrains+'}')} <b>=</b> </span> : <span>loading...</span>}
+        {constrains ? <span>{this.renderPart('{'+constrains+'}', true)} <b>=</b> </span> : <span>loading...</span>}
         {parts.map((part) => this.renderPart(part))}
       </span>
     )
