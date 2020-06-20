@@ -393,7 +393,7 @@ class Parameter extends Component {
           }
 
           <span style={{display: "inline-block", marginLeft: "10px", fontWeight: "bold", width: "calc(100% - 280px)", overflowX: "hidden"}} onClick={this.toggleExpandedDetails}>
-            <Twig twig={this.props.paramOverview.twig} paramOverview={this.props.paramOverview}/>
+            <Twig twig={this.props.paramOverview.twig} title={this.props.paramOverview.description+" (click for details)"} paramOverview={this.props.paramOverview}/>
           </span>
 
           {inlineValueContent}

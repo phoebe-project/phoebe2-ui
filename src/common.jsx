@@ -239,7 +239,7 @@ export class Twig extends Component {
     var twigRemainder = this.props.twig.slice(sliceIndex);
 
     return (
-      <span style={{marginLeft: "4px"}}>
+      <span style={{marginLeft: "4px"}} title={this.props.title}>
         <span style={{fontWeight: "bold"}}>{qualifier}</span>
         <span style={{fontWeight: "normal", color: "slategray"}}>{twigRemainder}</span>
       </span>
