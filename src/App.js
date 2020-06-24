@@ -40,6 +40,7 @@ class App extends ReactQueryParams {
       serverHost: null,
       serverStatus: "disconnected",
       serverPhoebeVersion: null,
+      serverInfo: null,
       serverAvailableKinds: null,
       serverAllowAutoconnect: true,
       serverStartingChildProcess: isElectron(),
@@ -176,13 +177,13 @@ class App extends ReactQueryParams {
     fetch("http://"+serverHost+"/info", {method: 'POST', body: JSON.stringify({client_version: this.state.clientVersion, clientid: this.state.clientid})})
       .then(res => res.json())
       .then(json => {
-        this.setState({serverPhoebeVersion: json.data.phoebe_version, serverAvailableKinds: json.data.available_kinds, clientWarning: json.data.client_warning || null})
+        this.setState({serverPhoebeVersion: json.data.phoebe_version, serverInfo: json.data.info || '', serverAvailableKinds: json.data.available_kinds, clientWarning: json.data.client_warning || null})
       })
       .catch(err => {
         if (!this.queryParams.disconnectButton && (!this.state.isElectron || !window.require('electron').remote.getGlobal('args').w)) {
           alert("server may no longer be available.  Cancel connection to rescan.")
         }
-        this.setState({serverPhoebeVersion: null, serverAvailableKinds: null});
+        this.setState({serverPhoebeVersion: null, serverInfo: null, serverAvailableKinds: null});
       });
     }
   serverConnect = (server) => {

@@ -325,12 +325,22 @@ export class Statusbar extends Component {
             <span title={serverTitle}>
               <span className="fa-md fas fa-fw fa-broadcast-tower" style={{margin: "4px"}}/>
               <span style={serverVersionStyle}>{this.props.app.state.serverPhoebeVersion}</span>
+              {this.props.app.state.serverInfo ?
+                <span style={{display: 'inline-block', width: '20px', marginTop: '4px'}} className="fa fa-fw fa-info-circle" title={this.props.app.state.serverInfo}/>
+                :
+                null
+              }
               <span style={{margin: "4px"}}>{this.props.app.state.serverHost}</span>
             </span>
             :
             <Link style={{fontWeight: "inherit", fontSize: "inherit"}} title={serverTitle} onClick={this.changeServerWarning} to={serverPath}>
               <span className="fa-md fas fa-fw fa-broadcast-tower" style={{margin: "4px"}}/>
               <span style={serverVersionStyle}>{this.props.app.state.serverPhoebeVersion}</span>
+              {this.props.app.state.serverInfo ?
+                <span style={{display: 'inline-block', width: '20px', marginTop: '4px'}} className="fa fa-fw fa-info-circle" title={this.props.app.state.serverInfo}/>
+                :
+                null
+              }
               <span style={{margin: "4px"}}>{this.props.app.state.serverHost}</span>
             </Link>
         :

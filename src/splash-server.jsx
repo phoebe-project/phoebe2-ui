@@ -185,7 +185,7 @@ class ServerStatusIcon extends Component {
 class ServerVersionSpan extends Component {
   render() {
     let text, title
-    var style = {display: "inline-block", float: "left", width: "60px", marginLeft: "5px", marginRight: "15px", textAlign: "center"}
+    var style = {display: "inline-block", float: "left", width: "60px", marginLeft: "5px", marginRight: "5px", textAlign: "center"}
 
     if (this.props.phoebeVersion) {
       style.border = "1px dotted #a1a1a1"
@@ -236,6 +236,7 @@ class ServerButton extends Component {
     super(props);
     this.state = {
       phoebeVersion: null,
+      serverInfo: null,
       clientMinVersion: null,
       clientWarning: null,
       parentId: null,
@@ -270,6 +271,7 @@ class ServerButton extends Component {
         .then(res => res.json())
         .then(json => {
           this.setState({phoebeVersion: json.data.phoebe_version,
+                         serverInfo: json.data.info || '',
                          clientMinVersion: json.data.client_min_version || null,
                          clientWarning: json.data.client_warning || null,
                          parentId: json.data.parentid})
@@ -389,7 +391,7 @@ class ServerButton extends Component {
       removeStyle.color = "transparent"
     }
 
-    var locationSpan = <span style={{display: "inline-block", float: "left", textAlign: "center", width: "calc(100% - 200px)"}}>{locationText}</span>
+    var locationSpan = <span style={{display: "inline-block", float: "left", textAlign: "center", width: "calc(100% - 210px)"}}>{locationText}</span>
 
     var to = generatePath(this.props.location);
     if (this.props.match.params.bundleid) {
@@ -445,6 +447,11 @@ class ServerButton extends Component {
                              serverWarning={serverWarning}
                              status={this.state.status}
                              autoconnect={this.props.autoconnect}/>
+          {this.state.serverInfo ?
+            <span style={{display: 'inline-block', float: 'left', width: '20px', marginTop: '4px'}} className="fa fa-fw fa-info-circle" title={this.state.serverInfo}/>
+            :
+            <span style={{display: 'inline-block', float: 'left', width: '20px'}}>&nbsp;</span>
+          }
           {locationSpan}
           {this.props.isSpawned || this.state.status ?
             null
