@@ -179,8 +179,16 @@ export class Toolbar extends Component {
     return (
       <div style={divStyle} className="toolbar">
         <div style={{float: "left", marginLeft: "0px"}}>
-          <ToolbarButton iconClassNames="fas fa-file" title="new bundle" onClick={this.newBundle}/>
-          <ToolbarButton iconClassNames="fas fa-folder-open" title="load/import bundle from file" onClick={this.openBundle}/>
+          {this.props.app.state.isElectron && window.require('electron').remote.getGlobal('args').disableBundleChange ?
+            null
+            :
+            <ToolbarButton iconClassNames="fas fa-file" title="new bundle" onClick={this.newBundle}/>
+          }
+          {this.props.app.state.isElectron && window.require('electron').remote.getGlobal('args').disableBundleChange ?
+            null
+            :
+            <ToolbarButton iconClassNames="fas fa-folder-open" title="load/import bundle from file" onClick={this.openBundle}/>
+          }
           <ToolbarButton iconClassNames="fas fa-save" title="save bundle" to={"http://" + this.props.app.state.serverHost + "/save_bundle/" + this.props.bundleid+"?"+randomstr(6)} download={this.props.bundleid+".bundle"} target={this.props.app.state.isElectron ? null : "_blank"}/>
           <ToolbarButton iconClassNames="fas fa-fw fa-file-download" title="EXPERIMENTAL: export logged history as python script" to={"http://" + this.props.app.state.serverHost + "/export_script/" + this.props.bundleid+"?"+randomstr(6)} download={this.props.bundleid+".py"} target={this.props.app.state.isElectron ? null : "_blank"}/>
           { this.props.bundle.state.undoDescription ?

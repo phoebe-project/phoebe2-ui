@@ -25,6 +25,7 @@ options.alias('f', 'filter').string('f').describe('f', 'filter to apply, will be
 options.alias('a', 'action').string('a').describe('a', 'launch at a given "action" (i.e. ps, figures, run_compute), will be ignore if server and bundle not provided')
 options.alias('p', 'portChildServer').number('p').describe('p', 'port to launch child server (defaults to 5000)')
 options.alias('n', 'skipChildServer').boolean('n').boolean('skip-child-server').describe('n', 'do not launch a server as a child process')
+options.alias('d', 'disableBundleChange').boolean('d').boolean('disable-bundle-change').describe('d', 'disable "new" and "open" bundle buttons')
 options.alias('c', 'noWarnOnClose').boolean('c').describe('c', 'do not warn about killing a child server or unsaved changes on close')
 options.alias('u', 'webClientUrl').boolean('u').describe('u', 'return the static URL to open as a web-app outside of electron and exit (does not support j)')
 
