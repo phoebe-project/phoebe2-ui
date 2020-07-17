@@ -95,6 +95,7 @@ const BrowserWindow = electron.BrowserWindow;
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow;
+var showExitPrompt = true;
 
 function createWindow() {
     // Create the browser window.
@@ -105,7 +106,7 @@ function createWindow() {
       height: 800,
       minHeight: 500,
       icon: __dirname + '/icons/phoebe.png',
-      // webPreferences: { nodeIntegration: true }
+      webPreferences: { nodeIntegration: true }
     });
 
     // and load the index.html of the app.
@@ -119,9 +120,8 @@ function createWindow() {
     // mainWindow.webContents.openDevTools();
 
     // Confirm before closing the app as that will kill the child-process server
-    mainWindow.showExitPrompt = true;
     mainWindow.on('close', function(e) {
-      if (mainWindow.showExitPrompt) {
+      if (showExitPrompt) {
         e.preventDefault();
 
         if (global.pyPort) {
@@ -132,7 +132,7 @@ function createWindow() {
               var connectedClients = json.data.clients.filter(client => client !== global.clientid)
               if (connectedClients.length > 0 && !options.argv.c) {
                 // TODO: only show this if there are clients connected to the server.  Will need to have all clients subscribe and then have the server return the clientids in this fetch.
-                choice = electron.dialog.showMessageBox(
+                choice = electron.dialog.showMessageBoxSync(
                   {
                       type: 'question',
                       buttons: ['Quit', 'Cancel'],
@@ -141,18 +141,17 @@ function createWindow() {
                   });
 
               }
-
               if (choice===0) {
-                mainWindow.showExitPrompt = false;
+                showExitPrompt = false;
                 mainWindow.close();
               }
             })
             .catch(err => {
-              mainWindow.showExitPrompt = false;
+              showExitPrompt = false;
               mainWindow.close();
             });
         } else {
-          mainWindow.showExitPrompt = false;
+          showExitPrompt = false;
           mainWindow.close();
         }
       }
