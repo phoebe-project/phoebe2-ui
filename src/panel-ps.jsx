@@ -679,8 +679,8 @@ class Input extends Component {
     if (this.props.type == 'float') {
       value = e.target.value.replace(/[^0-9.-]/g, '');
     } else if (this.props.type == 'floatunits') {
-      // allow space and [a-z,A-Z] if units
-      value = e.target.value.replace(/[^0-9A-Za-z.-\s]/g, '');
+      // allow space and [a-z,A-Z] as well as / if units
+      value = e.target.value.replace(/[^0-9A-Za-z.-\s\/]/g, '');
     } else if (this.props.type == 'int') {
       value = e.target.value.replace(/[^0-9-]/g, '');
     } else if (this.props.type == 'array') {
