@@ -116,7 +116,10 @@ export function popUpWindow(url, search) {
   if (isElectron()) {
     // set frame: false?
     url = window.location.origin + window.location.pathname + search + "#" + url
-    win = new BrowserWindow({width: 600, height: 400, minWidth: 325, minHeight: 200});
+    win = new BrowserWindow({width: 600, height: 400, minWidth: 325, minHeight: 200,
+                            webPreferences: {
+                              nodeIntegration: true, // needed for window.require
+                            }});
     win.on('close', () => {win = null});
     win.loadURL(url);
     win.show();
