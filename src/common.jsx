@@ -40,9 +40,12 @@ export function randomstr(N) {
 
 export function getServerWarning(phoebeVersion) {
   var serverWarning = null
-  // if a client ever needs to raise a warning for an old version of the server
+  // If a client ever needs to raise a warning for an old version of the server
   // but doesn't quite justify raising serverMinVersion, that logic should go
-  // here, based on this.state.phoebeVersion
+  // here, based on this.state.phoebeVersion.
+  // This obviously only knows about releases of PHOEBE when the current version
+  // of the client was released.  To handle warnings for NEWER versions of PHOEBE
+  // edit client_warning in phoebe2/client-server/phoebe-server
   if (phoebeVersion === null || versionCompare(phoebeVersion, '2.3.0') < 0) {
     serverWarning = 'phoebe-server with version '+phoebeVersion+' is before initial UI release'
   } else if (phoebeVersion === 'devel') {
