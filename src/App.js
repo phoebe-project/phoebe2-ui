@@ -47,7 +47,7 @@ class App extends ReactQueryParams {
       settingsServerHosts: [],
       settingsDismissedTips: [],
       allowDisconnectReadonly: false,
-      clientVersion: '0.1.0', // UPDATE ON NEW RELEASE, also update package.json.version to match
+      clientVersion: '1.0.0', // UPDATE ON NEW RELEASE, also update package.json.version to match
       serverMinVersion: '2.3.0',  // UPDATE ON NEW RELEASE - any warnings need to go in common.getServerWarning
       latestClientVersion: null, // leave at null, updated by getLatestClientVersion
       latestServerVersion: null, // leave at null, updated by getLatestServerVersion

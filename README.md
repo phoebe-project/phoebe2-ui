@@ -1,6 +1,20 @@
 # PHOEBE2-UI
 
-Web app and desktop app for interacting with [PHOEBE 2](https://github.com/phoebe-project/phoebe2).  A running instance of the web app is available at [ui.phoebe-project.org](http://ui.phoebe-project.org), but is connected to a server with limited capabilities due to limited compute resources.
+<p align="center"><a href="http://phoebe-project.org"><img src="./public/logos/phoebe2.svg" alt="PHOEBE logo" width="160px" align="center"/></a></p>
+
+<p align="center">
+  <a href="http://phoebe-project.org/clients"><img src="https://img.shields.io/badge/website-phoebe--project.org%2Fclients-blue.svg"/></a>
+  <a href="https://github.com/phoebe-project/phoebe2/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-GPL3-blue.svg"/></a>
+  <a href="https://ui.adsabs.harvard.edu/abs/2020arXiv200616951C"><img src="https://img.shields.io/badge/ApJS-Conroy+2020-lightgrey.svg"/></a>
+</p>
+
+Web app and desktop app for interacting with [PHOEBE 2](https://github.com/phoebe-project/phoebe2) (v 2.3+).  A running instance of the web app is available at [ui.phoebe-project.org](http://ui.phoebe-project.org), but is connected to a server with limited capabilities due to limited compute resources.
+
+<p align="center">
+  <a href="http://phoebe-project.org/clients"><img src="./mockups/ui-mockup.gif" alt="Console Animation" width="600px" align="center"/></a>
+</p>
+
+For more information and details, see [phoebe-project.org/clients](http://phoebe-project.org/clients)
 
 # Installing
 
@@ -94,7 +108,7 @@ To create installers for all supported distributions (currently includes .deb, .
 npm run package:installer:all
 ```
 
-will create installers in the `dist/installers` directory (not under version-control) from the latest created package versions (call `npm run package:all` first, if necessary).  Note that dmg installers can only be build on mac systems.  To create all default installers to release, instead run:
+will create installers in the `dist/installers` directory (not under version-control) from the latest created package versions (call `npm run package:all` first, if necessary).  Note that dmg installers can only be built on mac systems.  To create all default installers to release, instead run:
 
 ```bash
 npm run package:installer:default
