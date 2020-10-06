@@ -3,7 +3,7 @@
   "author": "PHOEBE development team",
   "contributors": "Kyle Conroy",
   "description": "Eclipsing Binary Modeling Software",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "license": "GPL v3",
   "repository": {
     "type": "git",
@@ -40,7 +40,7 @@
     "react-sortable-hoc": "1.9.1",
     "react-toastify": "5.3.1",
     "react-toggle-button": "2.2.0",
-    "semver-compare": "1.0.0",
+    "semver-compare": "1.0.1",
     "socket.io-client": "2.2.0",
     "whatwg-fetch": "3.0.0",
     "yargs": "12.0.0"
